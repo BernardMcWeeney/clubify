@@ -1,4 +1,3 @@
-// src/routes/+layout.server.ts
 import type { LayoutServerLoad } from './$types';
 import { prisma } from '$lib/server/prisma';
 
@@ -11,6 +10,11 @@ export const load: LayoutServerLoad = async ({ url }) => {
         tenant = await prisma.tenant.findFirst({
             where: {
                 domain: hostname
+            },
+            select: {
+                id: true,
+                name: true,
+                domain: true
             }
         });
     }

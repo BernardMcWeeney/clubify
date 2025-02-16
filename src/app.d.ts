@@ -15,8 +15,6 @@ declare global {
                 domain: string;
             } | null;
         }
-        // interface Error {}
-        // interface Platform {}
     }
 }
 
