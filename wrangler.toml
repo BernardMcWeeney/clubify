@@ -1,15 +1,11 @@
 name = "clubify"
 compatibility_date = "2024-02-16"
 
-[[ 
-d1_databases
- ]]
+[[d1_databases]]
 binding = "DB"
 database_name = "clubify-db"
 database_id = "74afb400-9282-439e-af7d-a37197471270"
 
-[[ 
-kv_namespaces
- ]]
+[[kv_namespaces]]
 binding = "SESSION_KV"
 id = "4153ed6763f940879250ea182fc9e57f"
