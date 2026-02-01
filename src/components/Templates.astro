@@ -26,34 +26,34 @@ const templates = [
 
 const colorStyles = {
   primary: {
-    gradient: "from-primary-500/20 to-primary-600/20",
+    gradient: "from-primary-500/10 to-primary-600/10",
     border: "border-primary-500/30",
-    text: "text-primary-400",
+    text: "text-primary-600",
     dot: "bg-primary-500"
   },
   accent: {
-    gradient: "from-accent-500/20 to-accent-600/20",
+    gradient: "from-accent-500/10 to-accent-600/10",
     border: "border-accent-500/30",
-    text: "text-accent-400",
+    text: "text-accent-600",
     dot: "bg-accent-500"
   },
   teal: {
-    gradient: "from-teal-500/20 to-teal-600/20",
+    gradient: "from-teal-500/10 to-teal-600/10",
     border: "border-teal-500/30",
-    text: "text-teal-400",
+    text: "text-teal-600",
     dot: "bg-teal-500"
   }
 };
 ---
 
-<Section id="templates" class="bg-slate-900/50">
+<Section id="templates" class="bg-slate-50">
   <!-- Section header -->
   <div class="text-center mb-16">
-    <span class="inline-block text-primary-400 font-semibold text-sm uppercase tracking-wider mb-4">Templates</span>
-    <h2 class="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-6">
+    <span class="inline-block text-primary-600 font-semibold text-sm uppercase tracking-wider mb-4">Templates</span>
+    <h2 class="text-3xl sm:text-4xl md:text-5xl font-bold text-slate-900 mb-6">
       Three designs, one perfect fit
     </h2>
-    <p class="text-lg text-slate-400 max-w-2xl mx-auto">
+    <p class="text-lg text-slate-600 max-w-2xl mx-auto">
       Each template is professionally designed for GAA clubs. Pick the one that matches your club's style.
     </p>
   </div>
@@ -70,37 +70,37 @@ const colorStyles = {
             </div>
           )}
 
-          <div class="bg-slate-900/90 rounded-xl p-6 h-full flex flex-col">
+          <div class="bg-white rounded-xl p-6 h-full flex flex-col">
             <!-- Template preview mockup -->
-            <div class="bg-slate-800/50 rounded-xl p-4 mb-6 aspect-[4/3] relative overflow-hidden">
+            <div class="bg-slate-100 rounded-xl p-4 mb-6 aspect-[4/3] relative overflow-hidden">
               <!-- Mockup content based on template type -->
               <div class="space-y-3">
                 <!-- Header mockup -->
                 <div class="flex items-center justify-between">
                   <div class="flex items-center gap-2">
                     <div class={`w-6 h-6 rounded-full ${styles.dot}`}></div>
-                    <div class="h-2 w-16 bg-slate-700 rounded"></div>
+                    <div class="h-2 w-16 bg-slate-300 rounded"></div>
                   </div>
                   <div class="flex gap-2">
-                    <div class="h-2 w-8 bg-slate-700/50 rounded"></div>
-                    <div class="h-2 w-8 bg-slate-700/50 rounded"></div>
+                    <div class="h-2 w-8 bg-slate-200 rounded"></div>
+                    <div class="h-2 w-8 bg-slate-200 rounded"></div>
                   </div>
                 </div>
 
                 <!-- Hero mockup -->
-                <div class={`h-16 rounded-lg bg-gradient-to-r ${styles.gradient} mt-2`}></div>
+                <div class={`h-16 rounded-lg bg-gradient-to-r ${styles.gradient} mt-2 border ${styles.border}`}></div>
 
                 <!-- Content blocks -->
                 <div class="grid grid-cols-2 gap-2">
-                  <div class="h-12 bg-slate-700/30 rounded-lg"></div>
-                  <div class="h-12 bg-slate-700/30 rounded-lg"></div>
+                  <div class="h-12 bg-white rounded-lg shadow-sm border border-slate-200"></div>
+                  <div class="h-12 bg-white rounded-lg shadow-sm border border-slate-200"></div>
                 </div>
 
-                <div class="h-8 bg-slate-700/20 rounded-lg"></div>
+                <div class="h-8 bg-slate-200/50 rounded-lg"></div>
               </div>
 
               <!-- Hover overlay -->
-              <div class="absolute inset-0 bg-slate-900/80 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+              <div class="absolute inset-0 bg-white/90 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                 <Button variant="primary" size="sm">
                   Preview
                 </Button>
@@ -108,13 +108,13 @@ const colorStyles = {
             </div>
 
             <!-- Template info -->
-            <h3 class="text-xl font-bold text-white mb-2">{template.name}</h3>
-            <p class="text-slate-400 text-sm mb-4 flex-grow">{template.description}</p>
+            <h3 class="text-xl font-bold text-slate-900 mb-2">{template.name}</h3>
+            <p class="text-slate-600 text-sm mb-4 flex-grow">{template.description}</p>
 
             <!-- Features list -->
             <ul class="space-y-2">
               {template.features.map((feature) => (
-                <li class="flex items-center gap-2 text-sm text-slate-300">
+                <li class="flex items-center gap-2 text-sm text-slate-700">
                   <svg class={`w-4 h-4 ${styles.text} flex-shrink-0`} fill="currentColor" viewBox="0 0 20 20">
                     <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
                   </svg>

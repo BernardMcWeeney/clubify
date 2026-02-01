@@ -16,19 +16,19 @@ import Button from './Button.astro';
             </svg>
           </div>
         </div>
-        <span class="text-xl font-bold text-white">Clubify</span>
+        <span class="text-xl font-bold text-slate-900">Clubify</span>
       </a>
 
       <!-- Desktop Navigation -->
       <div class="hidden md:flex items-center gap-8">
-        <a href="#features" class="text-slate-300 hover:text-white transition-colors font-medium">Features</a>
-        <a href="#templates" class="text-slate-300 hover:text-white transition-colors font-medium">Templates</a>
-        <a href="#how-it-works" class="text-slate-300 hover:text-white transition-colors font-medium">How it works</a>
+        <a href="#features" class="text-slate-600 hover:text-slate-900 transition-colors font-medium">Features</a>
+        <a href="#templates" class="text-slate-600 hover:text-slate-900 transition-colors font-medium">Templates</a>
+        <a href="#how-it-works" class="text-slate-600 hover:text-slate-900 transition-colors font-medium">How it works</a>
       </div>
 
       <!-- CTA Buttons -->
       <div class="flex items-center gap-4">
-        <a href="/admin" class="hidden sm:block text-slate-300 hover:text-white transition-colors font-medium">
+        <a href="/admin" class="hidden sm:block text-slate-600 hover:text-slate-900 transition-colors font-medium">
           Log in
         </a>
         <Button href="/admin" variant="primary" size="sm">
@@ -37,7 +37,7 @@ import Button from './Button.astro';
       </div>
 
       <!-- Mobile Menu Button -->
-      <button class="md:hidden p-2 text-slate-300 hover:text-white" id="mobile-menu-btn" aria-label="Toggle menu">
+      <button class="md:hidden p-2 text-slate-600 hover:text-slate-900" id="mobile-menu-btn" aria-label="Toggle menu">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
         </svg>
@@ -46,13 +46,13 @@ import Button from './Button.astro';
   </div>
 
   <!-- Mobile Menu -->
-  <div class="hidden md:hidden glass" id="mobile-menu">
+  <div class="hidden md:hidden glass-light" id="mobile-menu">
     <div class="px-4 py-6 space-y-4">
-      <a href="#features" class="block text-slate-300 hover:text-white transition-colors font-medium py-2">Features</a>
-      <a href="#templates" class="block text-slate-300 hover:text-white transition-colors font-medium py-2">Templates</a>
-      <a href="#how-it-works" class="block text-slate-300 hover:text-white transition-colors font-medium py-2">How it works</a>
-      <hr class="border-slate-700/50" />
-      <a href="/admin" class="block text-slate-300 hover:text-white transition-colors font-medium py-2">Log in</a>
+      <a href="#features" class="block text-slate-600 hover:text-slate-900 transition-colors font-medium py-2">Features</a>
+      <a href="#templates" class="block text-slate-600 hover:text-slate-900 transition-colors font-medium py-2">Templates</a>
+      <a href="#how-it-works" class="block text-slate-600 hover:text-slate-900 transition-colors font-medium py-2">How it works</a>
+      <hr class="border-slate-200" />
+      <a href="/admin" class="block text-slate-600 hover:text-slate-900 transition-colors font-medium py-2">Log in</a>
       <Button href="/admin" variant="primary" size="md" class="w-full">
         Create your club
       </Button>
@@ -68,9 +68,9 @@ import Button from './Button.astro';
 
   window.addEventListener('scroll', () => {
     if (window.scrollY > 50) {
-      navbar?.classList.add('glass', 'bg-slate-950/80');
+      navbar?.classList.add('glass-light', 'bg-white/80');
     } else {
-      navbar?.classList.remove('glass', 'bg-slate-950/80');
+      navbar?.classList.remove('glass-light', 'bg-white/80');
     }
   });
 

@@ -60,12 +60,27 @@
           </div>
 
           <div id="magic-link-sent" class="hidden p-4 bg-primary-500/10 border border-primary-500/20 rounded-xl">
-            <p class="text-primary-400 text-sm mb-2">
+            <p class="text-primary-400 text-sm">
               <strong>Check your email!</strong> We've sent you a magic link to sign in.
             </p>
-            <div id="dev-mode-link" class="hidden mt-3 p-3 bg-slate-800 rounded-lg">
-              <p class="text-amber-400 text-xs mb-2">Dev Mode: Email service not configured. Click the link below:</p>
-              <a id="dev-link" href="#" class="text-primary-400 text-sm break-all hover:underline" target="_blank"></a>
+          </div>
+
+          <!-- Dev mode link (only shown when no email service configured) -->
+          <div id="dev-mode-link" class="hidden p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-xl">
+            <div class="flex items-start gap-3">
+              <svg class="w-5 h-5 text-yellow-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
+              </svg>
+              <div class="flex-1">
+                <p class="text-yellow-400 font-medium">Dev Mode</p>
+                <p class="text-yellow-400/70 text-sm mt-1 mb-3">No email service configured. Click below to sign in directly:</p>
+                <a id="dev-link" href="#" class="inline-flex items-center gap-2 px-4 py-2 bg-yellow-500 hover:bg-yellow-400 text-black font-semibold rounded-lg text-sm transition-colors">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+                  </svg>
+                  Click to sign in
+                </a>
+              </div>
             </div>
           </div>
 
@@ -494,18 +509,18 @@
       const data = await res.json();
 
       if (data.success) {
-        document.getElementById('magic-link-sent')?.classList.remove('hidden');
-        submitBtn.innerHTML = '<span>Check your email</span>';
-
         // If dev mode link is returned (no email service configured), show it
         if (data.devModeLink) {
           const devModeDiv = document.getElementById('dev-mode-link');
           const devLink = document.getElementById('dev-link') as HTMLAnchorElement;
           if (devModeDiv && devLink) {
             devLink.href = data.devModeLink;
-            devLink.textContent = data.devModeLink;
             devModeDiv.classList.remove('hidden');
           }
+          submitBtn.innerHTML = '<span>Dev mode</span>';
+        } else {
+          document.getElementById('magic-link-sent')?.classList.remove('hidden');
+          submitBtn.innerHTML = '<span>Check your email</span>';
         }
 
         // Start polling for session (user clicks link in email or dev mode link)

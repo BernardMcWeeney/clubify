@@ -47,6 +47,25 @@ import Button from '../../components/Button.astro';
             </div>
           </div>
 
+          <!-- Dev mode link (only shown when no email service configured) -->
+          <div id="dev-mode-link" class="hidden p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-xl">
+            <div class="flex items-start gap-3">
+              <svg class="w-5 h-5 text-yellow-400 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
+              </svg>
+              <div class="flex-1">
+                <p class="text-yellow-400 font-medium">Dev Mode</p>
+                <p class="text-yellow-400/70 text-sm mt-1 mb-3">No email service configured. Click below to sign in directly:</p>
+                <a id="dev-link" href="#" class="inline-flex items-center gap-2 px-4 py-2 bg-yellow-500 hover:bg-yellow-400 text-black font-semibold rounded-lg text-sm transition-colors">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+                  </svg>
+                  Click to sign in
+                </a>
+              </div>
+            </div>
+          </div>
+
           <div id="error-message" class="hidden p-4 bg-red-500/10 border border-red-500/20 rounded-xl">
             <p class="text-red-400 text-sm"></p>
           </div>
@@ -93,6 +112,8 @@ import Button from '../../components/Button.astro';
     const form = document.getElementById('login-form');
     const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement;
     const magicLinkSent = document.getElementById('magic-link-sent');
+    const devModeLink = document.getElementById('dev-mode-link');
+    const devLink = document.getElementById('dev-link') as HTMLAnchorElement;
     const errorMessage = document.getElementById('error-message');
 
     form?.addEventListener('submit', async (e) => {
@@ -102,6 +123,7 @@ import Button from '../../components/Button.astro';
       submitBtn.disabled = true;
       submitBtn.innerHTML = '<span>Sending...</span>';
       errorMessage?.classList.add('hidden');
+      devModeLink?.classList.add('hidden');
 
       try {
         const res = await fetch('/api/auth/magic-link', {
@@ -113,8 +135,17 @@ import Button from '../../components/Button.astro';
         const data = await res.json();
 
         if (data.success) {
-          magicLinkSent?.classList.remove('hidden');
-          submitBtn.innerHTML = '<span>Email sent</span>';
+          // Check if we're in dev mode (API returns devModeLink)
+          if (data.devModeLink) {
+            devModeLink?.classList.remove('hidden');
+            if (devLink) {
+              devLink.href = data.devModeLink;
+            }
+            submitBtn.innerHTML = '<span>Dev mode</span>';
+          } else {
+            magicLinkSent?.classList.remove('hidden');
+            submitBtn.innerHTML = '<span>Email sent</span>';
+          }
 
           // Poll for session (user might click link in another tab)
           pollForSession();
