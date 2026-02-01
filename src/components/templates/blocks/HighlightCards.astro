@@ -47,18 +47,18 @@ const icons = {
 };
 ---
 
-<section class="py-16 bg-slate-900">
+<section class="py-16 bg-slate-50">
   <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
     <div class="grid md:grid-cols-3 gap-6">
       {displayCards.slice(0, 3).map((card) => (
         card.link ? (
           <a
             href={card.link}
-            class="group bg-slate-800/50 rounded-2xl p-6 border border-slate-700/50 hover:border-slate-600 transition-all hover:transform hover:-translate-y-1"
+            class="group bg-white rounded-2xl p-6 border border-slate-200 hover:border-slate-300 transition-all hover:-translate-y-1 hover:shadow-xl hover:shadow-slate-200/60"
           >
             <div
-              class="w-12 h-12 rounded-xl flex items-center justify-center mb-4"
-              style={`background-color: ${primaryColor}20`}
+              class="w-12 h-12 rounded-xl flex items-center justify-center mb-4 border border-slate-200"
+              style={`background-color: ${primaryColor}15`}
             >
               <svg
                 class="w-6 h-6"
@@ -69,16 +69,16 @@ const icons = {
                 set:html={icons[card.icon || 'info']}
               />
             </div>
-            <h3 class="text-lg font-semibold text-white mb-2 group-hover:text-slate-200">
+            <h3 class="text-lg font-semibold text-slate-900 mb-2 group-hover:text-slate-700">
               {card.title}
             </h3>
-            <p class="text-slate-400 text-sm">{card.description}</p>
+            <p class="text-slate-600 text-sm">{card.description}</p>
           </a>
         ) : (
-          <div class="bg-slate-800/50 rounded-2xl p-6 border border-slate-700/50">
+          <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
             <div
-              class="w-12 h-12 rounded-xl flex items-center justify-center mb-4"
-              style={`background-color: ${primaryColor}20`}
+              class="w-12 h-12 rounded-xl flex items-center justify-center mb-4 border border-slate-200"
+              style={`background-color: ${primaryColor}15`}
             >
               <svg
                 class="w-6 h-6"
@@ -89,8 +89,8 @@ const icons = {
                 set:html={icons[card.icon || 'info']}
               />
             </div>
-            <h3 class="text-lg font-semibold text-white mb-2">{card.title}</h3>
-            <p class="text-slate-400 text-sm">{card.description}</p>
+            <h3 class="text-lg font-semibold text-slate-900 mb-2">{card.title}</h3>
+            <p class="text-slate-600 text-sm">{card.description}</p>
           </div>
         )
       ))}

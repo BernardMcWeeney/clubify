@@ -52,24 +52,24 @@ if (pages.length === 0) {
 >
   <Fragment slot="header-left">
     <div class="flex items-center gap-4">
-      <a href={`/${slug}/admin-portal/settings/social`} class="p-2 text-slate-400 hover:text-white transition-colors">
+      <a href={`/${slug}/admin-portal/settings/social`} class="p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
         </svg>
       </a>
-      <h1 class="text-xl font-bold text-white">Select Facebook Page</h1>
+      <h1 class="text-xl font-bold text-slate-900">Select Facebook Page</h1>
     </div>
   </Fragment>
 
   <div class="max-w-2xl">
-    <p class="text-slate-400 mb-8">
+    <p class="text-slate-600 mb-8">
       You manage multiple Facebook Pages. Select the page you want to connect to {club.name}.
     </p>
 
     <div class="space-y-4">
       {pages.map((page) => (
         <button
-          class="page-option w-full flex items-center gap-4 p-4 bg-slate-800/50 hover:bg-slate-800 rounded-xl border border-slate-700/50 hover:border-slate-600 transition-colors text-left"
+          class="page-option w-full flex items-center gap-4 p-4 bg-white hover:bg-slate-50 rounded-xl border border-slate-200 hover:border-slate-300 transition-colors text-left shadow-sm"
           data-page-id={page.id}
           data-page-name={page.name}
           data-page-token={page.token}
@@ -80,10 +80,10 @@ if (pages.length === 0) {
             </svg>
           </div>
           <div class="flex-1">
-            <h3 class="text-lg font-semibold text-white">{page.name}</h3>
-            <p class="text-slate-400 text-sm">Page ID: {page.id}</p>
+            <h3 class="text-lg font-semibold text-slate-900">{page.name}</h3>
+            <p class="text-slate-500 text-sm">Page ID: {page.id}</p>
           </div>
-          <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
           </svg>
         </button>
@@ -91,16 +91,16 @@ if (pages.length === 0) {
     </div>
 
     <div class="mt-6 text-center">
-      <a href={`/${slug}/admin-portal/settings/social`} class="text-slate-400 hover:text-white text-sm">
+      <a href={`/${slug}/admin-portal/settings/social`} class="text-slate-500 hover:text-slate-900 text-sm">
         Cancel and go back
       </a>
     </div>
 
     <!-- Loading overlay -->
-    <div id="loading" class="hidden fixed inset-0 bg-slate-950/80 flex items-center justify-center z-50">
-      <div class="bg-slate-800 rounded-xl p-6 text-center">
+    <div id="loading" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50">
+      <div class="bg-white rounded-xl p-6 text-center border border-slate-200 shadow-xl">
         <div class="w-8 h-8 border-2 border-green-500 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
-        <p class="text-white">Connecting page...</p>
+        <p class="text-slate-700">Connecting page...</p>
       </div>
     </div>
   </div>

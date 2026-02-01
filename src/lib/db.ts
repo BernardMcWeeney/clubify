@@ -170,6 +170,24 @@ export interface HomepageConfig {
   updated_at: string;
 }
 
+export interface PlatformStats {
+  clubs: number;
+  live_clubs: number;
+  users: number;
+  posts: number;
+  fixtures: number;
+  pages: number;
+  media: number;
+}
+
+export interface ClubOverview extends Club {
+  member_count: number;
+  post_count: number;
+  fixture_count: number;
+  page_count: number;
+  last_content_at: string | null;
+}
+
 export class DatabaseService {
   constructor(private db: D1Database) {}
 
@@ -359,6 +377,53 @@ export class DatabaseService {
       WHERE cm.user_id = ?
       ORDER BY c.created_at DESC
     `).bind(userId).all<Club & { role: string }>();
+
+    return results.results || [];
+  }
+
+  async getPlatformStats(): Promise<PlatformStats> {
+    const result = await this.db.prepare(`
+      SELECT
+        (SELECT COUNT(*) FROM clubs) as clubs,
+        (SELECT COUNT(*) FROM clubs WHERE is_live = 1) as live_clubs,
+        (SELECT COUNT(*) FROM users) as users,
+        (SELECT COUNT(*) FROM posts) as posts,
+        (SELECT COUNT(*) FROM fixtures) as fixtures,
+        (SELECT COUNT(*) FROM pages) as pages,
+        (SELECT COUNT(*) FROM media) as media
+    `).first<any>();
+
+    return {
+      clubs: result?.clubs || 0,
+      live_clubs: result?.live_clubs || 0,
+      users: result?.users || 0,
+      posts: result?.posts || 0,
+      fixtures: result?.fixtures || 0,
+      pages: result?.pages || 0,
+      media: result?.media || 0,
+    };
+  }
+
+  async getClubOverviews(): Promise<ClubOverview[]> {
+    const results = await this.db.prepare(`
+      SELECT
+        c.*,
+        (SELECT COUNT(*) FROM club_members cm WHERE cm.club_id = c.id) as member_count,
+        (SELECT COUNT(*) FROM posts p WHERE p.club_id = c.id) as post_count,
+        (SELECT COUNT(*) FROM fixtures f WHERE f.club_id = c.id) as fixture_count,
+        (SELECT COUNT(*) FROM pages pg WHERE pg.club_id = c.id) as page_count,
+        (
+          SELECT MAX(ts) FROM (
+            SELECT MAX(updated_at) as ts FROM posts p WHERE p.club_id = c.id
+            UNION ALL
+            SELECT MAX(updated_at) as ts FROM fixtures f WHERE f.club_id = c.id
+            UNION ALL
+            SELECT MAX(updated_at) as ts FROM pages pg WHERE pg.club_id = c.id
+          )
+        ) as last_content_at
+      FROM clubs c
+      ORDER BY c.created_at DESC
+    `).all<any>();
 
     return results.results || [];
   }

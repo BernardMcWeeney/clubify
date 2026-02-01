@@ -63,31 +63,31 @@ const awayLabel = fixture.is_home ? fixture.opponent : club.name;
 >
   <Fragment slot="header-left">
     <div class="flex items-center gap-4">
-      <a href={`/${slug}/admin-portal/fixtures`} class="p-2 text-slate-400 hover:text-white transition-colors">
+      <a href={`/${slug}/admin-portal/fixtures`} class="p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
         </svg>
       </a>
-      <h1 class="text-xl font-bold text-white">{isPlayed ? 'Edit Result' : 'Enter Result'}</h1>
+      <h1 class="text-xl font-bold text-slate-900">{isPlayed ? 'Edit Result' : 'Enter Result'}</h1>
     </div>
   </Fragment>
 
   <!-- Match Info -->
-  <div class="bg-slate-800/50 rounded-xl border border-slate-700/50 p-6 mb-6 max-w-2xl">
+  <div class="bg-white rounded-xl border border-slate-200 p-6 mb-6 max-w-2xl shadow-sm">
     <div class="flex items-center gap-3 mb-3">
-      <span class={`px-2 py-0.5 rounded text-xs font-medium ${fixture.is_home ? 'bg-blue-500/20 text-blue-400' : 'bg-purple-500/20 text-purple-400'}`}>
+      <span class={`px-2 py-0.5 rounded text-xs font-medium ${fixture.is_home ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700'}`}>
         {fixture.is_home ? 'Home' : 'Away'}
       </span>
       {fixture.competition && (
-        <span class="text-slate-500 text-sm">{fixture.competition}</span>
+        <span class="text-slate-600 text-sm">{fixture.competition}</span>
       )}
     </div>
-    <h2 class="text-2xl font-bold text-white mb-2">vs {fixture.opponent}</h2>
-    <div class="flex items-center gap-4 text-sm text-slate-400">
+    <h2 class="text-2xl font-bold text-slate-900 mb-2">vs {fixture.opponent}</h2>
+    <div class="flex items-center gap-4 text-sm text-slate-500">
       <span>{formatDate(fixture.match_date)}</span>
       {fixture.venue && (
         <>
-          <span class="text-slate-600">•</span>
+          <span class="text-slate-300">•</span>
           <span>{fixture.venue}</span>
         </>
       )}
@@ -96,14 +96,14 @@ const awayLabel = fixture.is_home ? fixture.opponent : club.name;
 
   <form id="result-form" class="max-w-2xl">
     <!-- Score Entry -->
-    <div class="bg-slate-800/50 rounded-xl border border-slate-700/50 p-6 mb-6">
-      <h3 class="text-lg font-semibold text-white mb-6">Score</h3>
+    <div class="bg-white rounded-xl border border-slate-200 p-6 mb-6 shadow-sm">
+      <h3 class="text-lg font-semibold text-slate-900 mb-6">Score</h3>
 
       <!-- GAA Score Format: Goals-Points -->
       <div class="space-y-6">
         <!-- Home Team -->
         <div>
-          <label class="block text-sm font-medium text-slate-300 mb-3">{homeLabel}</label>
+          <label class="block text-sm font-medium text-slate-700 mb-3">{homeLabel}</label>
           <div class="flex items-center gap-4">
             <div class="flex-1">
               <label class="block text-xs text-slate-500 mb-1">Goals</label>
@@ -115,11 +115,11 @@ const awayLabel = fixture.is_home ? fixture.opponent : club.name;
                 max="99"
                 required
                 value={fixture.home_goals ?? ''}
-                class="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white text-2xl font-bold text-center focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                class="w-full px-4 py-3 bg-white border border-slate-200 rounded-lg text-slate-900 text-2xl font-bold text-center focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                 placeholder="0"
               />
             </div>
-            <span class="text-3xl text-slate-500 font-bold mt-5">-</span>
+            <span class="text-3xl text-slate-400 font-bold mt-5">-</span>
             <div class="flex-1">
               <label class="block text-xs text-slate-500 mb-1">Points</label>
               <input
@@ -130,21 +130,21 @@ const awayLabel = fixture.is_home ? fixture.opponent : club.name;
                 max="99"
                 required
                 value={fixture.home_points ?? ''}
-                class="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white text-2xl font-bold text-center focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                class="w-full px-4 py-3 bg-white border border-slate-200 rounded-lg text-slate-900 text-2xl font-bold text-center focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                 placeholder="0"
               />
             </div>
             <div class="w-20 text-center mt-5">
-              <span id="homeTotal" class="text-lg text-slate-400 font-mono">= 0</span>
+              <span id="homeTotal" class="text-lg text-slate-500 font-mono">= 0</span>
             </div>
           </div>
         </div>
 
-        <div class="border-t border-slate-700"></div>
+        <div class="border-t border-slate-200"></div>
 
         <!-- Away Team -->
         <div>
-          <label class="block text-sm font-medium text-slate-300 mb-3">{awayLabel}</label>
+          <label class="block text-sm font-medium text-slate-700 mb-3">{awayLabel}</label>
           <div class="flex items-center gap-4">
             <div class="flex-1">
               <label class="block text-xs text-slate-500 mb-1">Goals</label>
@@ -156,11 +156,11 @@ const awayLabel = fixture.is_home ? fixture.opponent : club.name;
                 max="99"
                 required
                 value={fixture.away_goals ?? ''}
-                class="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white text-2xl font-bold text-center focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                class="w-full px-4 py-3 bg-white border border-slate-200 rounded-lg text-slate-900 text-2xl font-bold text-center focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                 placeholder="0"
               />
             </div>
-            <span class="text-3xl text-slate-500 font-bold mt-5">-</span>
+            <span class="text-3xl text-slate-400 font-bold mt-5">-</span>
             <div class="flex-1">
               <label class="block text-xs text-slate-500 mb-1">Points</label>
               <input
@@ -171,31 +171,31 @@ const awayLabel = fixture.is_home ? fixture.opponent : club.name;
                 max="99"
                 required
                 value={fixture.away_points ?? ''}
-                class="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white text-2xl font-bold text-center focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                class="w-full px-4 py-3 bg-white border border-slate-200 rounded-lg text-slate-900 text-2xl font-bold text-center focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                 placeholder="0"
               />
             </div>
             <div class="w-20 text-center mt-5">
-              <span id="awayTotal" class="text-lg text-slate-400 font-mono">= 0</span>
+              <span id="awayTotal" class="text-lg text-slate-500 font-mono">= 0</span>
             </div>
           </div>
         </div>
       </div>
 
       <!-- Result Preview -->
-      <div id="result-preview" class="mt-6 p-4 bg-slate-900/50 rounded-lg text-center hidden">
+      <div id="result-preview" class="mt-6 p-4 bg-slate-50 rounded-lg text-center hidden border border-slate-200">
         <span id="result-text" class="text-lg font-bold"></span>
       </div>
     </div>
 
     <!-- Match Report (Optional) -->
-    <div class="bg-slate-800/50 rounded-xl border border-slate-700/50 p-6 mb-6">
-      <h3 class="text-lg font-semibold text-white mb-4">Match Report (Optional)</h3>
+    <div class="bg-white rounded-xl border border-slate-200 p-6 mb-6 shadow-sm">
+      <h3 class="text-lg font-semibold text-slate-900 mb-4">Match Report (Optional)</h3>
       <textarea
         id="matchReport"
         name="matchReport"
         rows="6"
-        class="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
+        class="w-full px-4 py-3 bg-white border border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
         placeholder="Write a brief match report..."
       >{fixture.match_report || ''}</textarea>
       <p class="text-slate-500 text-xs mt-2">This will be displayed with the result on your website.</p>
@@ -211,16 +211,16 @@ const awayLabel = fixture.is_home ? fixture.opponent : club.name;
       </button>
       <a
         href={`/${slug}/admin-portal/fixtures`}
-        class="px-6 py-3 text-slate-300 hover:text-white transition-colors font-medium"
+        class="px-6 py-3 text-slate-600 hover:text-slate-900 transition-colors font-medium"
       >
         Cancel
       </a>
     </div>
 
-    <div id="loading" class="hidden fixed inset-0 bg-slate-950/80 flex items-center justify-center z-50">
-      <div class="bg-slate-800 rounded-xl p-6 text-center">
+    <div id="loading" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50">
+      <div class="bg-white rounded-xl p-6 text-center border border-slate-200 shadow-xl">
         <div class="w-8 h-8 border-2 border-green-500 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
-        <p class="text-white">Saving...</p>
+        <p class="text-slate-700">Saving...</p>
       </div>
     </div>
   </form>

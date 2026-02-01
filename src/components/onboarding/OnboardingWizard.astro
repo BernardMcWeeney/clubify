@@ -2,8 +2,8 @@
 // Onboarding Wizard - Server component wrapper
 ---
 
-<div id="onboarding-app" class="min-h-screen mesh-gradient">
-  <div class="mx-auto max-w-2xl px-4 py-12">
+<div id="onboarding-app" class="min-h-screen mesh-gradient-light">
+  <div class="mx-auto max-w-3xl px-4 py-12">
     <!-- Logo -->
     <div class="text-center mb-8">
       <a href="/" class="inline-flex items-center gap-3">
@@ -14,7 +14,7 @@
             <circle cx="12" cy="12" r="2" fill="currentColor"/>
           </svg>
         </div>
-        <span class="text-2xl font-bold text-white">Clubify</span>
+        <span class="text-2xl font-bold text-slate-900">Clubify</span>
       </a>
     </div>
 
@@ -28,7 +28,7 @@
           </div>
         </template>
       </div>
-      <div class="flex justify-between mt-2 text-xs text-slate-400">
+      <div class="flex justify-between mt-2 text-xs text-slate-500">
         <span>Account</span>
         <span>Club Info</span>
         <span>Branding</span>
@@ -38,42 +38,42 @@
     </div>
 
     <!-- Step Content -->
-    <div id="step-content" class="bg-slate-800/50 backdrop-blur-xl rounded-2xl border border-slate-700/50 p-8">
+    <div id="step-content" class="glass-light rounded-2xl border border-slate-200 p-8 shadow-xl">
       <!-- Step 1: Account -->
       <div id="step-1" class="step-panel">
-        <h2 class="text-2xl font-bold text-white mb-2">Create your account</h2>
-        <p class="text-slate-400 mb-6">Enter your details to get started with Clubify.</p>
+        <h2 class="text-2xl font-bold text-slate-900 mb-2">Create your account</h2>
+        <p class="text-slate-600 mb-6">Enter your details to get started with Clubify.</p>
 
         <form id="account-form" class="space-y-4">
           <div>
-            <label for="name" class="block text-sm font-medium text-slate-300 mb-2">Your name</label>
+            <label for="name" class="block text-sm font-medium text-slate-700 mb-2">Your name</label>
             <input type="text" id="name" name="name" required
-              class="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              class="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
               placeholder="John Murphy">
           </div>
 
           <div>
-            <label for="email" class="block text-sm font-medium text-slate-300 mb-2">Email address</label>
+            <label for="email" class="block text-sm font-medium text-slate-700 mb-2">Email address</label>
             <input type="email" id="email" name="email" required
-              class="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              class="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
               placeholder="john@example.com">
           </div>
 
-          <div id="magic-link-sent" class="hidden p-4 bg-primary-500/10 border border-primary-500/20 rounded-xl">
-            <p class="text-primary-400 text-sm">
+          <div id="magic-link-sent" class="hidden p-4 bg-primary-50 border border-primary-200 rounded-xl">
+            <p class="text-primary-700 text-sm">
               <strong>Check your email!</strong> We've sent you a magic link to sign in.
             </p>
           </div>
 
           <!-- Dev mode link (only shown when no email service configured) -->
-          <div id="dev-mode-link" class="hidden p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-xl">
+          <div id="dev-mode-link" class="hidden p-4 bg-yellow-50 border border-yellow-200 rounded-xl">
             <div class="flex items-start gap-3">
-              <svg class="w-5 h-5 text-yellow-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg class="w-5 h-5 text-yellow-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
               </svg>
               <div class="flex-1">
-                <p class="text-yellow-400 font-medium">Dev Mode</p>
-                <p class="text-yellow-400/70 text-sm mt-1 mb-3">No email service configured. Click below to sign in directly:</p>
+                <p class="text-yellow-700 font-medium">Dev Mode</p>
+                <p class="text-yellow-700/80 text-sm mt-1 mb-3">No email service configured. Click below to sign in directly:</p>
                 <a id="dev-link" href="#" class="inline-flex items-center gap-2 px-4 py-2 bg-yellow-500 hover:bg-yellow-400 text-black font-semibold rounded-lg text-sm transition-colors">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
@@ -96,39 +96,45 @@
 
       <!-- Step 2: Club Info -->
       <div id="step-2" class="step-panel hidden">
-        <h2 class="text-2xl font-bold text-white mb-2">Tell us about your club</h2>
-        <p class="text-slate-400 mb-6">Basic information about your GAA club.</p>
+        <h2 class="text-2xl font-bold text-slate-900 mb-2">Tell us about your club</h2>
+        <p class="text-slate-600 mb-6">Basic information about your GAA club.</p>
 
         <form id="club-form" class="space-y-4">
           <div>
-            <label for="club-name" class="block text-sm font-medium text-slate-300 mb-2">Club name</label>
+            <label for="club-name" class="block text-sm font-medium text-slate-700 mb-2">Club name</label>
             <input type="text" id="club-name" name="club-name" required
-              class="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              class="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
               placeholder="St. Patrick's GAA">
           </div>
 
           <div>
-            <label for="county" class="block text-sm font-medium text-slate-300 mb-2">County</label>
+            <label for="county" class="block text-sm font-medium text-slate-700 mb-2">County</label>
             <select id="county" name="county" required
-              class="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+              class="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent">
               <option value="">Select county...</option>
             </select>
           </div>
 
           <div>
-            <label for="slug" class="block text-sm font-medium text-slate-300 mb-2">Club URL</label>
+            <label for="slug" class="block text-sm font-medium text-slate-700 mb-2">Club URL</label>
             <div class="flex items-center">
               <input type="text" id="slug" name="slug" required
-                class="flex-1 px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-l-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                placeholder="st-patricks">
-              <span class="px-4 py-3 bg-slate-600 border border-slate-600 rounded-r-xl text-slate-300 text-sm">.clubify.ie</span>
+                class="flex-1 px-4 py-3 bg-white border border-slate-200 rounded-l-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                placeholder="st-patricks-dublin">
+              <span class="px-4 py-3 bg-slate-100 border border-slate-200 rounded-r-xl text-slate-500 text-sm">.clubify.ie</span>
             </div>
             <p id="slug-status" class="mt-1 text-sm"></p>
+            <div class="mt-2 flex items-start gap-2 text-xs text-slate-500">
+              <svg class="w-4 h-4 text-slate-400 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M12 20a8 8 0 100-16 8 8 0 000 16z"/>
+              </svg>
+              <span>Format is <strong class="text-slate-700">clubname-county</strong>. We'll auto-format it for you. You can change your domain later or connect a custom domain.</span>
+            </div>
           </div>
 
           <div class="flex gap-3 pt-4">
             <button type="button" id="back-to-1"
-              class="px-6 py-3 border border-slate-600 text-slate-300 font-semibold rounded-xl hover:bg-slate-700/50 transition-colors">
+              class="px-6 py-3 border border-slate-200 text-slate-600 font-semibold rounded-xl hover:bg-slate-50 transition-colors">
               Back
             </button>
             <button type="submit" id="club-submit"
@@ -144,21 +150,22 @@
 
       <!-- Step 3: Branding -->
       <div id="step-3" class="step-panel hidden">
-        <h2 class="text-2xl font-bold text-white mb-2">Club branding</h2>
-        <p class="text-slate-400 mb-6">Upload your crest and choose your club colours.</p>
+        <h2 class="text-2xl font-bold text-slate-900 mb-2">Club branding</h2>
+        <p class="text-slate-600 mb-2">Upload your crest and choose your club colours.</p>
+        <p class="text-slate-500 text-sm mb-6">You can update these later in Settings.</p>
 
         <form id="branding-form" class="space-y-6">
           <div>
-            <label class="block text-sm font-medium text-slate-300 mb-2">Club crest</label>
-            <div id="crest-upload" class="border-2 border-dashed border-slate-600 rounded-xl p-8 text-center hover:border-primary-500 transition-colors cursor-pointer">
+            <label class="block text-sm font-medium text-slate-700 mb-2">Club crest</label>
+            <div id="crest-upload" class="border-2 border-dashed border-slate-200 rounded-xl p-8 text-center hover:border-primary-500 transition-colors cursor-pointer bg-white/70">
               <div id="crest-preview" class="hidden mb-4">
                 <img id="crest-image" src="" alt="Club crest" class="w-24 h-24 mx-auto object-contain">
               </div>
               <div id="crest-placeholder">
-                <svg class="w-12 h-12 mx-auto text-slate-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-12 h-12 mx-auto text-slate-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                 </svg>
-                <p class="text-slate-400 text-sm">Click to upload or drag and drop</p>
+                <p class="text-slate-600 text-sm">Click to upload or drag and drop</p>
                 <p class="text-slate-500 text-xs mt-1">PNG, JPG or SVG (max 2MB)</p>
               </div>
               <input type="file" id="crest-input" accept="image/*" class="hidden">
@@ -167,27 +174,27 @@
 
           <div class="grid grid-cols-2 gap-4">
             <div>
-              <label for="primary-color" class="block text-sm font-medium text-slate-300 mb-2">Primary colour</label>
+              <label for="primary-color" class="block text-sm font-medium text-slate-700 mb-2">Primary colour</label>
               <div class="flex items-center gap-2">
                 <input type="color" id="primary-color" value="#006838"
                   class="w-12 h-12 rounded-lg border-0 cursor-pointer">
                 <input type="text" id="primary-color-text" value="#006838"
-                  class="flex-1 px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-primary-500">
+                  class="flex-1 px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500">
               </div>
             </div>
             <div>
-              <label for="secondary-color" class="block text-sm font-medium text-slate-300 mb-2">Secondary colour</label>
+              <label for="secondary-color" class="block text-sm font-medium text-slate-700 mb-2">Secondary colour</label>
               <div class="flex items-center gap-2">
                 <input type="color" id="secondary-color" value="#FFFFFF"
                   class="w-12 h-12 rounded-lg border-0 cursor-pointer">
                 <input type="text" id="secondary-color-text" value="#FFFFFF"
-                  class="flex-1 px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-primary-500">
+                  class="flex-1 px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500">
               </div>
             </div>
           </div>
 
           <!-- Color preview -->
-          <div class="p-4 rounded-xl border border-slate-600" id="color-preview" style="background: linear-gradient(135deg, #006838, #004d2a);">
+          <div class="p-4 rounded-xl border border-slate-200" id="color-preview" style="background: linear-gradient(135deg, #006838, #004d2a);">
             <div class="flex items-center gap-3">
               <div class="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center">
                 <span class="text-white font-bold text-xl">GAA</span>
@@ -201,7 +208,7 @@
 
           <div class="flex gap-3 pt-4">
             <button type="button" id="back-to-2"
-              class="px-6 py-3 border border-slate-600 text-slate-300 font-semibold rounded-xl hover:bg-slate-700/50 transition-colors">
+              class="px-6 py-3 border border-slate-200 text-slate-600 font-semibold rounded-xl hover:bg-slate-50 transition-colors">
               Back
             </button>
             <button type="submit" id="branding-submit"
@@ -217,16 +224,17 @@
 
       <!-- Step 4: Template -->
       <div id="step-4" class="step-panel hidden">
-        <h2 class="text-2xl font-bold text-white mb-2">Choose your template</h2>
-        <p class="text-slate-400 mb-6">Select the layout that best suits your club.</p>
+        <h2 class="text-2xl font-bold text-slate-900 mb-2">Choose your template</h2>
+        <p class="text-slate-600 mb-2">Select the layout that best suits your club.</p>
+        <p class="text-slate-500 text-sm mb-6">You can switch templates any time from your admin portal.</p>
 
-        <div id="templates-grid" class="grid gap-4">
+        <div id="templates-grid" class="grid gap-6 md:grid-cols-2">
           <!-- Template cards will be inserted here -->
         </div>
 
         <div class="flex gap-3 pt-6">
           <button type="button" id="back-to-3"
-            class="px-6 py-3 border border-slate-600 text-slate-300 font-semibold rounded-xl hover:bg-slate-700/50 transition-colors">
+            class="px-6 py-3 border border-slate-200 text-slate-600 font-semibold rounded-xl hover:bg-slate-50 transition-colors">
             Back
           </button>
           <button type="button" id="template-submit"
@@ -247,12 +255,12 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
             </svg>
           </div>
-          <h2 class="text-2xl font-bold text-white mb-2">You're all set!</h2>
-          <p class="text-slate-400 mb-6">Your club website is ready to go live.</p>
+          <h2 class="text-2xl font-bold text-slate-900 mb-2">You're all set!</h2>
+          <p class="text-slate-600 mb-6">Your club website is ready to go live.</p>
 
-          <div class="bg-slate-700/30 rounded-xl p-4 mb-6">
-            <p class="text-slate-300 text-sm mb-2">Your club will be live at:</p>
-            <p id="final-url" class="text-primary-400 font-bold text-lg">yourclub.clubify.ie</p>
+          <div class="bg-slate-50 rounded-xl p-4 mb-6 border border-slate-200">
+            <p class="text-slate-600 text-sm mb-2">Your club will be live at:</p>
+            <p id="final-url" class="text-primary-600 font-bold text-lg">yourclub.clubify.ie</p>
           </div>
 
           <div class="space-y-3">
@@ -265,7 +273,7 @@
             </button>
 
             <button type="button" id="back-to-4"
-              class="w-full py-3 px-6 border border-slate-600 text-slate-300 font-semibold rounded-xl hover:bg-slate-700/50 transition-colors">
+              class="w-full py-3 px-6 border border-slate-200 text-slate-600 font-semibold rounded-xl hover:bg-slate-50 transition-colors">
               Back to edit
             </button>
           </div>
@@ -276,7 +284,7 @@
     <!-- Help text -->
     <p class="text-center text-slate-500 text-sm mt-6">
       Already have a club?
-      <a href="/admin" class="text-primary-400 hover:text-primary-300">Sign in here</a>
+      <a href="/admin" class="text-primary-600 hover:text-primary-700">Sign in here</a>
     </p>
   </div>
 </div>
@@ -295,20 +303,20 @@
     {
       id: 'classic',
       name: 'Classic Club',
-      description: 'The perfect all-rounder with hero, fixtures, news, and sponsors.',
-      color: 'primary'
+      description: 'A balanced, professional layout with hero, fixtures, news, and sponsors.',
+      highlights: ['Hero + fixtures', 'Latest news', 'Sponsors strip']
     },
     {
       id: 'matchday',
       name: 'Matchday Focus',
-      description: 'Put the game at the centre with match highlights and results.',
-      color: 'accent'
+      description: 'A match-first layout for clubs that want results front and centre.',
+      highlights: ['Match centre', 'Results ticker', 'News highlights']
     },
     {
       id: 'community',
       name: 'Community First',
-      description: 'Celebrate your community with events and volunteer highlights.',
-      color: 'teal'
+      description: 'Showcase volunteers, events, and club life alongside fixtures.',
+      highlights: ['Volunteer spotlights', 'Events grid', 'Club notices']
     }
   ];
 
@@ -338,6 +346,49 @@
     });
   }
 
+  function getTemplatePreview(id: string) {
+    switch (id) {
+      case 'matchday':
+        return `
+          <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+            <div class="h-10 rounded-lg bg-gradient-to-r from-amber-100 via-amber-50 to-white border border-amber-200/60"></div>
+            <div class="mt-3 grid grid-cols-3 gap-2">
+              <div class="h-8 rounded-lg bg-slate-100 border border-slate-200"></div>
+              <div class="h-8 rounded-lg bg-white border border-slate-200"></div>
+              <div class="h-8 rounded-lg bg-white border border-slate-200"></div>
+            </div>
+            <div class="mt-3 flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+              <div class="h-2 w-16 rounded-full bg-slate-200"></div>
+              <div class="h-6 w-10 rounded bg-amber-100"></div>
+            </div>
+          </div>
+        `;
+      case 'community':
+        return `
+          <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+            <div class="h-10 rounded-lg bg-gradient-to-r from-teal-100 via-teal-50 to-white border border-teal-200/60"></div>
+            <div class="mt-3 grid grid-cols-2 gap-2">
+              <div class="h-10 rounded-lg bg-white border border-slate-200"></div>
+              <div class="h-10 rounded-lg bg-slate-100 border border-slate-200"></div>
+            </div>
+            <div class="mt-3 h-6 rounded-lg bg-slate-100 border border-slate-200"></div>
+          </div>
+        `;
+      default:
+        return `
+          <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+            <div class="h-10 rounded-lg bg-gradient-to-r from-primary-100 via-primary-50 to-white border border-primary-200/60"></div>
+            <div class="mt-3 grid grid-cols-3 gap-2">
+              <div class="h-8 rounded-lg bg-white border border-slate-200"></div>
+              <div class="h-8 rounded-lg bg-white border border-slate-200"></div>
+              <div class="h-8 rounded-lg bg-slate-100 border border-slate-200"></div>
+            </div>
+            <div class="mt-3 h-6 rounded-lg bg-slate-100 border border-slate-200"></div>
+          </div>
+        `;
+    }
+  }
+
   function initTemplateCards() {
     const grid = document.getElementById('templates-grid');
     if (!grid) return;
@@ -345,16 +396,19 @@
     grid.innerHTML = TEMPLATES.map(t => `
       <label class="template-card cursor-pointer block">
         <input type="radio" name="template" value="${t.id}" class="hidden" ${t.id === selectedTemplate ? 'checked' : ''}>
-        <div class="p-4 rounded-xl border-2 transition-all ${t.id === selectedTemplate ? 'border-primary-500 bg-primary-500/10' : 'border-slate-600 hover:border-slate-500'}">
-          <div class="flex items-start gap-4">
-            <div class="w-16 h-16 rounded-lg bg-slate-700/50 flex items-center justify-center text-2xl">
-              ${t.id === 'classic' ? '🏆' : t.id === 'matchday' ? '⚽' : '🤝'}
-            </div>
+        <div class="p-5 rounded-2xl border-2 transition-all ${t.id === selectedTemplate ? 'border-primary-500 bg-primary-50 shadow-lg shadow-primary-500/10' : 'border-slate-200 bg-white hover:border-slate-300 hover:shadow-md'}">
+          <div class="mb-4">
+            ${getTemplatePreview(t.id)}
+          </div>
+          <div class="flex items-start gap-3">
             <div class="flex-1">
-              <h3 class="font-bold text-white">${t.name}</h3>
-              <p class="text-slate-400 text-sm">${t.description}</p>
+              <h3 class="font-semibold text-slate-900">${t.name}</h3>
+              <p class="text-slate-500 text-sm mt-1">${t.description}</p>
+              <div class="mt-3 flex flex-wrap gap-2">
+                ${t.highlights.map((h) => `<span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600">${h}</span>`).join('')}
+              </div>
             </div>
-            <div class="template-check w-6 h-6 rounded-full border-2 ${t.id === selectedTemplate ? 'border-primary-500 bg-primary-500' : 'border-slate-500'} flex items-center justify-center">
+            <div class="template-check w-6 h-6 rounded-full border-2 ${t.id === selectedTemplate ? 'border-primary-500 bg-primary-500' : 'border-slate-300'} flex items-center justify-center">
               ${t.id === selectedTemplate ? '<svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>' : ''}
             </div>
           </div>
@@ -386,10 +440,10 @@
       div.className = 'flex items-center';
       div.innerHTML = `
         <div class="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-all
-          ${isCompleted ? 'bg-primary-500 text-white' : isActive ? 'bg-primary-500/20 border-2 border-primary-500 text-primary-400' : 'bg-slate-700 text-slate-400'}">
+          ${isCompleted ? 'bg-primary-500 text-white' : isActive ? 'bg-primary-500/15 border-2 border-primary-500 text-primary-600' : 'bg-slate-200 text-slate-600'}">
           ${isCompleted ? '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>' : i}
         </div>
-        ${!isLast ? `<div class="hidden sm:block w-12 md:w-20 h-0.5 mx-2 ${isCompleted ? 'bg-primary-500' : 'bg-slate-700'}"></div>` : ''}
+        ${!isLast ? `<div class="hidden sm:block w-12 md:w-20 h-0.5 mx-2 ${isCompleted ? 'bg-primary-500' : 'bg-slate-200'}"></div>` : ''}
       `;
       container.appendChild(div);
     }
@@ -417,17 +471,20 @@
     let slugTimeout: number;
     document.getElementById('slug')?.addEventListener('input', (e) => {
       clearTimeout(slugTimeout);
-      slugTimeout = window.setTimeout(() => checkSlug((e.target as HTMLInputElement).value), 500);
+      const input = e.target as HTMLInputElement;
+      input.dataset.manual = 'true';
+      input.value = normalizeSlug(input.value);
+      slugTimeout = window.setTimeout(() => checkSlug(input.value), 500);
     });
 
     // Auto-generate slug from club name
     document.getElementById('club-name')?.addEventListener('input', (e) => {
-      const name = (e.target as HTMLInputElement).value;
-      const slugInput = document.getElementById('slug') as HTMLInputElement;
-      if (slugInput && !slugInput.dataset.manual) {
-        slugInput.value = slugify(name);
-        checkSlug(slugInput.value);
-      }
+      if ((document.getElementById('slug') as HTMLInputElement)?.dataset.manual) return;
+      updateSlugFromInputs();
+    });
+
+    document.getElementById('county')?.addEventListener('change', () => {
+      updateSlugFromInputs();
     });
 
     document.getElementById('slug')?.addEventListener('focus', (e) => {
@@ -568,7 +625,9 @@
     const form = e.target as HTMLFormElement;
     const name = (form.querySelector('#club-name') as HTMLInputElement).value;
     const county = (form.querySelector('#county') as HTMLSelectElement).value;
-    const slug = (form.querySelector('#slug') as HTMLInputElement).value;
+    const slugInput = form.querySelector('#slug') as HTMLInputElement;
+    const slug = normalizeSlug(slugInput.value, name, county);
+    slugInput.value = slug;
 
     const submitBtn = document.getElementById('club-submit') as HTMLButtonElement;
     submitBtn.disabled = true;
@@ -603,7 +662,7 @@
       return;
     }
 
-    slug = slugify(slug);
+    slug = normalizeSlug(slug);
 
     try {
       const res = await fetch(`/api/clubs/check-slug?slug=${encodeURIComponent(slug)}`);
@@ -611,10 +670,10 @@
 
       if (data.available) {
         statusEl.textContent = '✓ Available';
-        statusEl.className = 'mt-1 text-sm text-primary-400';
+        statusEl.className = 'mt-1 text-sm text-primary-600';
       } else {
         statusEl.textContent = data.reason || '✗ Not available';
-        statusEl.className = 'mt-1 text-sm text-red-400';
+        statusEl.className = 'mt-1 text-sm text-red-600';
       }
     } catch (e) {
       statusEl.textContent = '';
@@ -628,6 +687,53 @@
       .replace(/[^\w\s-]/g, '')
       .replace(/[\s_-]+/g, '-')
       .replace(/^-+|-+$/g, '');
+  }
+
+  function buildSlug(name: string, county: string): string {
+    const parts = [name, county].filter(Boolean).join('-');
+    return slugify(parts);
+  }
+
+  function normalizeSlug(raw: string, name?: string, county?: string): string {
+    const countyValue = county ?? (document.getElementById('county') as HTMLSelectElement | null)?.value || '';
+    const nameValue = name ?? (document.getElementById('club-name') as HTMLInputElement | null)?.value || '';
+    const countySlug = slugify(countyValue);
+    let slug = slugify(raw);
+
+    if (!slug) {
+      slug = buildSlug(nameValue, countyValue);
+    }
+
+    if (countySlug) {
+      if (!slug.endsWith(`-${countySlug}`)) {
+        slug = slug.replace(new RegExp(`-${countySlug}$`), '');
+        slug = slug ? `${slug}-${countySlug}` : countySlug;
+      }
+    }
+
+    return slug;
+  }
+
+  function updateSlugFromInputs() {
+    const slugInput = document.getElementById('slug') as HTMLInputElement | null;
+    const name = (document.getElementById('club-name') as HTMLInputElement | null)?.value || '';
+    const county = (document.getElementById('county') as HTMLSelectElement | null)?.value || '';
+    if (!slugInput) return;
+
+    if (!slugInput.dataset.manual) {
+      const value = buildSlug(name, county);
+      slugInput.value = value;
+      checkSlug(value);
+      return;
+    }
+
+    if (county) {
+      const normalized = normalizeSlug(slugInput.value, name, county);
+      if (normalized !== slugInput.value) {
+        slugInput.value = normalized;
+        checkSlug(normalized);
+      }
+    }
   }
 
   async function handleBrandingSubmit(e: Event) {

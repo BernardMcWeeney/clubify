@@ -16,7 +16,7 @@ export const GET: APIRoute = async ({ url, locals }) => {
     if (!isValidSlug(slug)) {
       return new Response(JSON.stringify({
         available: false,
-        reason: 'Invalid slug format. Use only lowercase letters, numbers, and hyphens.'
+        reason: 'Invalid slug format. Use clubname-county with only lowercase letters, numbers, and hyphens.'
       }), {
         status: 200,
         headers: { 'Content-Type': 'application/json' }

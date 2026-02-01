@@ -14,4 +14,5 @@ interface Env {
   SITE_URL?: string;
   APP_NAME?: string;
   RESEND_API_KEY?: string;
+  SUPER_ADMIN_EMAIL?: string;
 }

@@ -25,11 +25,16 @@ export const POST: APIRoute = async ({ request, locals, cookies }) => {
       });
     }
 
-    // Generate or validate slug
-    let slug = requestedSlug ? requestedSlug.toLowerCase() : slugify(name);
+    // Generate or validate slug (format: clubname-county)
+    const countySlug = slugify(county);
+    let slug = slugify(requestedSlug || `${name}-${county}`);
+
+    if (countySlug && !slug.endsWith(`-${countySlug}`)) {
+      slug = slugify(`${slug}-${countySlug}`);
+    }
 
     if (!isValidSlug(slug)) {
-      return new Response(JSON.stringify({ error: 'Invalid slug format' }), {
+      return new Response(JSON.stringify({ error: 'Invalid slug format. Use clubname-county.' }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' }
       });
@@ -38,15 +43,10 @@ export const POST: APIRoute = async ({ request, locals, cookies }) => {
     // Check slug availability
     const isAvailable = await db.isSlugAvailable(slug);
     if (!isAvailable) {
-      // Try appending county
-      slug = slugify(`${name}-${county}`);
-      const isAvailable2 = await db.isSlugAvailable(slug);
-      if (!isAvailable2) {
-        return new Response(JSON.stringify({ error: 'Slug is not available' }), {
-          status: 400,
-          headers: { 'Content-Type': 'application/json' }
-        });
-      }
+      return new Response(JSON.stringify({ error: 'That domain is already taken. Try a slightly different club name.' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' }
+      });
     }
 
     // Create the club

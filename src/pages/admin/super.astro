@@ -1,0 +1,244 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { DatabaseService } from '../../lib/db';
+import { getAuthContext } from '../../lib/auth';
+import { formatDateTime } from '../../lib/utils';
+
+if (!Astro.locals.runtime.env.DB) {
+  return Astro.redirect('/admin?error=db_not_configured');
+}
+
+const db = new DatabaseService(Astro.locals.runtime.env.DB);
+const { user } = await getAuthContext(Astro.cookies, db);
+
+if (!user) {
+  return Astro.redirect('/admin/login');
+}
+
+const superAdminEmail = Astro.locals.runtime.env.SUPER_ADMIN_EMAIL;
+if (!superAdminEmail || user.email.toLowerCase() !== superAdminEmail.toLowerCase()) {
+  return Astro.redirect('/admin');
+}
+
+const stats = await db.getPlatformStats();
+const clubs = await db.getClubOverviews();
+const liveRate = stats.clubs ? Math.round((stats.live_clubs / stats.clubs) * 100) : 0;
+---
+
+<Layout title="Clubify Super Admin">
+  <div class="min-h-screen bg-slate-50">
+    <header class="sticky top-0 z-30 bg-white/80 backdrop-blur border-b border-slate-200">
+      <div class="mx-auto max-w-6xl px-6 py-4 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center shadow-lg shadow-primary-500/20">
+            <svg class="w-6 h-6 text-white" viewBox="0 0 24 24" fill="none">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" fill="currentColor" opacity="0.3"/>
+              <circle cx="12" cy="12" r="2" fill="currentColor"/>
+            </svg>
+          </div>
+          <div>
+            <p class="text-sm text-slate-500">Clubify</p>
+            <h1 class="text-lg font-semibold text-slate-900">Super Admin</h1>
+          </div>
+        </div>
+        <div class="flex items-center gap-3">
+          <span class="text-sm text-slate-600">{user.email}</span>
+          <button id="logout-btn" class="px-3 py-2 text-sm font-medium text-slate-600 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">
+            Sign out
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main class="mx-auto max-w-6xl px-6 py-8">
+      <div class="mb-8">
+        <h2 class="text-2xl font-bold text-slate-900">Platform Overview</h2>
+        <p class="text-slate-600 mt-1">Monitor all clubs and manage live status across the tenancy.</p>
+      </div>
+
+      <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+        <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
+          <p class="text-sm text-slate-500">Total clubs</p>
+          <p class="text-2xl font-bold text-slate-900 mt-2">{stats.clubs}</p>
+          <p class="text-xs text-slate-500 mt-2">{stats.live_clubs} live ({liveRate}%)</p>
+        </div>
+        <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
+          <p class="text-sm text-slate-500">Users</p>
+          <p class="text-2xl font-bold text-slate-900 mt-2">{stats.users}</p>
+          <p class="text-xs text-slate-500 mt-2">Total accounts</p>
+        </div>
+        <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
+          <p class="text-sm text-slate-500">Content</p>
+          <p class="text-2xl font-bold text-slate-900 mt-2">{stats.posts}</p>
+          <p class="text-xs text-slate-500 mt-2">{stats.pages} pages, {stats.fixtures} fixtures</p>
+        </div>
+        <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
+          <p class="text-sm text-slate-500">Media</p>
+          <p class="text-2xl font-bold text-slate-900 mt-2">{stats.media}</p>
+          <p class="text-xs text-slate-500 mt-2">Uploads stored</p>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm">
+        <div class="flex flex-col gap-4 border-b border-slate-200 p-5 md:flex-row md:items-center md:justify-between">
+          <div>
+            <h3 class="text-lg font-semibold text-slate-900">Clubs</h3>
+            <p class="text-sm text-slate-500">Search, inspect, and toggle live status.</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <div class="relative">
+              <input
+                id="club-search"
+                type="search"
+                placeholder="Search by club or slug..."
+                class="w-64 max-w-full px-4 py-2 border border-slate-200 rounded-lg text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500"
+              />
+              <svg class="w-4 h-4 text-slate-400 absolute right-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M10 18a8 8 0 100-16 8 8 0 000 16z"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="min-w-full text-sm">
+            <thead class="bg-slate-50 text-slate-500">
+              <tr>
+                <th class="px-5 py-3 text-left font-medium">Club</th>
+                <th class="px-5 py-3 text-left font-medium">Status</th>
+                <th class="px-5 py-3 text-left font-medium">Template</th>
+                <th class="px-5 py-3 text-left font-medium">Members</th>
+                <th class="px-5 py-3 text-left font-medium">Posts</th>
+                <th class="px-5 py-3 text-left font-medium">Fixtures</th>
+                <th class="px-5 py-3 text-left font-medium">Pages</th>
+                <th class="px-5 py-3 text-left font-medium">Last Content</th>
+                <th class="px-5 py-3 text-left font-medium">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-200">
+              {clubs.map((club) => (
+                <tr data-club-row data-search={`${club.name.toLowerCase()} ${club.slug.toLowerCase()}`}>
+                  <td class="px-5 py-4">
+                    <div>
+                      <p class="font-medium text-slate-900">{club.name}</p>
+                      <p class="text-xs text-slate-500">{club.slug}.clubify.ie</p>
+                    </div>
+                  </td>
+                  <td class="px-5 py-4">
+                    <span
+                      class={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ${
+                        club.is_live ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'
+                      }`}
+                      data-status-pill
+                    >
+                      {club.is_live ? 'Live' : 'Draft'}
+                    </span>
+                  </td>
+                  <td class="px-5 py-4 capitalize text-slate-700">{club.template}</td>
+                  <td class="px-5 py-4 text-slate-700">{club.member_count}</td>
+                  <td class="px-5 py-4 text-slate-700">{club.post_count}</td>
+                  <td class="px-5 py-4 text-slate-700">{club.fixture_count}</td>
+                  <td class="px-5 py-4 text-slate-700">{club.page_count}</td>
+                  <td class="px-5 py-4 text-slate-600">
+                    {club.last_content_at ? formatDateTime(club.last_content_at) : '-'}
+                  </td>
+                  <td class="px-5 py-4">
+                    <div class="flex flex-wrap gap-2">
+                      <a
+                        href={`/${club.slug}`}
+                        target="_blank"
+                        class="inline-flex items-center gap-1 rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50"
+                      >
+                        View site
+                      </a>
+                      <a
+                        href={`/${club.slug}/admin-portal`}
+                        target="_blank"
+                        class="inline-flex items-center gap-1 rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50"
+                      >
+                        Admin portal
+                      </a>
+                      <button
+                        type="button"
+                        class="toggle-live-btn inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-semibold text-white bg-slate-900 hover:bg-slate-800"
+                        data-club-id={club.id}
+                        data-live={club.is_live ? '1' : '0'}
+                      >
+                        {club.is_live ? 'Set Draft' : 'Go Live'}
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+</Layout>
+
+<script>
+  const logoutBtn = document.getElementById('logout-btn');
+  logoutBtn?.addEventListener('click', async () => {
+    await fetch('/api/auth/logout', { method: 'POST' });
+    window.location.href = '/admin';
+  });
+
+  const searchInput = document.getElementById('club-search');
+  const rows = Array.from(document.querySelectorAll('[data-club-row]'));
+
+  searchInput?.addEventListener('input', () => {
+    const query = (searchInput as HTMLInputElement).value.trim().toLowerCase();
+    rows.forEach(row => {
+      const haystack = (row as HTMLElement).dataset.search || '';
+      row.classList.toggle('hidden', query.length > 0 && !haystack.includes(query));
+    });
+  });
+
+  document.querySelectorAll('.toggle-live-btn').forEach(button => {
+    button.addEventListener('click', async () => {
+      const btn = button as HTMLButtonElement;
+      const clubId = btn.dataset.clubId;
+      const isLive = btn.dataset.live === '1';
+      if (!clubId) return;
+
+      btn.disabled = true;
+      btn.textContent = 'Updating...';
+
+      try {
+        const response = await fetch(`/api/super-admin/clubs/${clubId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ is_live: isLive ? 0 : 1 }),
+        });
+
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || 'Failed to update');
+
+        const row = btn.closest('tr');
+        const pill = row?.querySelector('[data-status-pill]');
+        const newLive = result.is_live === 1;
+
+        btn.dataset.live = newLive ? '1' : '0';
+        btn.textContent = newLive ? 'Set Draft' : 'Go Live';
+
+        if (pill) {
+          pill.textContent = newLive ? 'Live' : 'Draft';
+          pill.className = `inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ${
+            newLive ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'
+          }`;
+        }
+      } catch (error) {
+        alert(error.message || 'Failed to update club');
+        btn.textContent = isLive ? 'Set Draft' : 'Go Live';
+      } finally {
+        btn.disabled = false;
+      }
+    });
+  });
+</script>
+
+<style>
+  @import "../../styles/global.css";
+</style>
