@@ -60,9 +60,13 @@
           </div>
 
           <div id="magic-link-sent" class="hidden p-4 bg-primary-500/10 border border-primary-500/20 rounded-xl">
-            <p class="text-primary-400 text-sm">
+            <p class="text-primary-400 text-sm mb-2">
               <strong>Check your email!</strong> We've sent you a magic link to sign in.
             </p>
+            <div id="dev-mode-link" class="hidden mt-3 p-3 bg-slate-800 rounded-lg">
+              <p class="text-amber-400 text-xs mb-2">Dev Mode: Email service not configured. Click the link below:</p>
+              <a id="dev-link" href="#" class="text-primary-400 text-sm break-all hover:underline" target="_blank"></a>
+            </div>
           </div>
 
           <button type="submit" id="account-submit"
@@ -493,11 +497,21 @@
         document.getElementById('magic-link-sent')?.classList.remove('hidden');
         submitBtn.innerHTML = '<span>Check your email</span>';
 
-        // For development, auto-proceed (in production, user clicks email link)
-        // Start polling for session
+        // If dev mode link is returned (no email service configured), show it
+        if (data.devModeLink) {
+          const devModeDiv = document.getElementById('dev-mode-link');
+          const devLink = document.getElementById('dev-link') as HTMLAnchorElement;
+          if (devModeDiv && devLink) {
+            devLink.href = data.devModeLink;
+            devLink.textContent = data.devModeLink;
+            devModeDiv.classList.remove('hidden');
+          }
+        }
+
+        // Start polling for session (user clicks link in email or dev mode link)
         pollForSession();
       } else {
-        throw new Error(data.error);
+        throw new Error(data.error || 'Unknown error');
       }
     } catch (error) {
       console.error('Account submit error:', error);

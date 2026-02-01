@@ -5,6 +5,16 @@ import { isValidEmail } from '../../../lib/utils';
 
 export const POST: APIRoute = async ({ request, locals }) => {
   try {
+    // Check if database is configured
+    if (!locals.runtime.env.DB) {
+      return new Response(JSON.stringify({
+        error: 'Database not configured. Please set up D1 database.'
+      }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
     const { email, name } = await request.json();
 
     if (!email || !isValidEmail(email)) {
@@ -28,20 +38,38 @@ export const POST: APIRoute = async ({ request, locals }) => {
     // Create magic link
     const token = await db.createMagicLink(email.toLowerCase());
 
-    // Send email
-    await sendMagicLinkEmail(email, token, baseUrl);
+    // Build the magic link URL
+    const magicLink = `${baseUrl}/auth/verify?token=${token}`;
+
+    // Send email (or return link in dev mode)
+    const resendApiKey = locals.runtime.env.RESEND_API_KEY;
+
+    if (resendApiKey) {
+      // Production: send via Resend
+      await sendMagicLinkEmail(email, token, baseUrl, resendApiKey);
+    } else {
+      // Dev mode: log to console
+      console.log(`\n[DEV MODE] Magic link for ${email}: ${magicLink}\n`);
+    }
 
     return new Response(JSON.stringify({
       success: true,
-      message: 'Magic link sent to your email',
-      isNewUser: !user
+      message: resendApiKey
+        ? 'Magic link sent to your email'
+        : 'Magic link generated (dev mode - check response)',
+      isNewUser: !user,
+      // In dev mode without email service, return the link directly
+      ...(resendApiKey ? {} : { devModeLink: magicLink })
     }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' }
     });
   } catch (error) {
     console.error('Magic link error:', error);
-    return new Response(JSON.stringify({ error: 'Failed to send magic link' }), {
+    return new Response(JSON.stringify({
+      error: 'Failed to send magic link',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' }
     });

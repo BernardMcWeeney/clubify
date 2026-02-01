@@ -13,4 +13,5 @@ interface Env {
   CACHE?: KVNamespace;
   SITE_URL?: string;
   APP_NAME?: string;
+  RESEND_API_KEY?: string;
 }
