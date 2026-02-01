@@ -27,11 +27,10 @@ APP_NAME = "Clubify"
 # Then uncomment and update the IDs below:
 # ===========================================
 
-# D1 Database (REQUIRED)
-# [[d1_databases]]
-# binding = "DB"
-# database_name = "clubify-db"
-# database_id = "YOUR_D1_DATABASE_ID_HERE"
+[[d1_databases]]
+binding = "clubify_db"
+database_name = "clubify-db"
+database_id = "2bac1f43-2fbc-40b6-a129-a02b1d2b61cc"
 
 # R2 Storage for media (OPTIONAL)
 # [[r2_buckets]]
