@@ -24,6 +24,26 @@ interface Props {
 const { title, club, user, member, currentPage = 'dashboard' } = Astro.props;
 const slug = club.slug;
 
+// Check for impersonation
+let isImpersonating = false;
+let impersonationData: { clubName?: string; superAdminEmail?: string } | null = null;
+
+const impersonationCookie = Astro.cookies.get('clubify_impersonate')?.value;
+if (impersonationCookie) {
+  try {
+    const parsed = JSON.parse(impersonationCookie);
+    if (parsed.clubId === club.id) {
+      isImpersonating = true;
+      impersonationData = {
+        clubName: parsed.clubName,
+        superAdminEmail: parsed.superAdminEmail,
+      };
+    }
+  } catch {
+    // Invalid cookie, ignore
+  }
+}
+
 // Get module configuration
 const db = new DatabaseService(Astro.locals.runtime.env.DB);
 const moduleConfig = await db.getModuleConfig(club.id);
@@ -67,7 +87,32 @@ const icons: Record<string, string> = {
 ---
 
 <Layout title={title}>
-  <div class="min-h-screen bg-slate-50">
+  {isImpersonating && impersonationData && (
+    <div class="fixed top-0 left-0 right-0 z-[100] bg-violet-600 text-white">
+      <div class="max-w-7xl mx-auto px-4 py-2 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+          </svg>
+          <span class="text-sm font-medium">
+            Viewing as <strong>{impersonationData.clubName}</strong>
+            <span class="opacity-75 ml-2">(Super Admin: {impersonationData.superAdminEmail})</span>
+          </span>
+        </div>
+        <button
+          id="exit-impersonation-btn"
+          class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/20 hover:bg-white/30 rounded-lg text-sm font-medium transition-colors"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+          </svg>
+          Exit Impersonation
+        </button>
+      </div>
+    </div>
+  )}
+  <div class:list={["min-h-screen bg-slate-50", isImpersonating && "pt-10"]}>
     <!-- Sidebar -->
     <aside class="fixed inset-y-0 left-0 w-64 bg-white border-r border-slate-200 hidden lg:block z-50 shadow-sm">
       <div class="flex flex-col h-full">
@@ -232,6 +277,32 @@ const icons: Record<string, string> = {
   mobileMenuBtn?.addEventListener('click', openMobileMenu);
   closeMobileMenu?.addEventListener('click', closeMobileMenuFn);
   mobileOverlay?.addEventListener('click', closeMobileMenuFn);
+
+  // Exit impersonation
+  document.getElementById('exit-impersonation-btn')?.addEventListener('click', async () => {
+    const btn = document.getElementById('exit-impersonation-btn') as HTMLButtonElement;
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = '<span class="animate-pulse">Exiting...</span>';
+    }
+
+    try {
+      const response = await fetch('/api/super-admin/impersonate', { method: 'DELETE' });
+      const result = await response.json();
+
+      if (response.ok && result.redirectUrl) {
+        window.location.href = result.redirectUrl;
+      } else {
+        throw new Error(result.error || 'Failed to exit impersonation');
+      }
+    } catch (error: any) {
+      alert(error.message || 'Failed to exit impersonation');
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>Exit Impersonation`;
+      }
+    }
+  });
 </script>
 
 <style>

@@ -14,9 +14,18 @@ interface Props {
   fixture?: Fixture | null;
   clubName: string;
   primaryColor: string;
+  template?: 'classic' | 'matchday' | 'community';
 }
 
-const { fixture, clubName, primaryColor } = Astro.props;
+const { fixture, clubName, primaryColor, template = 'classic' } = Astro.props;
+
+// Template-specific accent colors
+const templateAccents = {
+  classic: '#c9a227',      // Gold
+  matchday: '#dc2626',     // Red
+  community: '#0d9488',    // Teal
+};
+const accentColor = templateAccents[template];
 
 function formatDate(dateStr: string): string {
   const date = new Date(dateStr);
@@ -34,73 +43,223 @@ function formatTime(timeStr: string): string {
   const hour12 = hour % 12 || 12;
   return `${hour12}:${minutes} ${ampm}`;
 }
+
+// Calculate countdown data for the fixture
+function getCountdownData(dateStr: string, timeStr?: string | null) {
+  const matchDate = new Date(dateStr);
+  if (timeStr) {
+    const [hours, minutes] = timeStr.split(':');
+    matchDate.setHours(parseInt(hours), parseInt(minutes));
+  }
+  const now = new Date();
+  const diff = matchDate.getTime() - now.getTime();
+
+  if (diff <= 0) return null;
+
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+
+  return { days, hours, minutes };
+}
+
+const countdown = fixture ? getCountdownData(fixture.match_date, fixture.match_time) : null;
 ---
 
-<section class="py-20 bg-white">
-  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-    <h2 class="text-3xl font-bold text-slate-900 mb-10 text-center">Next Fixture</h2>
+<section class="py-24 relative overflow-hidden">
+  <!-- Background with subtle pattern -->
+  <div class="absolute inset-0 bg-gradient-to-b from-slate-50 via-white to-slate-50"></div>
+  <div class="absolute inset-0 opacity-[0.02]" style="background-image: url(&quot;data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E&quot;);"></div>
+
+  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative">
+    <!-- Section header -->
+    <div class="text-center mb-12 fixture-fade-in">
+      <span
+        class="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold mb-4"
+        style={`background: ${primaryColor}15; color: ${primaryColor}`}
+      >
+        <span class="relative flex h-2 w-2">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style={`background-color: ${accentColor}`}></span>
+          <span class="relative inline-flex rounded-full h-2 w-2" style={`background-color: ${accentColor}`}></span>
+        </span>
+        Upcoming Match
+      </span>
+      <h2 class="text-4xl md:text-5xl font-bold text-slate-900">Next Fixture</h2>
+    </div>
 
     {fixture ? (
-      <div class="max-w-2xl mx-auto bg-gradient-to-br from-slate-50 to-white rounded-3xl p-10 border border-slate-200 shadow-xl shadow-slate-200/50">
-        <div class="text-center mb-8">
-          <span
-            class="inline-block px-4 py-1.5 text-sm font-semibold rounded-full text-white shadow-lg"
-            style={`background-color: ${primaryColor}; box-shadow: 0 4px 14px ${primaryColor}40`}
-          >
-            {fixture.competition}
-          </span>
-        </div>
+      <div class="max-w-3xl mx-auto fixture-slide-up">
+        <!-- Main fixture card -->
+        <div class="relative">
+          <!-- Decorative elements -->
+          <div class="absolute -top-4 -left-4 w-24 h-24 rounded-full opacity-10" style={`background-color: ${primaryColor}`}></div>
+          <div class="absolute -bottom-4 -right-4 w-32 h-32 rounded-full opacity-10" style={`background-color: ${accentColor}`}></div>
 
-        <div class="flex items-center justify-center gap-8 mb-8">
-          <div class="text-center flex-1">
-            <p class="text-xl font-bold text-slate-900">{fixture.home_team}</p>
-          </div>
-          <div class="text-center">
-            <span class="text-3xl font-bold text-slate-300">vs</span>
-          </div>
-          <div class="text-center flex-1">
-            <p class="text-xl font-bold text-slate-900">{fixture.away_team}</p>
-          </div>
-        </div>
-
-        <div class="flex flex-col sm:flex-row items-center justify-center gap-6 text-slate-600">
-          <div class="flex items-center gap-2 bg-slate-100 px-4 py-2 rounded-xl">
-            <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-            </svg>
-            <span class="font-medium">{formatDate(fixture.match_date)}</span>
-          </div>
-
-          {fixture.match_time && (
-            <div class="flex items-center gap-2 bg-slate-100 px-4 py-2 rounded-xl">
-              <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-              </svg>
-              <span class="font-medium">{formatTime(fixture.match_time)}</span>
+          <div class="relative bg-white rounded-3xl p-8 md:p-12 border border-slate-200/80 shadow-2xl shadow-slate-200/50">
+            <!-- Competition badge -->
+            <div class="text-center mb-10">
+              <span
+                class="inline-flex items-center gap-2 px-5 py-2 text-sm font-bold rounded-full text-white uppercase tracking-wide shadow-lg"
+                style={`background: linear-gradient(135deg, ${primaryColor}, ${accentColor}); box-shadow: 0 8px 24px ${primaryColor}40`}
+              >
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M5 5a3 3 0 015-2.236A3 3 0 0114.83 6H16a2 2 0 012 2v6a2 2 0 01-2 2h-1.17a3 3 0 01-5.66 0H6.83a3 3 0 01-5.66-0H2a2 2 0 01-2-2V8a2 2 0 012-2h1.17A3 3 0 015 5z" clip-rule="evenodd"/>
+                </svg>
+                {fixture.competition}
+              </span>
             </div>
-          )}
 
-          {fixture.venue && (
-            <div class="flex items-center gap-2 bg-slate-100 px-4 py-2 rounded-xl">
-              <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-              </svg>
-              <span class="font-medium">{fixture.venue}</span>
+            <!-- Teams -->
+            <div class="flex items-center justify-center gap-6 md:gap-12 mb-10">
+              <!-- Home team -->
+              <div class="text-center flex-1">
+                <div class="w-20 h-20 md:w-24 md:h-24 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-slate-100 to-slate-50 border border-slate-200 flex items-center justify-center">
+                  <svg class="w-10 h-10 md:w-12 md:h-12 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                  </svg>
+                </div>
+                <p class="text-xl md:text-2xl font-bold text-slate-900">{fixture.home_team}</p>
+                <p class="text-sm text-slate-500 mt-1">Home</p>
+              </div>
+
+              <!-- VS badge -->
+              <div class="flex-shrink-0">
+                <div
+                  class="w-16 h-16 md:w-20 md:h-20 rounded-2xl flex items-center justify-center text-white font-black text-xl md:text-2xl shadow-xl"
+                  style={`background: linear-gradient(135deg, ${primaryColor}, ${accentColor})`}
+                >
+                  VS
+                </div>
+              </div>
+
+              <!-- Away team -->
+              <div class="text-center flex-1">
+                <div class="w-20 h-20 md:w-24 md:h-24 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-slate-100 to-slate-50 border border-slate-200 flex items-center justify-center">
+                  <svg class="w-10 h-10 md:w-12 md:h-12 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                  </svg>
+                </div>
+                <p class="text-xl md:text-2xl font-bold text-slate-900">{fixture.away_team}</p>
+                <p class="text-sm text-slate-500 mt-1">Away</p>
+              </div>
             </div>
-          )}
+
+            <!-- Countdown timer -->
+            {countdown && (
+              <div class="flex items-center justify-center gap-4 md:gap-6 mb-10">
+                <div class="text-center">
+                  <div class="w-16 h-16 md:w-20 md:h-20 rounded-2xl bg-slate-900 flex items-center justify-center mb-2">
+                    <span class="text-2xl md:text-3xl font-bold text-white">{countdown.days}</span>
+                  </div>
+                  <span class="text-xs font-medium text-slate-500 uppercase tracking-wide">Days</span>
+                </div>
+                <span class="text-2xl font-bold text-slate-300 -mt-6">:</span>
+                <div class="text-center">
+                  <div class="w-16 h-16 md:w-20 md:h-20 rounded-2xl bg-slate-900 flex items-center justify-center mb-2">
+                    <span class="text-2xl md:text-3xl font-bold text-white">{countdown.hours}</span>
+                  </div>
+                  <span class="text-xs font-medium text-slate-500 uppercase tracking-wide">Hours</span>
+                </div>
+                <span class="text-2xl font-bold text-slate-300 -mt-6">:</span>
+                <div class="text-center">
+                  <div class="w-16 h-16 md:w-20 md:h-20 rounded-2xl bg-slate-900 flex items-center justify-center mb-2">
+                    <span class="text-2xl md:text-3xl font-bold text-white">{countdown.minutes}</span>
+                  </div>
+                  <span class="text-xs font-medium text-slate-500 uppercase tracking-wide">Mins</span>
+                </div>
+              </div>
+            )}
+
+            <!-- Match details -->
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <div
+                class="flex items-center gap-3 px-5 py-3 rounded-2xl border transition-all duration-300 hover:scale-105"
+                style={`background: ${primaryColor}08; border-color: ${primaryColor}20`}
+              >
+                <div class="w-10 h-10 rounded-xl flex items-center justify-center" style={`background-color: ${primaryColor}15`}>
+                  <svg class="w-5 h-5" style={`color: ${primaryColor}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                  </svg>
+                </div>
+                <span class="font-semibold text-slate-900">{formatDate(fixture.match_date)}</span>
+              </div>
+
+              {fixture.match_time && (
+                <div
+                  class="flex items-center gap-3 px-5 py-3 rounded-2xl border transition-all duration-300 hover:scale-105"
+                  style={`background: ${accentColor}08; border-color: ${accentColor}20`}
+                >
+                  <div class="w-10 h-10 rounded-xl flex items-center justify-center" style={`background-color: ${accentColor}15`}>
+                    <svg class="w-5 h-5" style={`color: ${accentColor}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                  </div>
+                  <span class="font-semibold text-slate-900">{formatTime(fixture.match_time)}</span>
+                </div>
+              )}
+
+              {fixture.venue && (
+                <div
+                  class="flex items-center gap-3 px-5 py-3 rounded-2xl bg-slate-50 border border-slate-200 transition-all duration-300 hover:scale-105"
+                >
+                  <div class="w-10 h-10 rounded-xl flex items-center justify-center bg-slate-100">
+                    <svg class="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    </svg>
+                  </div>
+                  <span class="font-semibold text-slate-900">{fixture.venue}</span>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     ) : (
-      <div class="max-w-2xl mx-auto bg-slate-50 rounded-3xl p-10 border border-slate-200 text-center">
-        <div class="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-          <svg class="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-          </svg>
+      <div class="max-w-2xl mx-auto fixture-fade-in">
+        <div class="bg-white rounded-3xl p-12 border border-slate-200 shadow-xl text-center">
+          <div class="w-20 h-20 bg-gradient-to-br from-slate-100 to-slate-50 rounded-3xl flex items-center justify-center mx-auto mb-6">
+            <svg class="w-10 h-10 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+            </svg>
+          </div>
+          <h3 class="text-xl font-bold text-slate-900 mb-2">No Upcoming Fixtures</h3>
+          <p class="text-slate-500">Check back soon for match updates</p>
         </div>
-        <p class="text-slate-700 font-medium mb-2">No upcoming fixtures</p>
-        <p class="text-slate-500 text-sm">Check back soon for match updates</p>
       </div>
     )}
   </div>
 </section>
+
+<style>
+  .fixture-fade-in {
+    animation: fixtureFadeIn 0.8s ease-out forwards;
+  }
+
+  .fixture-slide-up {
+    animation: fixtureSlideUp 0.8s ease-out 0.2s forwards;
+    opacity: 0;
+  }
+
+  @keyframes fixtureFadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes fixtureSlideUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+</style>

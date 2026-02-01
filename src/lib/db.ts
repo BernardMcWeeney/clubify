@@ -526,8 +526,10 @@ export class DatabaseService {
         c.*,
         (SELECT COUNT(*) FROM club_members cm WHERE cm.club_id = c.id) as member_count,
         (SELECT COUNT(*) FROM posts p WHERE p.club_id = c.id) as post_count,
+        (SELECT COUNT(*) FROM posts p WHERE p.club_id = c.id AND p.status = 'published') as published_post_count,
         (SELECT COUNT(*) FROM fixtures f WHERE f.club_id = c.id) as fixture_count,
         (SELECT COUNT(*) FROM pages pg WHERE pg.club_id = c.id) as page_count,
+        (SELECT COUNT(*) FROM social_connections sc WHERE sc.club_id = c.id) as social_count,
         (
           SELECT MAX(ts) FROM (
             SELECT MAX(updated_at) as ts FROM posts p WHERE p.club_id = c.id
@@ -536,12 +538,38 @@ export class DatabaseService {
             UNION ALL
             SELECT MAX(updated_at) as ts FROM pages pg WHERE pg.club_id = c.id
           )
-        ) as last_content_at
+        ) as last_content_at,
+        CASE WHEN c.crest_url IS NOT NULL AND c.crest_url != '' THEN 1 ELSE 0 END as has_crest,
+        CASE WHEN (c.contact_email IS NOT NULL AND c.contact_email != '') OR (c.contact_phone IS NOT NULL AND c.contact_phone != '') THEN 1 ELSE 0 END as has_contact,
+        CASE WHEN c.navigation_items IS NOT NULL AND c.navigation_items != '[]' AND c.navigation_items != '' THEN 1 ELSE 0 END as has_nav
       FROM clubs c
       ORDER BY c.created_at DESC
     `).all<any>();
 
-    return results.results || [];
+    // Calculate health score for each club
+    return (results.results || []).map(club => {
+      let healthScore = 0;
+      const healthChecks = {
+        hasCrest: club.has_crest === 1,
+        hasContact: club.has_contact === 1,
+        hasNav: club.has_nav === 1,
+        hasPublishedPost: club.published_post_count > 0,
+        hasSocialConnection: club.social_count > 0,
+      };
+
+      if (healthChecks.hasCrest) healthScore++;
+      if (healthChecks.hasContact) healthScore++;
+      if (healthChecks.hasNav) healthScore++;
+      if (healthChecks.hasPublishedPost) healthScore++;
+      if (healthChecks.hasSocialConnection) healthScore++;
+
+      return {
+        ...club,
+        health_score: healthScore,
+        health_max: 5,
+        health_checks: healthChecks,
+      };
+    });
   }
 
   // Club member operations

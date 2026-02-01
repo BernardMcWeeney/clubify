@@ -1,0 +1,52 @@
+# Cloudflare Pages Headers
+# https://developers.cloudflare.com/pages/platform/headers
+
+# Security headers for all pages
+/*
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
+
+# Static assets - long cache (1 year)
+/_astro/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Images - long cache (1 year)
+/*.svg
+  Cache-Control: public, max-age=31536000, immutable
+/*.png
+  Cache-Control: public, max-age=31536000, immutable
+/*.jpg
+  Cache-Control: public, max-age=31536000, immutable
+/*.jpeg
+  Cache-Control: public, max-age=31536000, immutable
+/*.webp
+  Cache-Control: public, max-age=31536000, immutable
+/*.ico
+  Cache-Control: public, max-age=31536000, immutable
+
+# Fonts - long cache (1 year)
+/*.woff
+  Cache-Control: public, max-age=31536000, immutable
+/*.woff2
+  Cache-Control: public, max-age=31536000, immutable
+
+# Public club pages - short cache with revalidation (5 min edge, 1 min stale)
+/:slug
+  Cache-Control: public, max-age=300, stale-while-revalidate=60
+/:slug/*
+  Cache-Control: public, max-age=300, stale-while-revalidate=60
+
+# Admin pages - no cache
+/admin/*
+  Cache-Control: no-store, no-cache, must-revalidate
+  Pragma: no-cache
+/:slug/admin-portal/*
+  Cache-Control: no-store, no-cache, must-revalidate
+  Pragma: no-cache
+
+# API endpoints - no cache
+/api/*
+  Cache-Control: no-store, no-cache, must-revalidate
+  Pragma: no-cache

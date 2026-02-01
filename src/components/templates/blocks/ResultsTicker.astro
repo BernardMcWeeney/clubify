@@ -18,9 +18,18 @@ interface Props {
   results: Result[];
   clubName: string;
   primaryColor: string;
+  template?: 'classic' | 'matchday' | 'community';
 }
 
-const { results, clubName, primaryColor } = Astro.props;
+const { results, clubName, primaryColor, template = 'classic' } = Astro.props;
+
+// Template-specific accent colors
+const templateAccents = {
+  classic: '#c9a227',
+  matchday: '#dc2626',
+  community: '#0d9488',
+};
+const accentColor = templateAccents[template];
 
 function formatDate(dateStr: string): string {
   const date = new Date(dateStr);
@@ -37,43 +46,122 @@ function formatGAAScore(goals: number | null, points: number | null): string {
   return `${goals}-${String(points).padStart(2, '0')}`;
 }
 
-function getResultColor(result: string | null): string {
-  if (result === 'win') return '#22c55e';
-  if (result === 'loss') return '#ef4444';
-  return '#f59e0b';
+function getResultColor(result: string | null): { bg: string; text: string; label: string } {
+  if (result === 'win') return { bg: '#22c55e', text: 'white', label: 'W' };
+  if (result === 'loss') return { bg: '#ef4444', text: 'white', label: 'L' };
+  return { bg: '#f59e0b', text: 'white', label: 'D' };
 }
+
+// Duplicate results for seamless loop
+const tickerResults = [...results.slice(0, 5), ...results.slice(0, 5)];
 ---
 
 {results.length > 0 ? (
-  <section class="py-4 overflow-hidden" style={`background-color: ${primaryColor}`}>
-    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-      <div class="flex items-center gap-4 overflow-x-auto scrollbar-hide py-2">
-        <span class="text-white/80 text-sm font-medium whitespace-nowrap">Recent Results:</span>
-        <div class="flex items-center gap-6">
-          {results.slice(0, 5).map((result) => (
-            <div class="flex items-center gap-3 whitespace-nowrap">
-              <span class="text-white/60 text-xs">{formatDate(result.match_date)}</span>
-              <span class="text-white text-sm font-medium">
-                {result.home_team} {formatGAAScore(result.home_goals, result.home_points)} - {formatGAAScore(result.away_goals, result.away_points)} {result.away_team}
-              </span>
-              <span
-                class="w-2 h-2 rounded-full"
-                style={`background-color: ${getResultColor(result.result)}`}
-              ></span>
-            </div>
-          ))}
+  <section class="relative overflow-hidden py-1">
+    <!-- Gradient background -->
+    <div
+      class="absolute inset-0"
+      style={`background: linear-gradient(135deg, ${primaryColor} 0%, ${accentColor} 100%)`}
+    ></div>
+
+    <!-- Subtle pattern overlay -->
+    <div class="absolute inset-0 opacity-10" style="background-image: url(&quot;data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='1' fill-rule='evenodd'%3E%3Ccircle cx='3' cy='3' r='1'/%3E%3Ccircle cx='13' cy='13' r='1'/%3E%3C/g%3E%3C/svg%3E&quot;);"></div>
+
+    <div class="relative">
+      <div class="flex items-center">
+        <!-- Label -->
+        <div class="flex-shrink-0 z-10 bg-black/20 backdrop-blur-sm px-4 md:px-6 py-4">
+          <span class="flex items-center gap-2 text-white font-bold text-sm uppercase tracking-wider whitespace-nowrap">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+            </svg>
+            Recent Results
+          </span>
         </div>
+
+        <!-- Ticker container -->
+        <div class="overflow-hidden flex-1">
+          <div class="ticker-track flex items-center gap-6 md:gap-10 py-4">
+            {tickerResults.map((result) => {
+              const resultStyle = getResultColor(result.result);
+              return (
+                <div class="flex items-center gap-4 whitespace-nowrap group">
+                  <!-- Date badge -->
+                  <span class="text-white/50 text-xs font-medium bg-white/10 px-2 py-1 rounded-md">
+                    {formatDate(result.match_date)}
+                  </span>
+
+                  <!-- Match card -->
+                  <div class="flex items-center gap-3 bg-white/10 backdrop-blur-sm rounded-xl px-4 py-2 border border-white/10 transition-all duration-300 group-hover:bg-white/20 group-hover:scale-105">
+                    <!-- Home team -->
+                    <span class="text-white font-semibold text-sm">{result.home_team}</span>
+
+                    <!-- Score -->
+                    <div class="flex items-center gap-2">
+                      <span class="bg-white/20 text-white font-bold px-2 py-1 rounded-lg text-sm">
+                        {formatGAAScore(result.home_goals, result.home_points)}
+                      </span>
+                      <span class="text-white/40 text-xs">-</span>
+                      <span class="bg-white/20 text-white font-bold px-2 py-1 rounded-lg text-sm">
+                        {formatGAAScore(result.away_goals, result.away_points)}
+                      </span>
+                    </div>
+
+                    <!-- Away team -->
+                    <span class="text-white font-semibold text-sm">{result.away_team}</span>
+
+                    <!-- Result badge -->
+                    <span
+                      class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shadow-lg"
+                      style={`background-color: ${resultStyle.bg}; color: ${resultStyle.text}`}
+                    >
+                      {resultStyle.label}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        <!-- View all link -->
+        <a
+          href="#results"
+          class="flex-shrink-0 z-10 bg-black/20 backdrop-blur-sm px-4 md:px-6 py-4 text-white/80 hover:text-white transition-colors group"
+        >
+          <span class="flex items-center gap-2 text-sm font-medium whitespace-nowrap">
+            View All
+            <svg class="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+            </svg>
+          </span>
+        </a>
       </div>
     </div>
   </section>
 ) : null}
 
 <style>
-  .scrollbar-hide {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
+  .ticker-track {
+    animation: ticker 30s linear infinite;
+    width: max-content;
   }
-  .scrollbar-hide::-webkit-scrollbar {
-    display: none;
+
+  .ticker-track:hover {
+    animation-play-state: paused;
+  }
+
+  @keyframes ticker {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(-50%);
+    }
+  }
+
+  /* Pause animation on hover for better UX */
+  section:hover .ticker-track {
+    animation-play-state: paused;
   }
 </style>

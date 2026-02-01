@@ -37,10 +37,13 @@ binding = "MEDIA"
 bucket_name = "clubify-media"
 
 # KV for rate limiting and caching
-# Run: wrangler kv:namespace create RATE_LIMIT
-[[kv_namespaces]]
-binding = "RATE_LIMIT"
-id = "PLACEHOLDER_RATE_LIMIT_KV_ID"
+# To enable rate limiting:
+# 1. Run: wrangler kv:namespace create RATE_LIMIT
+# 2. Copy the namespace ID from output
+# 3. Uncomment and update the id below
+# [[kv_namespaces]]
+# binding = "RATE_LIMIT"
+# id = "YOUR_KV_NAMESPACE_ID_HERE"
 
 # KV for caching (OPTIONAL)
 # [[kv_namespaces]]

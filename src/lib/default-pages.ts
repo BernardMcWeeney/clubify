@@ -282,7 +282,7 @@ Show your support for ${clubName} with official club merchandise!
 
 - [GAA Official Website](https://www.gaa.ie)
 - [Club Governance](https://learning.gaa.ie)
-- [Healthy Club Project](https://healthy club.gaa.ie)
+- [Healthy Club Project](https://healthyclub.gaa.ie)
 
 ---
 

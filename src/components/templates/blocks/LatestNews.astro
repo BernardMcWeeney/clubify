@@ -13,11 +13,20 @@ interface Props {
   posts: Post[];
   slug: string;
   primaryColor: string;
+  template?: 'classic' | 'matchday' | 'community';
   maxItems?: number;
 }
 
-const { posts, slug, primaryColor, maxItems = 3 } = Astro.props;
+const { posts, slug, primaryColor, template = 'classic', maxItems = 3 } = Astro.props;
 const displayPosts = posts.slice(0, maxItems);
+
+// Template-specific accent colors
+const templateAccents = {
+  classic: '#c9a227',      // Gold
+  matchday: '#dc2626',     // Red
+  community: '#0d9488',    // Teal
+};
+const accentColor = templateAccents[template];
 
 function formatDate(dateStr: string): string {
   const date = new Date(dateStr);
@@ -28,89 +37,195 @@ function formatDate(dateStr: string): string {
   });
 }
 
+function getRelativeTime(dateStr: string): string {
+  const date = new Date(dateStr);
+  const now = new Date();
+  const diff = now.getTime() - date.getTime();
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+
+  if (days === 0) return 'Today';
+  if (days === 1) return 'Yesterday';
+  if (days < 7) return `${days} days ago`;
+  if (days < 14) return '1 week ago';
+  if (days < 30) return `${Math.floor(days / 7)} weeks ago`;
+  return formatDate(dateStr);
+}
+
+const categoryConfig: Record<string, { color: string; icon: string }> = {
+  news: { color: '#3b82f6', icon: '📰' },
+  'match-report': { color: '#22c55e', icon: '⚽' },
+  fundraiser: { color: '#f59e0b', icon: '🎉' },
+  notice: { color: '#8b5cf6', icon: '📢' },
+};
+
 function getCategoryColor(category: string): string {
-  const colors: Record<string, string> = {
-    news: '#3b82f6',
-    'match-report': '#22c55e',
-    fundraiser: '#f59e0b',
-    notice: '#8b5cf6',
-  };
-  return colors[category] || primaryColor;
+  return categoryConfig[category]?.color || primaryColor;
+}
+
+function getCategoryIcon(category: string): string {
+  return categoryConfig[category]?.icon || '📄';
 }
 ---
 
-<section class="py-20 bg-slate-50">
-  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-    <div class="flex items-center justify-between mb-10">
-      <h2 class="text-3xl font-bold text-slate-900">Latest News</h2>
+<section class="py-24 relative overflow-hidden">
+  <!-- Background gradient -->
+  <div class="absolute inset-0 bg-gradient-to-b from-white via-slate-50 to-slate-100"></div>
+
+  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative">
+    <!-- Section header -->
+    <div class="flex flex-col md:flex-row items-start md:items-end justify-between mb-14 gap-6 news-fade-in">
+      <div>
+        <span
+          class="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold mb-4"
+          style={`background: ${primaryColor}15; color: ${primaryColor}`}
+        >
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M2 5a2 2 0 012-2h8a2 2 0 012 2v10a2 2 0 002 2H4a2 2 0 01-2-2V5zm3 1h6v4H5V6zm6 6H5v2h6v-2z" clip-rule="evenodd"/>
+            <path d="M15 7h1a2 2 0 012 2v5.5a1.5 1.5 0 01-3 0V7z"/>
+          </svg>
+          Latest Updates
+        </span>
+        <h2 class="text-4xl md:text-5xl font-bold text-slate-900">Club News</h2>
+      </div>
       <a
         href={`/${slug}/news`}
-        class="text-sm font-semibold hover:underline transition-colors"
-        style={`color: ${primaryColor}`}
+        class="group inline-flex items-center gap-2 px-6 py-3 rounded-full font-semibold text-white transition-all duration-300 hover:gap-4 hover:shadow-xl"
+        style={`background: linear-gradient(135deg, ${primaryColor}, ${accentColor}); box-shadow: 0 4px 14px ${primaryColor}40`}
       >
         View all news
+        <svg class="w-5 h-5 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+        </svg>
       </a>
     </div>
 
     {displayPosts.length > 0 ? (
       <div class="grid md:grid-cols-3 gap-8">
-        {displayPosts.map((post) => (
+        {displayPosts.map((post, index) => (
           <a
             href={`/${slug}/news/${post.slug}`}
-            class="group bg-white rounded-2xl overflow-hidden border border-slate-200 hover:border-slate-300 hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-300"
+            class="news-card group relative bg-white rounded-3xl overflow-hidden border border-slate-200/80 hover:border-transparent transition-all duration-500"
+            style={`animation-delay: ${index * 0.1}s`}
           >
+            <!-- Hover gradient overlay -->
+            <div
+              class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+              style={`background: linear-gradient(135deg, ${primaryColor}08, ${accentColor}08)`}
+            ></div>
+
+            <!-- Image -->
             {post.featured_image ? (
-              <div class="aspect-video overflow-hidden">
+              <div class="aspect-[16/10] overflow-hidden relative">
                 <img
                   src={post.featured_image}
                   alt={post.title}
-                  class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                 />
+                <!-- Gradient overlay on image -->
+                <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
               </div>
             ) : (
-              <div
-                class="aspect-video flex items-center justify-center bg-gradient-to-br from-slate-100 to-slate-50"
-              >
-                <svg class="w-14 h-14 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/>
-                </svg>
+              <div class="aspect-[16/10] flex items-center justify-center bg-gradient-to-br from-slate-100 via-slate-50 to-white relative overflow-hidden">
+                <div class="absolute inset-0 opacity-5" style={`background: linear-gradient(135deg, ${primaryColor}, ${accentColor})`}></div>
+                <span class="text-5xl opacity-50">{getCategoryIcon(post.category)}</span>
               </div>
             )}
 
-            <div class="p-6">
-              <div class="flex items-center gap-2 mb-4">
+            <!-- Content -->
+            <div class="p-7 relative">
+              <!-- Category and date row -->
+              <div class="flex items-center gap-3 mb-4">
                 <span
-                  class="text-xs font-semibold px-2.5 py-1 rounded-full text-white capitalize"
+                  class="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full text-white uppercase tracking-wide shadow-sm"
                   style={`background-color: ${getCategoryColor(post.category)}`}
                 >
+                  <span>{getCategoryIcon(post.category)}</span>
                   {post.category.replace('-', ' ')}
                 </span>
                 {post.published_at && (
-                  <span class="text-xs text-slate-500">{formatDate(post.published_at)}</span>
+                  <span class="text-xs text-slate-400 font-medium">{getRelativeTime(post.published_at)}</span>
                 )}
               </div>
 
-              <h3 class="text-lg font-bold text-slate-900 mb-2 group-hover:text-slate-700 transition-colors line-clamp-2">
+              <!-- Title -->
+              <h3 class="text-xl font-bold text-slate-900 mb-3 line-clamp-2 group-hover:text-slate-700 transition-colors duration-300">
                 {post.title}
               </h3>
 
+              <!-- Summary -->
               {post.summary && (
-                <p class="text-sm text-slate-500 line-clamp-2">{post.summary}</p>
+                <p class="text-slate-500 text-sm line-clamp-2 mb-5">{post.summary}</p>
               )}
+
+              <!-- Read more link -->
+              <div
+                class="inline-flex items-center gap-2 text-sm font-semibold transition-all duration-300 group-hover:gap-3"
+                style={`color: ${primaryColor}`}
+              >
+                Read article
+                <svg class="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                </svg>
+              </div>
             </div>
+
+            <!-- Bottom accent line -->
+            <div
+              class="absolute bottom-0 left-0 right-0 h-1 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left"
+              style={`background: linear-gradient(90deg, ${primaryColor}, ${accentColor})`}
+            ></div>
           </a>
         ))}
       </div>
     ) : (
-      <div class="bg-white rounded-2xl p-10 border border-slate-200 text-center">
-        <div class="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-          <svg class="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div class="bg-white rounded-3xl p-14 border border-slate-200 shadow-xl text-center news-fade-in">
+        <div class="w-20 h-20 bg-gradient-to-br from-slate-100 to-slate-50 rounded-3xl flex items-center justify-center mx-auto mb-6">
+          <svg class="w-10 h-10 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/>
           </svg>
         </div>
-        <p class="text-slate-600 font-medium">No news posts yet</p>
-        <p class="text-slate-500 text-sm mt-1">Check back soon for updates</p>
+        <h3 class="text-xl font-bold text-slate-900 mb-2">No News Yet</h3>
+        <p class="text-slate-500">Check back soon for updates from the club</p>
       </div>
     )}
   </div>
 </section>
+
+<style>
+  .news-fade-in {
+    animation: newsFadeIn 0.8s ease-out forwards;
+  }
+
+  .news-card {
+    animation: newsCardSlideUp 0.6s ease-out forwards;
+    opacity: 0;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+  }
+
+  .news-card:hover {
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
+    transform: translateY(-8px);
+  }
+
+  @keyframes newsFadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes newsCardSlideUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+</style>

@@ -23,77 +23,129 @@ if (!superAdminEmail || user.email.toLowerCase() !== superAdminEmail.toLowerCase
 const stats = await db.getPlatformStats();
 const clubs = await db.getClubOverviews();
 const liveRate = stats.clubs ? Math.round((stats.live_clubs / stats.clubs) * 100) : 0;
+
+// Health score helpers
+function getHealthColor(score: number, max: number): string {
+  const percentage = (score / max) * 100;
+  if (percentage >= 80) return 'bg-green-100 text-green-700 border-green-200';
+  if (percentage >= 60) return 'bg-amber-100 text-amber-700 border-amber-200';
+  return 'bg-red-100 text-red-700 border-red-200';
+}
+
+function getHealthBgColor(score: number, max: number): string {
+  const percentage = (score / max) * 100;
+  if (percentage >= 80) return '#22c55e';
+  if (percentage >= 60) return '#f59e0b';
+  return '#ef4444';
+}
 ---
 
 <Layout title="Clubify Super Admin">
   <div class="min-h-screen bg-slate-50">
     <header class="sticky top-0 z-30 bg-white/80 backdrop-blur border-b border-slate-200">
-      <div class="mx-auto max-w-6xl px-6 py-4 flex items-center justify-between">
+      <div class="mx-auto max-w-7xl px-6 py-4 flex items-center justify-between">
         <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center shadow-lg shadow-primary-500/20">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-lg shadow-violet-500/20">
             <svg class="w-6 h-6 text-white" viewBox="0 0 24 24" fill="none">
               <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" fill="currentColor" opacity="0.3"/>
               <circle cx="12" cy="12" r="2" fill="currentColor"/>
             </svg>
           </div>
           <div>
-            <p class="text-sm text-slate-500">Clubify</p>
-            <h1 class="text-lg font-semibold text-slate-900">Super Admin</h1>
+            <p class="text-sm text-slate-500">Clubify Platform</p>
+            <h1 class="text-lg font-bold text-slate-900">Super Admin</h1>
           </div>
         </div>
         <div class="flex items-center gap-3">
-          <span class="text-sm text-slate-600">{user.email}</span>
-          <button id="logout-btn" class="px-3 py-2 text-sm font-medium text-slate-600 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">
+          <span class="inline-flex items-center gap-1.5 text-sm text-slate-600 bg-slate-100 px-3 py-1.5 rounded-full">
+            <span class="w-2 h-2 bg-violet-500 rounded-full"></span>
+            {user.email}
+          </span>
+          <button id="logout-btn" class="px-4 py-2 text-sm font-medium text-slate-600 border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors">
             Sign out
           </button>
         </div>
       </div>
     </header>
 
-    <main class="mx-auto max-w-6xl px-6 py-8">
+    <main class="mx-auto max-w-7xl px-6 py-8">
+      <!-- Header -->
       <div class="mb-8">
         <h2 class="text-2xl font-bold text-slate-900">Platform Overview</h2>
-        <p class="text-slate-600 mt-1">Monitor all clubs and manage live status across the tenancy.</p>
+        <p class="text-slate-600 mt-1">Monitor all clubs, manage live status, and access admin tools.</p>
       </div>
 
+      <!-- Stats Grid -->
       <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
-          <p class="text-sm text-slate-500">Total clubs</p>
-          <p class="text-2xl font-bold text-slate-900 mt-2">{stats.clubs}</p>
-          <p class="text-xs text-slate-500 mt-2">{stats.live_clubs} live ({liveRate}%)</p>
+        <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+          <div class="flex items-center gap-3 mb-3">
+            <div class="w-10 h-10 rounded-xl bg-violet-100 flex items-center justify-center">
+              <svg class="w-5 h-5 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+              </svg>
+            </div>
+            <p class="text-sm font-medium text-slate-500">Total Clubs</p>
+          </div>
+          <p class="text-3xl font-bold text-slate-900">{stats.clubs}</p>
+          <p class="text-sm text-slate-500 mt-1">{stats.live_clubs} live ({liveRate}%)</p>
         </div>
-        <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
-          <p class="text-sm text-slate-500">Users</p>
-          <p class="text-2xl font-bold text-slate-900 mt-2">{stats.users}</p>
-          <p class="text-xs text-slate-500 mt-2">Total accounts</p>
+
+        <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+          <div class="flex items-center gap-3 mb-3">
+            <div class="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center">
+              <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m3 5.197V21"/>
+              </svg>
+            </div>
+            <p class="text-sm font-medium text-slate-500">Users</p>
+          </div>
+          <p class="text-3xl font-bold text-slate-900">{stats.users}</p>
+          <p class="text-sm text-slate-500 mt-1">Total accounts</p>
         </div>
-        <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
-          <p class="text-sm text-slate-500">Content</p>
-          <p class="text-2xl font-bold text-slate-900 mt-2">{stats.posts}</p>
-          <p class="text-xs text-slate-500 mt-2">{stats.pages} pages, {stats.fixtures} fixtures</p>
+
+        <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+          <div class="flex items-center gap-3 mb-3">
+            <div class="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center">
+              <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+              </svg>
+            </div>
+            <p class="text-sm font-medium text-slate-500">Content</p>
+          </div>
+          <p class="text-3xl font-bold text-slate-900">{stats.posts}</p>
+          <p class="text-sm text-slate-500 mt-1">{stats.pages} pages, {stats.fixtures} fixtures</p>
         </div>
-        <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
-          <p class="text-sm text-slate-500">Media</p>
-          <p class="text-2xl font-bold text-slate-900 mt-2">{stats.media}</p>
-          <p class="text-xs text-slate-500 mt-2">Uploads stored</p>
+
+        <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+          <div class="flex items-center gap-3 mb-3">
+            <div class="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center">
+              <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+              </svg>
+            </div>
+            <p class="text-sm font-medium text-slate-500">Media</p>
+          </div>
+          <p class="text-3xl font-bold text-slate-900">{stats.media}</p>
+          <p class="text-sm text-slate-500 mt-1">Uploads stored</p>
         </div>
       </div>
 
-      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm">
-        <div class="flex flex-col gap-4 border-b border-slate-200 p-5 md:flex-row md:items-center md:justify-between">
+      <!-- Clubs Table -->
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="flex flex-col gap-4 border-b border-slate-200 p-6 md:flex-row md:items-center md:justify-between">
           <div>
-            <h3 class="text-lg font-semibold text-slate-900">Clubs</h3>
-            <p class="text-sm text-slate-500">Search, inspect, and toggle live status.</p>
+            <h3 class="text-lg font-bold text-slate-900">Clubs</h3>
+            <p class="text-sm text-slate-500">Search, inspect, impersonate, and manage clubs.</p>
           </div>
-          <div class="flex items-center gap-2">
+          <div class="flex items-center gap-3">
             <div class="relative">
               <input
                 id="club-search"
                 type="search"
                 placeholder="Search by club or slug..."
-                class="w-64 max-w-full px-4 py-2 border border-slate-200 rounded-lg text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                class="w-72 max-w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent"
               />
-              <svg class="w-4 h-4 text-slate-400 absolute right-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg class="w-4 h-4 text-slate-400 absolute right-4 top-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M10 18a8 8 0 100-16 8 8 0 000 16z"/>
               </svg>
             </div>
@@ -102,69 +154,159 @@ const liveRate = stats.clubs ? Math.round((stats.live_clubs / stats.clubs) * 100
 
         <div class="overflow-x-auto">
           <table class="min-w-full text-sm">
-            <thead class="bg-slate-50 text-slate-500">
+            <thead class="bg-slate-50 text-slate-500 border-b border-slate-200">
               <tr>
-                <th class="px-5 py-3 text-left font-medium">Club</th>
-                <th class="px-5 py-3 text-left font-medium">Status</th>
-                <th class="px-5 py-3 text-left font-medium">Template</th>
-                <th class="px-5 py-3 text-left font-medium">Members</th>
-                <th class="px-5 py-3 text-left font-medium">Posts</th>
-                <th class="px-5 py-3 text-left font-medium">Fixtures</th>
-                <th class="px-5 py-3 text-left font-medium">Pages</th>
-                <th class="px-5 py-3 text-left font-medium">Last Content</th>
-                <th class="px-5 py-3 text-left font-medium">Actions</th>
+                <th class="px-6 py-4 text-left font-semibold">Club</th>
+                <th class="px-6 py-4 text-left font-semibold">Health</th>
+                <th class="px-6 py-4 text-left font-semibold">Status</th>
+                <th class="px-6 py-4 text-left font-semibold">Template</th>
+                <th class="px-6 py-4 text-left font-semibold">Members</th>
+                <th class="px-6 py-4 text-left font-semibold">Content</th>
+                <th class="px-6 py-4 text-left font-semibold">Last Activity</th>
+                <th class="px-6 py-4 text-left font-semibold">Actions</th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-slate-200">
+            <tbody class="divide-y divide-slate-100">
               {clubs.map((club) => (
-                <tr data-club-row data-search={`${club.name.toLowerCase()} ${club.slug.toLowerCase()}`}>
-                  <td class="px-5 py-4">
-                    <div>
-                      <p class="font-medium text-slate-900">{club.name}</p>
-                      <p class="text-xs text-slate-500">{club.slug}.clubify.ie</p>
+                <tr
+                  class="hover:bg-slate-50/50 transition-colors"
+                  data-club-row
+                  data-search={`${club.name.toLowerCase()} ${club.slug.toLowerCase()}`}
+                  data-club-id={club.id}
+                  data-club-slug={club.slug}
+                  data-club-name={club.name}
+                >
+                  <td class="px-6 py-4">
+                    <div class="flex items-center gap-3">
+                      {club.crest_url ? (
+                        <img src={club.crest_url} alt="" class="w-10 h-10 rounded-xl object-contain bg-slate-50 border border-slate-200" />
+                      ) : (
+                        <div class="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400">
+                          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                          </svg>
+                        </div>
+                      )}
+                      <div>
+                        <p class="font-semibold text-slate-900">{club.name}</p>
+                        <p class="text-xs text-slate-500 flex items-center gap-1">
+                          <span class="slug-display">{club.slug}</span>.clubify.ie
+                          <button
+                            class="edit-slug-btn p-0.5 text-slate-400 hover:text-violet-600 transition-colors"
+                            title="Edit slug"
+                          >
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+                            </svg>
+                          </button>
+                        </p>
+                      </div>
                     </div>
                   </td>
-                  <td class="px-5 py-4">
+                  <td class="px-6 py-4">
+                    <div class="flex items-center gap-2">
+                      <div
+                        class={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${getHealthColor(club.health_score, club.health_max)}`}
+                        title={`${club.health_score}/${club.health_max} health checks passed`}
+                      >
+                        <span
+                          class="w-2 h-2 rounded-full"
+                          style={`background-color: ${getHealthBgColor(club.health_score, club.health_max)}`}
+                        ></span>
+                        {club.health_score}/{club.health_max}
+                      </div>
+                      <div class="hidden xl:flex items-center gap-1">
+                        <span
+                          class={`w-5 h-5 rounded flex items-center justify-center text-xs ${club.health_checks?.hasCrest ? 'bg-green-100 text-green-600' : 'bg-slate-100 text-slate-400'}`}
+                          title={club.health_checks?.hasCrest ? 'Has crest' : 'No crest'}
+                        >
+                          {club.health_checks?.hasCrest ? '&#10003;' : '&#10005;'}
+                        </span>
+                        <span
+                          class={`w-5 h-5 rounded flex items-center justify-center text-xs ${club.health_checks?.hasContact ? 'bg-green-100 text-green-600' : 'bg-slate-100 text-slate-400'}`}
+                          title={club.health_checks?.hasContact ? 'Has contact info' : 'No contact info'}
+                        >
+                          {club.health_checks?.hasContact ? '&#10003;' : '&#10005;'}
+                        </span>
+                        <span
+                          class={`w-5 h-5 rounded flex items-center justify-center text-xs ${club.health_checks?.hasPublishedPost ? 'bg-green-100 text-green-600' : 'bg-slate-100 text-slate-400'}`}
+                          title={club.health_checks?.hasPublishedPost ? 'Has published content' : 'No published content'}
+                        >
+                          {club.health_checks?.hasPublishedPost ? '&#10003;' : '&#10005;'}
+                        </span>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="px-6 py-4">
                     <span
-                      class={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ${
+                      class={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ${
                         club.is_live ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'
                       }`}
                       data-status-pill
                     >
+                      <span class={`w-1.5 h-1.5 rounded-full mr-1.5 ${club.is_live ? 'bg-green-500' : 'bg-amber-500'}`}></span>
                       {club.is_live ? 'Live' : 'Draft'}
                     </span>
                   </td>
-                  <td class="px-5 py-4 capitalize text-slate-700">{club.template}</td>
-                  <td class="px-5 py-4 text-slate-700">{club.member_count}</td>
-                  <td class="px-5 py-4 text-slate-700">{club.post_count}</td>
-                  <td class="px-5 py-4 text-slate-700">{club.fixture_count}</td>
-                  <td class="px-5 py-4 text-slate-700">{club.page_count}</td>
-                  <td class="px-5 py-4 text-slate-600">
+                  <td class="px-6 py-4">
+                    <span class="capitalize text-slate-700 bg-slate-100 px-2 py-1 rounded-lg text-xs font-medium">
+                      {club.template}
+                    </span>
+                  </td>
+                  <td class="px-6 py-4 text-slate-700">{club.member_count}</td>
+                  <td class="px-6 py-4">
+                    <div class="text-slate-700">
+                      <span class="text-slate-900 font-medium">{club.post_count}</span> posts
+                      <span class="text-slate-400 mx-1">&middot;</span>
+                      <span class="text-slate-900 font-medium">{club.fixture_count}</span> fixtures
+                    </div>
+                  </td>
+                  <td class="px-6 py-4 text-slate-600 text-xs">
                     {club.last_content_at ? formatDateTime(club.last_content_at) : '-'}
                   </td>
-                  <td class="px-5 py-4">
+                  <td class="px-6 py-4">
                     <div class="flex flex-wrap gap-2">
                       <a
                         href={`/${club.slug}`}
                         target="_blank"
-                        class="inline-flex items-center gap-1 rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50"
+                        class="inline-flex items-center gap-1 rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50 hover:border-slate-300 transition-colors"
+                        title="View public site"
                       >
-                        View site
-                      </a>
-                      <a
-                        href={`/${club.slug}/admin-portal`}
-                        target="_blank"
-                        class="inline-flex items-center gap-1 rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50"
-                      >
-                        Admin portal
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                        </svg>
+                        Site
                       </a>
                       <button
                         type="button"
-                        class="toggle-live-btn inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-semibold text-white bg-slate-900 hover:bg-slate-800"
+                        class="impersonate-btn inline-flex items-center gap-1 rounded-lg border border-violet-200 bg-violet-50 px-3 py-1.5 text-xs font-medium text-violet-700 hover:bg-violet-100 hover:border-violet-300 transition-colors"
+                        data-club-id={club.id}
+                        title="View as club admin"
+                      >
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                        </svg>
+                        View As
+                      </button>
+                      <button
+                        type="button"
+                        class="toggle-live-btn inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-semibold text-white bg-slate-900 hover:bg-slate-800 transition-colors"
                         data-club-id={club.id}
                         data-live={club.is_live ? '1' : '0'}
                       >
                         {club.is_live ? 'Set Draft' : 'Go Live'}
+                      </button>
+                      <button
+                        type="button"
+                        class="export-btn inline-flex items-center gap-1 rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50 hover:border-slate-300 transition-colors"
+                        data-club-id={club.id}
+                        title="Export GDPR data"
+                      >
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                        </svg>
+                        Export
                       </button>
                     </div>
                   </td>
@@ -176,26 +318,76 @@ const liveRate = stats.clubs ? Math.round((stats.live_clubs / stats.clubs) * 100
       </div>
     </main>
   </div>
+
+  <!-- Edit Slug Modal -->
+  <div id="slug-modal" class="hidden fixed inset-0 z-50 overflow-y-auto">
+    <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm" data-modal-backdrop></div>
+    <div class="flex min-h-full items-center justify-center p-4">
+      <div class="relative bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-md">
+        <div class="p-6 border-b border-slate-200">
+          <h3 class="text-lg font-bold text-slate-900">Edit Club Slug</h3>
+          <p class="text-sm text-slate-500 mt-1">Change the URL path for this club.</p>
+        </div>
+        <form id="slug-form" class="p-6">
+          <input type="hidden" id="slug-club-id" />
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-slate-700 mb-2">New Slug</label>
+            <div class="flex items-center gap-2">
+              <input
+                type="text"
+                id="slug-input"
+                pattern="[a-z0-9][a-z0-9-]*[a-z0-9]"
+                minlength="3"
+                maxlength="50"
+                required
+                class="flex-1 px-4 py-3 border border-slate-300 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500"
+                placeholder="club-name"
+              />
+              <span class="text-slate-500">.clubify.ie</span>
+            </div>
+            <p class="text-xs text-slate-500 mt-2">Lowercase letters, numbers, and hyphens only. 3-50 characters.</p>
+          </div>
+          <div class="flex justify-end gap-3">
+            <button
+              type="button"
+              class="px-4 py-2.5 text-sm font-medium text-slate-600 border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors"
+              data-modal-close
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              class="px-4 py-2.5 text-sm font-semibold text-white bg-violet-600 hover:bg-violet-700 rounded-xl transition-colors"
+            >
+              Update Slug
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
 </Layout>
 
 <script>
-  const logoutBtn = document.getElementById('logout-btn');
-  logoutBtn?.addEventListener('click', async () => {
+  // Logout
+  document.getElementById('logout-btn')?.addEventListener('click', async () => {
     await fetch('/api/auth/logout', { method: 'POST' });
     window.location.href = '/admin';
   });
 
-  const searchInput = document.getElementById('club-search');
+  // Search
+  const searchInput = document.getElementById('club-search') as HTMLInputElement;
   const rows = Array.from(document.querySelectorAll('[data-club-row]'));
 
   searchInput?.addEventListener('input', () => {
-    const query = (searchInput as HTMLInputElement).value.trim().toLowerCase();
+    const query = searchInput.value.trim().toLowerCase();
     rows.forEach(row => {
       const haystack = (row as HTMLElement).dataset.search || '';
       row.classList.toggle('hidden', query.length > 0 && !haystack.includes(query));
     });
   });
 
+  // Toggle Live Status
   document.querySelectorAll('.toggle-live-btn').forEach(button => {
     button.addEventListener('click', async () => {
       const btn = button as HTMLButtonElement;
@@ -224,12 +416,12 @@ const liveRate = stats.clubs ? Math.round((stats.live_clubs / stats.clubs) * 100
         btn.textContent = newLive ? 'Set Draft' : 'Go Live';
 
         if (pill) {
-          pill.textContent = newLive ? 'Live' : 'Draft';
-          pill.className = `inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ${
+          pill.innerHTML = `<span class="w-1.5 h-1.5 rounded-full mr-1.5 ${newLive ? 'bg-green-500' : 'bg-amber-500'}"></span>${newLive ? 'Live' : 'Draft'}`;
+          pill.className = `inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ${
             newLive ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'
           }`;
         }
-      } catch (error) {
+      } catch (error: any) {
         alert(error.message || 'Failed to update club');
         btn.textContent = isLive ? 'Set Draft' : 'Go Live';
       } finally {
@@ -237,8 +429,143 @@ const liveRate = stats.clubs ? Math.round((stats.live_clubs / stats.clubs) * 100
       }
     });
   });
-</script>
 
-<style>
-  @import "../../styles/global.css";
-</style>
+  // Impersonate
+  document.querySelectorAll('.impersonate-btn').forEach(button => {
+    button.addEventListener('click', async () => {
+      const btn = button as HTMLButtonElement;
+      const clubId = btn.dataset.clubId;
+      if (!clubId) return;
+
+      if (!confirm('This will open the club admin portal as if you were the club admin. Continue?')) {
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerHTML = '<span class="animate-pulse">Loading...</span>';
+
+      try {
+        const response = await fetch('/api/super-admin/impersonate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ clubId }),
+        });
+
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || 'Failed to impersonate');
+
+        window.location.href = result.redirectUrl;
+      } catch (error: any) {
+        alert(error.message || 'Failed to impersonate');
+        btn.disabled = false;
+        btn.innerHTML = `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>View As`;
+      }
+    });
+  });
+
+  // GDPR Export
+  document.querySelectorAll('.export-btn').forEach(button => {
+    button.addEventListener('click', async () => {
+      const btn = button as HTMLButtonElement;
+      const clubId = btn.dataset.clubId;
+      if (!clubId) return;
+
+      btn.disabled = true;
+      btn.innerHTML = '<span class="animate-pulse">Exporting...</span>';
+
+      try {
+        const response = await fetch(`/api/super-admin/clubs/${clubId}?export=gdpr`);
+        if (!response.ok) throw new Error('Export failed');
+
+        const blob = await response.blob();
+        const contentDisposition = response.headers.get('Content-Disposition');
+        const filename = contentDisposition?.match(/filename="(.+)"/)?.[1] || 'gdpr-export.json';
+
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      } catch (error: any) {
+        alert(error.message || 'Export failed');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>Export`;
+      }
+    });
+  });
+
+  // Slug Modal
+  const slugModal = document.getElementById('slug-modal');
+  const slugForm = document.getElementById('slug-form') as HTMLFormElement;
+  const slugInput = document.getElementById('slug-input') as HTMLInputElement;
+  const slugClubIdInput = document.getElementById('slug-club-id') as HTMLInputElement;
+
+  function openSlugModal(clubId: string, currentSlug: string) {
+    slugClubIdInput.value = clubId;
+    slugInput.value = currentSlug;
+    slugModal?.classList.remove('hidden');
+  }
+
+  function closeSlugModal() {
+    slugModal?.classList.add('hidden');
+  }
+
+  document.querySelectorAll('.edit-slug-btn').forEach(button => {
+    button.addEventListener('click', (e) => {
+      e.preventDefault();
+      const row = (button as HTMLElement).closest('tr');
+      const clubId = row?.getAttribute('data-club-id');
+      const clubSlug = row?.getAttribute('data-club-slug');
+      if (clubId && clubSlug) {
+        openSlugModal(clubId, clubSlug);
+      }
+    });
+  });
+
+  slugModal?.querySelector('[data-modal-backdrop]')?.addEventListener('click', closeSlugModal);
+  slugModal?.querySelector('[data-modal-close]')?.addEventListener('click', closeSlugModal);
+
+  slugForm?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const clubId = slugClubIdInput.value;
+    const newSlug = slugInput.value.toLowerCase().trim();
+
+    if (!clubId || !newSlug) return;
+
+    const submitBtn = slugForm.querySelector('button[type="submit"]') as HTMLButtonElement;
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Updating...';
+
+    try {
+      const response = await fetch(`/api/super-admin/clubs/${clubId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ slug: newSlug }),
+      });
+
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Failed to update slug');
+
+      // Update the row
+      const row = document.querySelector(`[data-club-id="${clubId}"]`);
+      if (row) {
+        row.setAttribute('data-club-slug', newSlug);
+        const slugDisplay = row.querySelector('.slug-display');
+        if (slugDisplay) slugDisplay.textContent = newSlug;
+        const searchAttr = row.getAttribute('data-search') || '';
+        row.setAttribute('data-search', searchAttr.replace(/\S+$/, newSlug));
+      }
+
+      closeSlugModal();
+    } catch (error: any) {
+      alert(error.message || 'Failed to update slug');
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Update Slug';
+    }
+  });
+</script>
