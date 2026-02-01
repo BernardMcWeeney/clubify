@@ -11,6 +11,8 @@ directory = "dist"
 SITE_URL = "https://clubify.ie"
 APP_NAME = "Clubify"
 
+[observability]
+enabled = true
 
 
 [[d1_databases]]
