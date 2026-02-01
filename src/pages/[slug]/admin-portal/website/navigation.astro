@@ -1,0 +1,411 @@
+---
+import AdminLayout from '../../../../components/admin/AdminLayout.astro';
+import { DatabaseService } from '../../../../lib/db';
+import { getAuthContext } from '../../../../lib/auth';
+import { hasPermission, type Role } from '../../../../lib/permissions';
+
+const { slug } = Astro.params;
+
+if (!Astro.locals.runtime.env.DB) {
+  return Astro.redirect('/admin?error=db_not_configured');
+}
+
+const db = new DatabaseService(Astro.locals.runtime.env.DB);
+const { user } = await getAuthContext(Astro.cookies, db);
+
+if (!user) {
+  return Astro.redirect('/admin/login');
+}
+
+const club = await db.getClubBySlug(slug!);
+if (!club) {
+  return Astro.redirect('/admin');
+}
+
+const member = await db.getClubMember(club.id, user.id);
+if (!member) {
+  return Astro.redirect('/admin');
+}
+
+const canEdit = hasPermission(member.role as Role, 'homepage.edit');
+
+const siteSettings = await db.getSiteSettings(club.id);
+
+const defaultNavItems = [
+  { label: 'Home', href: `/${slug}` },
+  { label: 'News', href: `/${slug}/news` },
+  { label: 'Fixtures', href: `/${slug}/fixtures` },
+  { label: 'About', href: `/${slug}/about` },
+  { label: 'Contact', href: `/${slug}/contact` },
+];
+
+const defaultHeader = {
+  show_cta: true,
+  cta_label: 'Join the Club',
+  cta_url: `/${slug}/contact`,
+};
+
+const defaultFooterLinks = [
+  { label: 'Privacy Policy', href: `/${slug}/privacy-policy` },
+  { label: 'Terms of Use', href: `/${slug}/terms` },
+  { label: 'Contact', href: `/${slug}/contact` },
+];
+
+const navItems = siteSettings?.nav_items ? JSON.parse(siteSettings.nav_items) : defaultNavItems;
+const headerSettings = siteSettings?.header_settings ? JSON.parse(siteSettings.header_settings) : defaultHeader;
+const footerLinks = siteSettings?.footer_links ? JSON.parse(siteSettings.footer_links) : defaultFooterLinks;
+---
+
+<AdminLayout
+  title="Navigation & Menus"
+  club={club}
+  user={user}
+  member={member}
+  currentPage="website"
+>
+  <div class="max-w-4xl mx-auto">
+    <!-- Header -->
+    <div class="mb-8">
+      <a href={`/${slug}/admin-portal/website`} class="inline-flex items-center gap-2 text-slate-600 hover:text-slate-900 mb-4 group">
+        <svg class="w-4 h-4 transform group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+        </svg>
+        Back to Website
+      </a>
+      <h1 class="text-3xl font-bold text-slate-900 mb-2">Navigation & Menus</h1>
+      <p class="text-slate-600">Manage your main menu, header button, and footer links</p>
+    </div>
+
+    <!-- Main Navigation Menu -->
+    <div class="bg-white rounded-2xl border-2 border-slate-200 p-6 shadow-sm mb-6">
+      <div class="flex items-start justify-between gap-4 mb-6">
+        <div>
+          <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+            <svg class="w-6 h-6 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+            </svg>
+            Main Menu
+          </h2>
+          <p class="text-sm text-slate-500 mt-1">Appears in your website header and mobile menu</p>
+        </div>
+        <span class="px-3 py-1 rounded-full text-xs font-semibold bg-purple-100 text-purple-700">
+          {navItems.length} Items
+        </span>
+      </div>
+
+      <div class="space-y-3 mb-4" id="nav-list">
+        {navItems.map((item: any, index: number) => (
+          <div class="nav-row bg-gradient-to-r from-slate-50 to-white rounded-xl border-2 border-slate-200 p-4 hover:border-purple-300 transition-all" data-index={index}>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+              <div>
+                <label class="text-xs font-semibold text-slate-600 mb-1 block">Menu Label</label>
+                <input
+                  type="text"
+                  class="nav-label w-full px-3 py-2.5 rounded-lg border-2 border-slate-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all text-sm font-medium"
+                  placeholder="e.g., Home, News, About"
+                  value={item.label}
+                  disabled={!canEdit}
+                />
+              </div>
+              <div>
+                <label class="text-xs font-semibold text-slate-600 mb-1 block">Link URL</label>
+                <input
+                  type="text"
+                  class="nav-href w-full px-3 py-2.5 rounded-lg border-2 border-slate-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all text-sm font-medium"
+                  placeholder="/{slug}/page or https://..."
+                  value={item.href}
+                  disabled={!canEdit}
+                />
+              </div>
+            </div>
+            {canEdit && (
+              <div class="flex items-center gap-2">
+                <button type="button" class="nav-up px-3 py-1.5 rounded-lg border-2 border-slate-200 text-slate-600 hover:border-purple-500 hover:text-purple-600 hover:bg-purple-50 transition-all text-xs font-medium">
+                  ↑ Move Up
+                </button>
+                <button type="button" class="nav-down px-3 py-1.5 rounded-lg border-2 border-slate-200 text-slate-600 hover:border-purple-500 hover:text-purple-600 hover:bg-purple-50 transition-all text-xs font-medium">
+                  ↓ Move Down
+                </button>
+                <button type="button" class="nav-remove px-3 py-1.5 rounded-lg border-2 border-red-200 text-red-600 hover:bg-red-50 transition-all text-xs font-medium ml-auto">
+                  🗑 Remove
+                </button>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {canEdit && (
+        <div class="flex items-center justify-between gap-3 pt-4 border-t-2 border-slate-200">
+          <button type="button" id="add-nav" class="px-4 py-2.5 rounded-xl border-2 border-dashed border-slate-300 text-slate-600 hover:border-purple-500 hover:text-purple-600 hover:bg-purple-50 transition-all text-sm font-semibold">
+            + Add Menu Item
+          </button>
+          <button type="button" id="save-nav" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-purple-500 to-pink-600 text-white font-semibold hover:from-purple-600 hover:to-pink-700 transition-all shadow-lg hover:shadow-xl">
+            Save Menu
+          </button>
+        </div>
+      )}
+    </div>
+
+    <!-- Header CTA Button -->
+    <div class="bg-white rounded-2xl border-2 border-slate-200 p-6 shadow-sm mb-6">
+      <div class="flex items-start justify-between gap-4 mb-6">
+        <div>
+          <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+            <svg class="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122"/>
+            </svg>
+            Header Button
+          </h2>
+          <p class="text-sm text-slate-500 mt-1">Optional call-to-action button in your header</p>
+        </div>
+      </div>
+
+      <div class="space-y-4">
+        <label class="flex items-center gap-3 p-3 rounded-xl border-2 border-slate-200 cursor-pointer hover:bg-slate-50 transition-all">
+          <input type="checkbox" id="cta-enabled" class="w-5 h-5 rounded border-slate-300 text-green-600 focus:ring-2 focus:ring-green-500" checked={headerSettings.show_cta} disabled={!canEdit} />
+          <span class="text-sm font-semibold text-slate-700">Show header button</span>
+        </label>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="text-xs font-semibold text-slate-600 mb-2 block">Button Text</label>
+            <input type="text" id="cta-label" class="w-full px-4 py-2.5 rounded-xl border-2 border-slate-200 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all font-medium" value={headerSettings.cta_label} disabled={!canEdit} placeholder="Join the Club" />
+          </div>
+          <div>
+            <label class="text-xs font-semibold text-slate-600 mb-2 block">Button Link</label>
+            <input type="text" id="cta-url" class="w-full px-4 py-2.5 rounded-xl border-2 border-slate-200 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all font-medium" value={headerSettings.cta_url} disabled={!canEdit} placeholder="/{slug}/contact" />
+          </div>
+        </div>
+      </div>
+
+      {canEdit && (
+        <div class="flex justify-end mt-4 pt-4 border-t-2 border-slate-200">
+          <button type="button" id="save-header" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold hover:from-green-600 hover:to-emerald-700 transition-all shadow-lg hover:shadow-xl">
+            Save Header
+          </button>
+        </div>
+      )}
+    </div>
+
+    <!-- Footer Links -->
+    <div class="bg-white rounded-2xl border-2 border-slate-200 p-6 shadow-sm mb-6">
+      <div class="flex items-start justify-between gap-4 mb-6">
+        <div>
+          <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+            <svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+            </svg>
+            Footer Links
+          </h2>
+          <p class="text-sm text-slate-500 mt-1">Quick links shown in your website footer</p>
+        </div>
+      </div>
+
+      <div class="space-y-3 mb-4" id="footer-list">
+        {footerLinks.map((item: any, index: number) => (
+          <div class="footer-row bg-gradient-to-r from-blue-50 to-white rounded-xl border-2 border-slate-200 p-4 hover:border-blue-300 transition-all" data-index={index}>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+              <div>
+                <label class="text-xs font-semibold text-slate-600 mb-1 block">Link Label</label>
+                <input
+                  type="text"
+                  class="footer-label w-full px-3 py-2.5 rounded-lg border-2 border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all text-sm font-medium"
+                  placeholder="Privacy Policy"
+                  value={item.label}
+                  disabled={!canEdit}
+                />
+              </div>
+              <div>
+                <label class="text-xs font-semibold text-slate-600 mb-1 block">Link URL</label>
+                <input
+                  type="text"
+                  class="footer-href w-full px-3 py-2.5 rounded-lg border-2 border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all text-sm font-medium"
+                  placeholder="/{slug}/privacy"
+                  value={item.href}
+                  disabled={!canEdit}
+                />
+              </div>
+            </div>
+            {canEdit && (
+              <div class="flex items-center gap-2">
+                <button type="button" class="footer-up px-3 py-1.5 rounded-lg border-2 border-slate-200 text-slate-600 hover:border-blue-500 hover:text-blue-600 hover:bg-blue-50 transition-all text-xs font-medium">
+                  ↑ Move Up
+                </button>
+                <button type="button" class="footer-down px-3 py-1.5 rounded-lg border-2 border-slate-200 text-slate-600 hover:border-blue-500 hover:text-blue-600 hover:bg-blue-50 transition-all text-xs font-medium">
+                  ↓ Move Down
+                </button>
+                <button type="button" class="footer-remove px-3 py-1.5 rounded-lg border-2 border-red-200 text-red-600 hover:bg-red-50 transition-all text-xs font-medium ml-auto">
+                  🗑 Remove
+                </button>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {canEdit && (
+        <div class="flex items-center justify-between gap-3 pt-4 border-t-2 border-slate-200">
+          <button type="button" id="add-footer" class="px-4 py-2.5 rounded-xl border-2 border-dashed border-slate-300 text-slate-600 hover:border-blue-500 hover:text-blue-600 hover:bg-blue-50 transition-all text-sm font-semibold">
+            + Add Footer Link
+          </button>
+          <button type="button" id="save-footer" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold hover:from-blue-600 hover:to-indigo-700 transition-all shadow-lg hover:shadow-xl">
+            Save Footer
+          </button>
+        </div>
+      )}
+    </div>
+
+    <!-- Help Box -->
+    <div class="bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-200 rounded-2xl p-6">
+      <div class="flex items-start gap-4">
+        <div class="w-10 h-10 bg-amber-500 rounded-xl flex items-center justify-center flex-shrink-0">
+          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+        <div class="flex-1">
+          <h3 class="font-semibold text-amber-900 mb-1">Navigation Tips</h3>
+          <ul class="text-sm text-amber-800 space-y-1">
+            <li>• Keep your main menu to <strong>5-7 items</strong> for best usability</li>
+            <li>• Use <strong>/{slug}/page-name</strong> for internal pages</li>
+            <li>• Use <strong>https://</strong> for external links</li>
+            <li>• Footer links are great for legal pages like Privacy Policy</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</AdminLayout>
+
+<script define:vars={{ canEdit, clubId: club.id }}>
+  function collectRows(containerId, rowSelector, labelSelector, hrefSelector) {
+    const container = document.getElementById(containerId);
+    if (!container) return [];
+    return Array.from(container.querySelectorAll(rowSelector))
+      .map((row) => {
+        const label = row.querySelector(labelSelector)?.value?.trim();
+        const href = row.querySelector(hrefSelector)?.value?.trim();
+        return label && href ? { label, href } : null;
+      })
+      .filter(Boolean);
+  }
+
+  function addRow(containerId, className, color = 'slate') {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+
+    const row = document.createElement('div');
+    row.className = `${className}-row bg-gradient-to-r from-${color}-50 to-white rounded-xl border-2 border-slate-200 p-4 hover:border-${color}-300 transition-all`;
+    row.innerHTML = `
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+        <div>
+          <label class="text-xs font-semibold text-slate-600 mb-1 block">Label</label>
+          <input type="text" class="${className}-label w-full px-3 py-2.5 rounded-lg border-2 border-slate-200 focus:border-${color}-500 focus:ring-2 focus:ring-${color}-200 transition-all text-sm font-medium" placeholder="Label" />
+        </div>
+        <div>
+          <label class="text-xs font-semibold text-slate-600 mb-1 block">URL</label>
+          <input type="text" class="${className}-href w-full px-3 py-2.5 rounded-lg border-2 border-slate-200 focus:border-${color}-500 focus:ring-2 focus:ring-${color}-200 transition-all text-sm font-medium" placeholder="/page or https://" />
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <button type="button" class="${className}-up px-3 py-1.5 rounded-lg border-2 border-slate-200 text-slate-600 hover:border-${color}-500 hover:text-${color}-600 hover:bg-${color}-50 transition-all text-xs font-medium">↑ Move Up</button>
+        <button type="button" class="${className}-down px-3 py-1.5 rounded-lg border-2 border-slate-200 text-slate-600 hover:border-${color}-500 hover:text-${color}-600 hover:bg-${color}-50 transition-all text-xs font-medium">↓ Move Down</button>
+        <button type="button" class="${className}-remove px-3 py-1.5 rounded-lg border-2 border-red-200 text-red-600 hover:bg-red-50 transition-all text-xs font-medium ml-auto">🗑 Remove</button>
+      </div>
+    `;
+    container.appendChild(row);
+  }
+
+  function wireRowControls(containerId, className) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+
+    container.addEventListener('click', (event) => {
+      const target = event.target.closest(`.${className}-up, .${className}-down, .${className}-remove`);
+      if (!target) return;
+
+      const row = target.closest(`.${className}-row`);
+      if (!row) return;
+
+      if (target.classList.contains(`${className}-remove`)) {
+        row.remove();
+        return;
+      }
+
+      const rows = Array.from(container.querySelectorAll(`.${className}-row`));
+      const index = rows.indexOf(row);
+
+      if (target.classList.contains(`${className}-up`) && index > 0) {
+        container.insertBefore(row, rows[index - 1]);
+      }
+
+      if (target.classList.contains(`${className}-down`) && index < rows.length - 1) {
+        container.insertBefore(rows[index + 1], row);
+      }
+    });
+  }
+
+  if (canEdit) {
+    document.getElementById('add-nav')?.addEventListener('click', () => addRow('nav-list', 'nav', 'purple'));
+    document.getElementById('add-footer')?.addEventListener('click', () => addRow('footer-list', 'footer', 'blue'));
+  }
+
+  wireRowControls('nav-list', 'nav');
+  wireRowControls('footer-list', 'footer');
+
+  async function saveSiteSettings() {
+    if (!clubId) return;
+
+    const navItems = collectRows('nav-list', '.nav-row', '.nav-label', '.nav-href');
+    const footerLinks = collectRows('footer-list', '.footer-row', '.footer-label', '.footer-href');
+
+    const headerSettings = {
+      show_cta: document.getElementById('cta-enabled')?.checked ?? true,
+      cta_label: document.getElementById('cta-label')?.value?.trim() || 'Join the Club',
+      cta_url: document.getElementById('cta-url')?.value?.trim() || '/contact',
+    };
+
+    const res = await fetch(`/api/clubs/${clubId}/site-settings`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nav_items: navItems, header_settings: headerSettings, footer_links: footerLinks }),
+    });
+
+    if (!res.ok) {
+      const data = await res.json();
+      throw new Error(data.error || 'Failed to save');
+    }
+  }
+
+  document.getElementById('save-nav')?.addEventListener('click', async () => {
+    try {
+      await saveSiteSettings();
+      alert('✓ Navigation saved successfully!');
+    } catch (error) {
+      alert('Failed to save: ' + (error.message || 'Unknown error'));
+    }
+  });
+
+  document.getElementById('save-header')?.addEventListener('click', async () => {
+    try {
+      await saveSiteSettings();
+      alert('✓ Header button saved successfully!');
+    } catch (error) {
+      alert('Failed to save: ' + (error.message || 'Unknown error'));
+    }
+  });
+
+  document.getElementById('save-footer')?.addEventListener('click', async () => {
+    try {
+      await saveSiteSettings();
+      alert('✓ Footer links saved successfully!');
+    } catch (error) {
+      alert('Failed to save: ' + (error.message || 'Unknown error'));
+    }
+  });
+</script>
+
+<style>
+  @import "../../../../styles/global.css";
+</style>

@@ -1,0 +1,82 @@
+---
+interface Props {
+  /** Input type */
+  type?: 'text' | 'email' | 'password' | 'tel' | 'url' | 'number' | 'date' | 'time' | 'datetime-local';
+  /** Input name */
+  name: string;
+  /** Input id (defaults to name) */
+  id?: string;
+  /** Current value */
+  value?: string | number;
+  /** Placeholder text */
+  placeholder?: string;
+  /** Label text */
+  label?: string;
+  /** Helper text */
+  helper?: string;
+  /** Error message */
+  error?: string;
+  /** Required field */
+  required?: boolean;
+  /** Disabled state */
+  disabled?: boolean;
+  /** Read-only state */
+  readonly?: boolean;
+  /** Additional CSS classes for input */
+  class?: string;
+}
+
+const {
+  type = 'text',
+  name,
+  id = name,
+  value = '',
+  placeholder = '',
+  label,
+  helper,
+  error,
+  required = false,
+  disabled = false,
+  readonly = false,
+  class: className = '',
+} = Astro.props;
+
+const inputClasses = `
+  w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl
+  text-slate-900 placeholder-slate-400
+  focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 focus:bg-white
+  disabled:bg-slate-100 disabled:opacity-60 disabled:cursor-not-allowed
+  transition-colors
+  ${error ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : ''}
+  ${className}
+`.trim();
+---
+
+<div class="space-y-1.5">
+  {label && (
+    <label for={id} class="block text-sm font-medium text-slate-700">
+      {label}
+      {required && <span class="text-red-500 ml-0.5">*</span>}
+    </label>
+  )}
+
+  <input
+    type={type}
+    name={name}
+    id={id}
+    value={value}
+    placeholder={placeholder}
+    required={required}
+    disabled={disabled}
+    readonly={readonly}
+    class={inputClasses}
+  />
+
+  {helper && !error && (
+    <p class="text-sm text-slate-500">{helper}</p>
+  )}
+
+  {error && (
+    <p class="text-sm text-red-600">{error}</p>
+  )}
+</div>

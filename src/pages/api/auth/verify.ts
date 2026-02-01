@@ -1,9 +1,22 @@
 import type { APIRoute } from 'astro';
 import { DatabaseService } from '../../../lib/db';
 import { setSessionCookie } from '../../../lib/auth';
+import { checkRateLimit, getRateLimitKey, rateLimitExceeded, RATE_LIMITS } from '../../../lib/rate-limit';
 
 export const POST: APIRoute = async ({ request, locals, cookies }) => {
   try {
+    // Rate limiting - prevent token brute force attempts
+    const rateLimitKey = getRateLimitKey(request, 'auth-verify');
+    const rateLimitResult = await checkRateLimit(
+      locals.runtime.env.RATE_LIMIT,
+      rateLimitKey,
+      RATE_LIMITS.authVerify
+    );
+
+    if (!rateLimitResult.allowed) {
+      return rateLimitExceeded(rateLimitResult, RATE_LIMITS.authVerify);
+    }
+
     const { token } = await request.json();
 
     if (!token) {

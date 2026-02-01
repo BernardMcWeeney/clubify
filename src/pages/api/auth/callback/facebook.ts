@@ -40,7 +40,7 @@ export const GET: APIRoute = async ({ url, cookies, locals, redirect }) => {
       return redirect('/admin?error=state_expired', 302);
     }
 
-    const db = new DatabaseService(locals.runtime.env.DB!);
+    const db = new DatabaseService(locals.runtime.env.DB!, locals.runtime.env.ENCRYPTION_SECRET);
     const { user } = await getAuthContext(cookies, db);
 
     // Verify user matches state

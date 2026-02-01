@@ -1,0 +1,183 @@
+---
+import { DatabaseService } from '../../../lib/db';
+import ClubNavigation from '../../../components/templates/ClubNavigation.astro';
+import ClubFooter from '../../../components/templates/ClubFooter.astro';
+import Sponsors from '../../../components/templates/blocks/Sponsors.astro';
+
+const { slug, formSlug } = Astro.params;
+
+if (!Astro.locals.runtime.env.DB) {
+  return Astro.redirect('/?error=db_not_configured');
+}
+
+const db = new DatabaseService(Astro.locals.runtime.env.DB);
+const club = await db.getClubBySlug(slug!);
+
+if (!club || !club.is_live) {
+  return Astro.redirect('/');
+}
+
+const form = await db.getFormBySlug(club.id, formSlug!);
+if (!form || form.is_active === 0) {
+  return Astro.redirect(`/${slug}`);
+}
+
+const [fields, siteSettingsRecord, sponsors] = await Promise.all([
+  db.getFormFields(form.id),
+  db.getSiteSettings(club.id),
+  db.getSponsorsForPlacement(club.id, 'forms'),
+]);
+
+const navItems = siteSettingsRecord?.nav_items ? JSON.parse(siteSettingsRecord.nav_items) : null;
+const headerSettings = siteSettingsRecord?.header_settings ? JSON.parse(siteSettingsRecord.header_settings) : null;
+const footerLinks = siteSettingsRecord?.footer_links ? JSON.parse(siteSettingsRecord.footer_links) : null;
+
+function parseOptions(options?: string | null): string[] {
+  if (!options) return [];
+  return options.split(',').map((opt) => opt.trim()).filter(Boolean);
+}
+---
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content={form.description || form.name} />
+  <title>{form.name} | {club.name}</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+</head>
+<body class="bg-white text-slate-900 antialiased">
+  <ClubNavigation club={club} slug={slug!} currentPath={`/${slug}/forms/${form.slug}`} navItems={navItems} headerSettings={headerSettings} />
+
+  <main class="pt-20">
+    <section class="py-12 bg-slate-50 border-b border-slate-200">
+      <div class="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+        <p class="text-sm uppercase tracking-wide text-slate-500">Form</p>
+        <h1 class="text-3xl sm:text-4xl font-bold text-slate-900 mt-2">{form.name}</h1>
+        {form.description && <p class="text-slate-600 mt-3">{form.description}</p>}
+      </div>
+    </section>
+
+    <section class="py-12">
+      <div class="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+        <form id="public-form" class="space-y-5" data-form-id={form.id} data-fields={JSON.stringify(fields)}>
+          {fields.map((field) => (
+            <div>
+              <label class="text-sm font-semibold text-slate-700">{field.label}{field.required ? '*' : ''}</label>
+              {field.type === 'textarea' ? (
+                <textarea
+                  name={field.id}
+                  rows="4"
+                  class="mt-2 w-full px-3 py-2 rounded-lg border border-slate-200 text-sm"
+                  placeholder={field.placeholder || ''}
+                  required={field.required === 1}
+                />
+              ) : field.type === 'select' ? (
+                <select
+                  name={field.id}
+                  class="mt-2 w-full px-3 py-2 rounded-lg border border-slate-200 text-sm"
+                  required={field.required === 1}
+                >
+                  <option value="">Select...</option>
+                  {parseOptions(field.options).map((opt) => (
+                    <option value={opt}>{opt}</option>
+                  ))}
+                </select>
+              ) : field.type === 'radio' ? (
+                <div class="mt-2 space-y-2">
+                  {parseOptions(field.options).map((opt) => (
+                    <label class="flex items-center gap-2 text-sm text-slate-600">
+                      <input type="radio" name={field.id} value={opt} required={field.required === 1} />
+                      {opt}
+                    </label>
+                  ))}
+                </div>
+              ) : field.type === 'checkbox' ? (
+                <label class="mt-2 flex items-center gap-2 text-sm text-slate-600">
+                  <input type="checkbox" name={field.id} />
+                  {field.placeholder || 'Yes'}
+                </label>
+              ) : (
+                <input
+                  type={field.type === 'email' ? 'email' : field.type === 'phone' ? 'tel' : field.type === 'date' ? 'date' : 'text'}
+                  name={field.id}
+                  class="mt-2 w-full px-3 py-2 rounded-lg border border-slate-200 text-sm"
+                  placeholder={field.placeholder || ''}
+                  required={field.required === 1}
+                />
+              )}
+              {field.help_text && <p class="text-xs text-slate-500 mt-2">{field.help_text}</p>}
+            </div>
+          ))}
+
+          <button type="submit" class="w-full px-4 py-2 rounded-lg bg-green-500 text-white text-sm font-semibold hover:bg-green-600">
+            Submit
+          </button>
+          <p id="form-success" class="hidden text-sm text-green-600"></p>
+          <p id="form-error" class="hidden text-sm text-red-600"></p>
+        </form>
+      </div>
+    </section>
+
+    <Sponsors sponsors={sponsors} primaryColor={club.primary_color} variant="compact" />
+  </main>
+
+  <ClubFooter club={club} slug={slug!} footerLinks={footerLinks} />
+</body>
+</html>
+
+<script>
+  const form = document.getElementById('public-form');
+  if (form) {
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+
+      const fields = JSON.parse(form.dataset.fields || '[]');
+      const payload = {};
+
+      fields.forEach((field) => {
+        if (field.type === 'radio') {
+          const checked = form.querySelector(`input[name="${field.id}"]:checked`);
+          payload[field.id] = checked ? checked.value : '';
+          return;
+        }
+
+        const input = form.querySelector(`[name="${field.id}"]`);
+        if (!input) return;
+
+        if (field.type === 'checkbox') {
+          payload[field.id] = input.checked ? 'Yes' : '';
+        } else {
+          payload[field.id] = input.value;
+        }
+      });
+
+      const res = await fetch(`/api/forms/${form.dataset.formId}/submit`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+      const successEl = document.getElementById('form-success');
+      const errorEl = document.getElementById('form-error');
+      successEl.classList.add('hidden');
+      errorEl.classList.add('hidden');
+
+      if (!res.ok) {
+        errorEl.textContent = data.error || 'Failed to submit form.';
+        errorEl.classList.remove('hidden');
+        return;
+      }
+
+      successEl.textContent = data.message || 'Thanks! Your submission has been received.';
+      successEl.classList.remove('hidden');
+      form.reset();
+    });
+  }
+</script>
+
+<style is:global>
+  @import "../../../styles/global.css";
+</style>

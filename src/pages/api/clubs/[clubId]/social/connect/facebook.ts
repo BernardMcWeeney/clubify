@@ -13,7 +13,7 @@ export const GET: APIRoute = async ({ params, url, cookies, locals, redirect }) 
       });
     }
 
-    const db = new DatabaseService(locals.runtime.env.DB!);
+    const db = new DatabaseService(locals.runtime.env.DB!, locals.runtime.env.ENCRYPTION_SECRET);
     const { user } = await getAuthContext(cookies, db);
 
     if (!user) {
@@ -86,7 +86,7 @@ export const DELETE: APIRoute = async ({ params, cookies, locals }) => {
       });
     }
 
-    const db = new DatabaseService(locals.runtime.env.DB!);
+    const db = new DatabaseService(locals.runtime.env.DB!, locals.runtime.env.ENCRYPTION_SECRET);
     const { user } = await getAuthContext(cookies, db);
 
     if (!user) {

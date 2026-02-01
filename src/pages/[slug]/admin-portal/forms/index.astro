@@ -1,0 +1,368 @@
+---
+import AdminLayout from '../../../../components/admin/AdminLayout.astro';
+import { DatabaseService } from '../../../../lib/db';
+import { getAuthContext } from '../../../../lib/auth';
+
+const { slug } = Astro.params;
+
+if (!Astro.locals.runtime.env.DB) {
+  return Astro.redirect('/admin?error=db_not_configured');
+}
+
+const db = new DatabaseService(Astro.locals.runtime.env.DB);
+const { user } = await getAuthContext(Astro.cookies, db);
+
+if (!user) {
+  return Astro.redirect('/admin/login');
+}
+
+const club = await db.getClubBySlug(slug!);
+if (!club) {
+  return Astro.redirect('/admin');
+}
+
+const member = await db.getClubMember(club.id, user.id);
+if (!member) {
+  return Astro.redirect('/admin');
+}
+
+const forms = await db.getForms(club.id);
+
+const submissionCountsResult = await Astro.locals.runtime.env.DB.prepare(`
+  SELECT form_id, COUNT(*) as count
+  FROM form_submissions
+  WHERE club_id = ?
+  GROUP BY form_id
+`).bind(club.id).all();
+
+const submissionCounts = new Map((submissionCountsResult.results || []).map((row: any) => [row.form_id, row.count]));
+const canManage = ['admin', 'pro'].includes(member.role);
+
+const activeForms = forms.filter(f => f.is_active);
+const inactiveForms = forms.filter(f => !f.is_active);
+const totalSubmissions = Array.from(submissionCounts.values()).reduce((sum, count) => sum + count, 0);
+---
+
+<AdminLayout
+  title="Forms"
+  club={club}
+  user={user}
+  member={member}
+  currentPage="forms"
+>
+  <Fragment slot="header-actions">
+    <button id="new-form-btn" class="flex items-center gap-2 px-4 py-2.5 bg-green-500 hover:bg-green-600 text-white rounded-xl transition-colors text-sm font-medium shadow-lg shadow-green-500/25" disabled={!canManage}>
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+      </svg>
+      Create Form
+    </button>
+  </Fragment>
+
+  <div class="max-w-7xl mx-auto" id="forms-page" data-club-id={club.id} data-slug={slug}>
+    <!-- Header -->
+    <div class="mb-8">
+      <h1 class="text-3xl font-bold text-slate-900 mb-2">Custom Forms</h1>
+      <p class="text-slate-600">Create custom forms for registrations, volunteers, and enquiries</p>
+    </div>
+
+    <!-- Stats -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-6 border border-green-100">
+        <div class="flex items-center justify-between mb-4">
+          <div class="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center">
+            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+          </div>
+        </div>
+        <p class="text-sm font-medium text-green-700 mb-1">Total Forms</p>
+        <p class="text-3xl font-bold text-green-900">{forms.length}</p>
+        <p class="text-xs text-green-600 mt-2">{activeForms.length} active</p>
+      </div>
+
+      <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-100">
+        <div class="flex items-center justify-between mb-4">
+          <div class="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center">
+            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V7a2 2 0 00-2-2H6a2 2 0 00-2 2v6m16 0l-3 5H7l-3-5m16 0H4"/>
+            </svg>
+          </div>
+        </div>
+        <p class="text-sm font-medium text-blue-700 mb-1">Total Submissions</p>
+        <p class="text-3xl font-bold text-blue-900">{totalSubmissions}</p>
+        <p class="text-xs text-blue-600 mt-2">All forms combined</p>
+      </div>
+
+      <div class="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-6 border border-purple-100">
+        <div class="flex items-center justify-between mb-4">
+          <div class="w-12 h-12 bg-purple-500 rounded-xl flex items-center justify-center">
+            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+            </svg>
+          </div>
+        </div>
+        <p class="text-sm font-medium text-purple-700 mb-1">Public Forms</p>
+        <p class="text-3xl font-bold text-purple-900">{activeForms.length}</p>
+        <p class="text-xs text-purple-600 mt-2">Visible to visitors</p>
+      </div>
+    </div>
+
+    {forms.length > 0 ? (
+      <div class="space-y-8">
+        <!-- Active Forms -->
+        {activeForms.length > 0 && (
+          <div>
+            <div class="flex items-center gap-3 mb-6">
+              <div class="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center">
+                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+              </div>
+              <h2 class="text-2xl font-bold text-slate-900">Active Forms</h2>
+              <span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-semibold">{activeForms.length}</span>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {activeForms.map((form) => (
+                <a
+                  href={`/${slug}/admin-portal/forms/${form.id}`}
+                  class="group bg-white rounded-2xl border-2 border-slate-200 p-6 hover:border-green-400 hover:shadow-xl transition-all duration-300"
+                >
+                  <div class="flex items-start justify-between mb-4">
+                    <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center transform group-hover:scale-110 transition-transform">
+                      <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                      </svg>
+                    </div>
+                    <svg class="w-5 h-5 text-slate-400 group-hover:text-green-500 transform group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                    </svg>
+                  </div>
+                  <h3 class="text-lg font-bold text-slate-900 mb-2 group-hover:text-green-600 transition-colors">{form.name}</h3>
+                  {form.description && (
+                    <p class="text-sm text-slate-600 mb-4 line-clamp-2">{form.description}</p>
+                  )}
+                  <div class="flex items-center justify-between pt-4 border-t border-slate-100">
+                    <div class="flex items-center gap-2">
+                      <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V7a2 2 0 00-2-2H6a2 2 0 00-2 2v6m16 0l-3 5H7l-3-5m16 0H4"/>
+                      </svg>
+                      <span class="text-sm font-semibold text-green-700">{submissionCounts.get(form.id) || 0} submissions</span>
+                    </div>
+                    <span class="text-xs text-slate-500">/{slug}/forms/{form.slug}</span>
+                  </div>
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <!-- Inactive Forms -->
+        {inactiveForms.length > 0 && (
+          <div>
+            <div class="flex items-center gap-3 mb-6">
+              <div class="w-10 h-10 bg-gradient-to-br from-slate-400 to-slate-600 rounded-xl flex items-center justify-center">
+                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
+                </svg>
+              </div>
+              <h2 class="text-2xl font-bold text-slate-900">Paused Forms</h2>
+              <span class="px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-sm font-semibold">{inactiveForms.length}</span>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {inactiveForms.map((form) => (
+                <a
+                  href={`/${slug}/admin-portal/forms/${form.id}`}
+                  class="group bg-slate-50 rounded-2xl border-2 border-slate-200 p-6 hover:border-slate-400 hover:shadow-lg transition-all duration-300 opacity-75"
+                >
+                  <div class="flex items-start justify-between mb-4">
+                    <div class="w-12 h-12 bg-slate-400 rounded-xl flex items-center justify-center">
+                      <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                      </svg>
+                    </div>
+                    <span class="px-2.5 py-1 bg-slate-200 text-slate-600 rounded-full text-xs font-semibold">Paused</span>
+                  </div>
+                  <h3 class="text-lg font-bold text-slate-700 mb-2">{form.name}</h3>
+                  {form.description && (
+                    <p class="text-sm text-slate-500 mb-4 line-clamp-2">{form.description}</p>
+                  )}
+                  <div class="flex items-center justify-between pt-4 border-t border-slate-200">
+                    <div class="flex items-center gap-2">
+                      <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V7a2 2 0 00-2-2H6a2 2 0 00-2 2v6m16 0l-3 5H7l-3-5m16 0H4"/>
+                      </svg>
+                      <span class="text-sm font-semibold text-slate-600">{submissionCounts.get(form.id) || 0} submissions</span>
+                    </div>
+                    <span class="text-xs text-slate-400">/{slug}/forms/{form.slug}</span>
+                  </div>
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    ) : (
+      <div class="bg-white rounded-2xl border border-dashed border-slate-200 p-16 text-center">
+        <div class="w-20 h-20 bg-green-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
+          <svg class="w-10 h-10 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+        </div>
+        <h3 class="text-2xl font-bold text-slate-900 mb-3">No forms yet</h3>
+        <p class="text-slate-500 mb-8 max-w-md mx-auto">Create custom forms for registrations, volunteer sign-ups, membership applications, and more. Collect structured data and manage submissions in your inbox.</p>
+        <button id="empty-new-btn" class="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl text-sm font-semibold hover:shadow-lg hover:scale-105 transition-all" disabled={!canManage}>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+          </svg>
+          Create your first form
+        </button>
+      </div>
+    )}
+  </div>
+
+  <!-- Create Form Modal -->
+  <div id="create-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full">
+      <div class="bg-gradient-to-r from-green-500 to-emerald-600 px-6 py-4 rounded-t-2xl">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-white bg-opacity-20 backdrop-blur-sm rounded-xl flex items-center justify-center">
+              <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+              </svg>
+            </div>
+            <h2 class="text-xl font-bold text-white">Create New Form</h2>
+          </div>
+          <button id="close-modal" class="w-8 h-8 rounded-lg hover:bg-white hover:bg-opacity-10 flex items-center justify-center transition-colors">
+            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <form id="create-form" class="p-6 space-y-5">
+        <div>
+          <label class="block text-sm font-semibold text-slate-700 mb-2">Form name *</label>
+          <input id="form-name" type="text" class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all" placeholder="Volunteer Sign-up" required />
+        </div>
+
+        <div>
+          <label class="block text-sm font-semibold text-slate-700 mb-2">URL slug *</label>
+          <div class="flex items-center gap-2">
+            <span class="text-sm text-slate-500">/{slug}/forms/</span>
+            <input id="form-slug" type="text" class="flex-1 px-4 py-3 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all" placeholder="volunteer-signup" required />
+          </div>
+          <p class="text-xs text-slate-400 mt-2">Public URL: /{slug}/forms/<span id="slug-preview">volunteer-signup</span></p>
+        </div>
+
+        <div>
+          <label class="block text-sm font-semibold text-slate-700 mb-2">Description (optional)</label>
+          <textarea id="form-description" rows="3" class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all" placeholder="Tell people why this form matters..."></textarea>
+        </div>
+
+        <label class="flex items-center gap-3 p-4 rounded-xl border-2 border-green-200 bg-green-50 cursor-pointer">
+          <input id="form-active" type="checkbox" class="rounded border-slate-300 text-green-600 focus:ring-2 focus:ring-green-500" checked />
+          <span class="text-sm font-semibold text-green-900">Form is active (visible to public)</span>
+        </label>
+
+        <div class="flex justify-end gap-3 pt-4 border-t border-slate-200">
+          <button type="button" id="cancel-btn" class="px-5 py-3 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-100 transition-all">
+            Cancel
+          </button>
+          <button type="submit" class="px-6 py-3 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 text-white text-sm font-semibold hover:shadow-lg hover:scale-105 transition-all" disabled={!canManage}>
+            Create Form
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</AdminLayout>
+
+<script>
+  const page = document.getElementById('forms-page');
+  const clubId = page?.dataset.clubId;
+  const slugParam = page?.dataset.slug;
+  const modal = document.getElementById('create-modal') as HTMLElement;
+  const formName = document.getElementById('form-name') as HTMLInputElement;
+  const formSlug = document.getElementById('form-slug') as HTMLInputElement;
+  const slugPreview = document.getElementById('slug-preview') as HTMLElement;
+  const closeModalBtn = document.getElementById('close-modal') as HTMLButtonElement;
+  const cancelBtn = document.getElementById('cancel-btn') as HTMLButtonElement;
+
+  function slugify(text: string): string {
+    return text
+      .toLowerCase()
+      .trim()
+      .replace(/[^\w\s-]/g, '')
+      .replace(/[\s_-]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+  }
+
+  function showModal() {
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function hideModal() {
+    modal.classList.add('hidden');
+    document.body.style.overflow = '';
+    formName.value = '';
+    formSlug.value = '';
+    slugPreview.textContent = 'your-form';
+    (formSlug as any).dataset.manual = 'false';
+  }
+
+  document.getElementById('new-form-btn')?.addEventListener('click', showModal);
+  document.getElementById('empty-new-btn')?.addEventListener('click', showModal);
+  closeModalBtn?.addEventListener('click', hideModal);
+  cancelBtn?.addEventListener('click', hideModal);
+
+  modal?.addEventListener('click', (e) => {
+    if (e.target === modal) hideModal();
+  });
+
+  formName?.addEventListener('input', () => {
+    if ((formSlug as any).dataset.manual === 'true') return;
+    formSlug.value = slugify(formName.value);
+    slugPreview.textContent = formSlug.value || 'your-form';
+  });
+
+  formSlug?.addEventListener('input', () => {
+    (formSlug as any).dataset.manual = 'true';
+    formSlug.value = slugify(formSlug.value);
+    slugPreview.textContent = formSlug.value || 'your-form';
+  });
+
+  document.getElementById('create-form')?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    if (!clubId) return;
+
+    const payload = {
+      name: formName.value.trim(),
+      slug: formSlug.value.trim(),
+      description: (document.getElementById('form-description') as HTMLTextAreaElement)?.value?.trim() || null,
+      is_active: (document.getElementById('form-active') as HTMLInputElement)?.checked ? 1 : 0,
+    };
+
+    const res = await fetch(`/api/clubs/${clubId}/forms`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+
+    const data = await res.json();
+    if (!res.ok) {
+      alert(data.error || 'Failed to create form');
+      return;
+    }
+
+    window.location.href = `/${slugParam}/admin-portal/forms/${data.form.id}`;
+  });
+</script>
+
+<style>
+  @import "../../../../styles/global.css";
+</style>

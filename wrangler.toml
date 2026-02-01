@@ -11,6 +11,15 @@ directory = "dist"
 SITE_URL = "https://clubify.ie"
 APP_NAME = "Clubify"
 
+# IMPORTANT: Set these secrets via Cloudflare dashboard or `wrangler secret put`:
+# - ENCRYPTION_SECRET: Required for encrypting social media tokens (min 32 chars)
+# - FACEBOOK_APP_ID: Facebook app ID for OAuth
+# - FACEBOOK_APP_SECRET: Facebook app secret
+# - TWITTER_CLIENT_ID: Twitter OAuth 2.0 client ID
+# - TWITTER_CLIENT_SECRET: Twitter OAuth 2.0 client secret
+# - RESEND_API_KEY: API key for magic link emails
+# - SUPER_ADMIN_EMAIL: Email address for super admin access
+
 [observability]
 enabled = true
 
@@ -19,12 +28,19 @@ enabled = true
 binding = "DB"
 database_name = "clubify-db"
 database_id = "2bac1f43-2fbc-40b6-a129-a02b1d2b61cc"
+migrations_dir = "db/migrations"
 
 # R2 Storage for media
 # Run: wrangler r2 bucket create clubify-media
 [[r2_buckets]]
 binding = "MEDIA"
 bucket_name = "clubify-media"
+
+# KV for rate limiting and caching
+# Run: wrangler kv:namespace create RATE_LIMIT
+[[kv_namespaces]]
+binding = "RATE_LIMIT"
+id = "PLACEHOLDER_RATE_LIMIT_KV_ID"
 
 # KV for caching (OPTIONAL)
 # [[kv_namespaces]]
@@ -41,3 +57,9 @@ bucket_name = "clubify-media"
 # queue = "clubify-publish-queue"
 # max_batch_size = 10
 # max_batch_timeout = 30
+
+# Cron triggers for scheduled tasks
+[triggers]
+crons = [
+  "0 2 * * *"  # Daily at 2am UTC: GDPR auto-purge expired submissions
+]

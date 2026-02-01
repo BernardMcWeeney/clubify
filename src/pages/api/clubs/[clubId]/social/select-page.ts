@@ -13,7 +13,7 @@ export const POST: APIRoute = async ({ params, request, cookies, locals }) => {
       });
     }
 
-    const db = new DatabaseService(locals.runtime.env.DB!);
+    const db = new DatabaseService(locals.runtime.env.DB!, locals.runtime.env.ENCRYPTION_SECRET);
     const { user } = await getAuthContext(cookies, db);
 
     if (!user) {

@@ -1,5 +1,6 @@
 // Database service for Cloudflare D1
 import { generateId, generateToken, addMinutes, addDays, isExpired } from './utils';
+import { encrypt, decrypt } from './crypto';
 
 export interface User {
   id: string;
@@ -30,6 +31,7 @@ export interface Club {
   facebook_url: string | null;
   twitter_url: string | null;
   instagram_url: string | null;
+  modules_config: string | null;
   is_live: number;
   setup_completed: number;
   setup_step: number;
@@ -91,6 +93,13 @@ export interface Fixture {
   status: string;
   home_score: number | null;
   away_score: number | null;
+  home_goals: number | null;
+  home_points: number | null;
+  away_goals: number | null;
+  away_points: number | null;
+  is_home: number | null;
+  result: string | null;
+  match_report: string | null;
   notes: string | null;
   created_at: string;
   updated_at: string;
@@ -117,6 +126,8 @@ export interface SocialConnection {
   refresh_token: string | null;
   page_id: string | null;
   page_name: string | null;
+  external_user_id: string | null;
+  external_username: string | null;
   expires_at: string | null;
   connected_by: string;
   created_at: string;
@@ -188,8 +199,91 @@ export interface ClubOverview extends Club {
   last_content_at: string | null;
 }
 
+export interface SiteSettings {
+  club_id: string;
+  nav_items: string | null;
+  header_settings: string | null;
+  footer_links: string | null;
+  updated_at: string;
+}
+
+export interface Sponsor {
+  id: string;
+  club_id: string;
+  name: string;
+  logo_url: string | null;
+  website_url: string | null;
+  tier: string;
+  sponsoring: string | null;
+  start_date: string | null;
+  end_date: string | null;
+  sort_order: number;
+  placements: string | null; // JSON array
+  is_active: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ContactSettings {
+  club_id: string;
+  notify_email: string | null;
+  retention_days: number;
+  form_title: string | null;
+  form_intro: string | null;
+  success_message: string | null;
+  is_enabled: number;
+  updated_at: string;
+}
+
+export interface ContactSubmission {
+  id: string;
+  club_id: string;
+  name: string | null;
+  email: string | null;
+  phone: string | null;
+  message: string;
+  consent: number;
+  created_at: string;
+}
+
+export interface Form {
+  id: string;
+  club_id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  is_active: number;
+  success_message: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface FormField {
+  id: string;
+  form_id: string;
+  label: string;
+  type: string;
+  required: number;
+  options: string | null;
+  placeholder: string | null;
+  help_text: string | null;
+  order_index: number;
+}
+
+export interface FormSubmission {
+  id: string;
+  form_id: string;
+  club_id: string;
+  data: string; // JSON
+  created_at: string;
+}
+
 export class DatabaseService {
-  constructor(private db: D1Database) {}
+  private encryptionSecret?: string;
+
+  constructor(private db: D1Database, encryptionSecret?: string) {
+    this.encryptionSecret = encryptionSecret;
+  }
 
   // User operations
   async createUser(email: string, name: string): Promise<User> {
@@ -367,6 +461,28 @@ export class DatabaseService {
     await this.db.prepare(
       `UPDATE clubs SET ${setClause}, updated_at = datetime('now') WHERE id = ?`
     ).bind(...values, id).run();
+  }
+
+  async getModuleConfig(clubId: string): Promise<Record<string, boolean>> {
+    const club = await this.getClubById(clubId);
+    if (!club || !club.modules_config) {
+      // Return default config if not set
+      return {
+        inbox: true,
+        forms: true,
+        sponsors: true,
+        fixtures: true,
+        posts: true,
+        media: true,
+      };
+    }
+    return JSON.parse(club.modules_config);
+  }
+
+  async updateModuleConfig(clubId: string, config: Record<string, boolean>): Promise<void> {
+    await this.db.prepare(
+      `UPDATE clubs SET modules_config = ?, updated_at = datetime('now') WHERE id = ?`
+    ).bind(JSON.stringify(config), clubId).run();
   }
 
   async getUserClubs(userId: string): Promise<(Club & { role: string })[]> {
@@ -751,11 +867,41 @@ export class DatabaseService {
     ).bind(...values, id).run();
   }
 
-  async recordResult(id: string, homeScore: number, awayScore: number): Promise<void> {
+  async recordResult(
+    id: string,
+    homeGoals: number,
+    homePoints: number,
+    awayGoals: number,
+    awayPoints: number,
+    isHome: number
+  ): Promise<void> {
+    // Calculate total scores (GAA scoring: goals worth 3 points each)
+    const homeTotal = (homeGoals * 3) + homePoints;
+    const awayTotal = (awayGoals * 3) + awayPoints;
+
+    // Determine result from club's perspective
+    let result: string;
+    if (isHome === 1) {
+      // Club is home team
+      result = homeTotal > awayTotal ? 'win' : homeTotal < awayTotal ? 'loss' : 'draw';
+    } else {
+      // Club is away team
+      result = awayTotal > homeTotal ? 'win' : awayTotal < homeTotal ? 'loss' : 'draw';
+    }
+
     await this.db.prepare(`
-      UPDATE fixtures SET home_score = ?, away_score = ?, status = 'played', updated_at = datetime('now')
+      UPDATE fixtures SET
+        home_goals = ?,
+        home_points = ?,
+        away_goals = ?,
+        away_points = ?,
+        home_score = ?,
+        away_score = ?,
+        result = ?,
+        status = 'played',
+        updated_at = datetime('now')
       WHERE id = ?
-    `).bind(homeScore, awayScore, id).run();
+    `).bind(homeGoals, homePoints, awayGoals, awayPoints, homeTotal, awayTotal, result, id).run();
   }
 
   async deleteFixture(id: string): Promise<void> {
@@ -829,19 +975,39 @@ export class DatabaseService {
     await this.db.prepare(`DELETE FROM pages WHERE id = ?`).bind(id).run();
   }
 
-  // Social connection operations
+  // Social connection operations (with token encryption)
+  private async decryptSocialConnection(connection: SocialConnection | null): Promise<SocialConnection | null> {
+    if (!connection) return null;
+    if (!this.encryptionSecret) return connection;
+
+    return {
+      ...connection,
+      access_token: await decrypt(connection.access_token, this.encryptionSecret),
+      refresh_token: connection.refresh_token
+        ? await decrypt(connection.refresh_token, this.encryptionSecret)
+        : null,
+    };
+  }
+
   async getSocialConnections(clubId: string): Promise<SocialConnection[]> {
     const results = await this.db.prepare(`
       SELECT * FROM social_connections WHERE club_id = ? ORDER BY platform ASC
     `).bind(clubId).all<SocialConnection>();
 
-    return results.results || [];
+    const connections = results.results || [];
+
+    // Decrypt tokens for each connection
+    return Promise.all(
+      connections.map(conn => this.decryptSocialConnection(conn) as Promise<SocialConnection>)
+    );
   }
 
   async getSocialConnection(clubId: string, platform: string): Promise<SocialConnection | null> {
-    return this.db.prepare(
+    const connection = await this.db.prepare(
       `SELECT * FROM social_connections WHERE club_id = ? AND platform = ?`
     ).bind(clubId, platform).first<SocialConnection>();
+
+    return this.decryptSocialConnection(connection);
   }
 
   async createSocialConnection(data: {
@@ -851,34 +1017,57 @@ export class DatabaseService {
     refreshToken?: string;
     pageId?: string;
     pageName?: string;
+    externalUserId?: string;
+    externalUsername?: string;
     expiresAt?: string;
     connectedBy: string;
   }): Promise<SocialConnection> {
     const id = generateId();
 
+    // Encrypt tokens before storing
+    const encryptedAccessToken = this.encryptionSecret
+      ? await encrypt(data.accessToken, this.encryptionSecret)
+      : data.accessToken;
+    const encryptedRefreshToken = data.refreshToken && this.encryptionSecret
+      ? await encrypt(data.refreshToken, this.encryptionSecret)
+      : data.refreshToken || null;
+
     await this.db.prepare(`
-      INSERT INTO social_connections (id, club_id, platform, access_token, refresh_token, page_id, page_name, expires_at, connected_by)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO social_connections (id, club_id, platform, access_token, refresh_token, page_id, page_name, external_user_id, external_username, expires_at, connected_by)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).bind(
       id,
       data.clubId,
       data.platform,
-      data.accessToken,
-      data.refreshToken || null,
+      encryptedAccessToken,
+      encryptedRefreshToken,
       data.pageId || null,
       data.pageName || null,
+      data.externalUserId || null,
+      data.externalUsername || null,
       data.expiresAt || null,
       data.connectedBy
     ).run();
 
-    return this.db.prepare(`SELECT * FROM social_connections WHERE id = ?`).bind(id).first<SocialConnection>() as Promise<SocialConnection>;
+    // Return decrypted version
+    const result = await this.db.prepare(`SELECT * FROM social_connections WHERE id = ?`).bind(id).first<SocialConnection>();
+    return this.decryptSocialConnection(result) as Promise<SocialConnection>;
   }
 
   async updateSocialConnection(id: string, data: Partial<SocialConnection>): Promise<void> {
     const fields = Object.keys(data).filter(k => k !== 'id');
     if (fields.length === 0) return;
 
-    const values = fields.map(k => (data as any)[k]);
+    // Encrypt token fields if being updated
+    const processedData = { ...data };
+    if (processedData.access_token && this.encryptionSecret) {
+      processedData.access_token = await encrypt(processedData.access_token, this.encryptionSecret);
+    }
+    if (processedData.refresh_token && this.encryptionSecret) {
+      processedData.refresh_token = await encrypt(processedData.refresh_token, this.encryptionSecret);
+    }
+
+    const values = fields.map(k => (processedData as any)[k]);
     const setClause = fields.map(f => `${f} = ?`).join(', ');
 
     await this.db.prepare(
@@ -1092,5 +1281,297 @@ export class DatabaseService {
     await this.db.prepare(
       `DELETE FROM homepage_configs WHERE club_id = ?`
     ).bind(clubId).run();
+  }
+
+  // Site settings operations
+  async getSiteSettings(clubId: string): Promise<SiteSettings | null> {
+    return this.db.prepare(
+      `SELECT * FROM site_settings WHERE club_id = ?`
+    ).bind(clubId).first<SiteSettings>();
+  }
+
+  async upsertSiteSettings(clubId: string, data: {
+    nav_items?: string | null;
+    header_settings?: string | null;
+    footer_links?: string | null;
+  }): Promise<void> {
+    await this.db.prepare(`
+      INSERT INTO site_settings (club_id, nav_items, header_settings, footer_links, updated_at)
+      VALUES (?, ?, ?, ?, datetime('now'))
+      ON CONFLICT(club_id) DO UPDATE SET
+        nav_items = excluded.nav_items,
+        header_settings = excluded.header_settings,
+        footer_links = excluded.footer_links,
+        updated_at = datetime('now')
+    `).bind(
+      clubId,
+      data.nav_items ?? null,
+      data.header_settings ?? null,
+      data.footer_links ?? null
+    ).run();
+  }
+
+  // Sponsor operations
+  async getSponsors(clubId: string): Promise<Sponsor[]> {
+    const results = await this.db.prepare(`
+      SELECT * FROM sponsors
+      WHERE club_id = ?
+      ORDER BY sort_order ASC, created_at DESC
+    `).bind(clubId).all<Sponsor>();
+
+    return results.results || [];
+  }
+
+  async getSponsorsForPlacement(clubId: string, placement: string): Promise<Sponsor[]> {
+    const sponsors = await this.getSponsors(clubId);
+    return sponsors.filter((s) => {
+      if (!s.is_active) return false;
+      const placements = s.placements ? JSON.parse(s.placements) as string[] : ['home'];
+      return placements.includes('all') || placements.includes(placement);
+    });
+  }
+
+  async createSponsor(data: {
+    clubId: string;
+    name: string;
+    logoUrl?: string | null;
+    websiteUrl?: string | null;
+    tier?: string;
+    sponsoring?: string | null;
+    startDate?: string | null;
+    endDate?: string | null;
+    sortOrder?: number;
+    placements?: string[] | null;
+    isActive?: number;
+  }): Promise<Sponsor> {
+    const id = generateId();
+
+    await this.db.prepare(`
+      INSERT INTO sponsors (
+        id, club_id, name, logo_url, website_url, tier,
+        sponsoring, start_date, end_date, sort_order, placements, is_active
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).bind(
+      id,
+      data.clubId,
+      data.name,
+      data.logoUrl || null,
+      data.websiteUrl || null,
+      data.tier || 'main',
+      data.sponsoring || null,
+      data.startDate || null,
+      data.endDate || null,
+      data.sortOrder ?? 0,
+      JSON.stringify(data.placements || ['home']),
+      data.isActive ?? 1
+    ).run();
+
+    return this.db.prepare(`SELECT * FROM sponsors WHERE id = ?`).bind(id).first<Sponsor>() as Promise<Sponsor>;
+  }
+
+  async updateSponsor(id: string, data: Partial<Sponsor>): Promise<void> {
+    const fields = Object.keys(data).filter(k => k !== 'id' && k !== 'club_id');
+    if (fields.length === 0) return;
+
+    const values = fields.map(k => (data as any)[k]);
+    const setClause = fields.map(f => `${f} = ?`).join(', ');
+
+    await this.db.prepare(
+      `UPDATE sponsors SET ${setClause}, updated_at = datetime('now') WHERE id = ?`
+    ).bind(...values, id).run();
+  }
+
+  async deleteSponsor(id: string): Promise<void> {
+    await this.db.prepare(`DELETE FROM sponsors WHERE id = ?`).bind(id).run();
+  }
+
+  // Contact settings & submissions
+  async getContactSettings(clubId: string): Promise<ContactSettings | null> {
+    return this.db.prepare(
+      `SELECT * FROM contact_settings WHERE club_id = ?`
+    ).bind(clubId).first<ContactSettings>();
+  }
+
+  async upsertContactSettings(clubId: string, data: Partial<ContactSettings>): Promise<void> {
+    await this.db.prepare(`
+      INSERT INTO contact_settings (
+        club_id, notify_email, retention_days, form_title, form_intro, success_message, is_enabled, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'))
+      ON CONFLICT(club_id) DO UPDATE SET
+        notify_email = excluded.notify_email,
+        retention_days = excluded.retention_days,
+        form_title = excluded.form_title,
+        form_intro = excluded.form_intro,
+        success_message = excluded.success_message,
+        is_enabled = excluded.is_enabled,
+        updated_at = datetime('now')
+    `).bind(
+      clubId,
+      data.notify_email ?? null,
+      data.retention_days ?? 30,
+      data.form_title ?? null,
+      data.form_intro ?? null,
+      data.success_message ?? null,
+      data.is_enabled ?? 1
+    ).run();
+  }
+
+  async purgeContactSubmissions(clubId: string, retentionDays: number): Promise<void> {
+    await this.db.prepare(
+      `DELETE FROM contact_submissions WHERE club_id = ? AND created_at < datetime('now', ?)`
+    ).bind(clubId, `-${retentionDays} days`).run();
+  }
+
+  async createContactSubmission(data: {
+    clubId: string;
+    name?: string | null;
+    email?: string | null;
+    phone?: string | null;
+    message: string;
+    consent: number;
+  }): Promise<ContactSubmission> {
+    const id = generateId();
+    await this.db.prepare(`
+      INSERT INTO contact_submissions (id, club_id, name, email, phone, message, consent)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `).bind(
+      id,
+      data.clubId,
+      data.name || null,
+      data.email || null,
+      data.phone || null,
+      data.message,
+      data.consent
+    ).run();
+
+    return this.db.prepare(`SELECT * FROM contact_submissions WHERE id = ?`).bind(id).first<ContactSubmission>() as Promise<ContactSubmission>;
+  }
+
+  async getContactSubmissions(clubId: string, retentionDays: number = 30): Promise<ContactSubmission[]> {
+    await this.purgeContactSubmissions(clubId, retentionDays);
+    const results = await this.db.prepare(`
+      SELECT * FROM contact_submissions WHERE club_id = ?
+      ORDER BY created_at DESC
+    `).bind(clubId).all<ContactSubmission>();
+    return results.results || [];
+  }
+
+  // Form builder operations
+  async getForms(clubId: string): Promise<Form[]> {
+    const results = await this.db.prepare(`
+      SELECT * FROM forms WHERE club_id = ? ORDER BY created_at DESC
+    `).bind(clubId).all<Form>();
+    return results.results || [];
+  }
+
+  async getFormById(formId: string): Promise<Form | null> {
+    return this.db.prepare(`SELECT * FROM forms WHERE id = ?`).bind(formId).first<Form>();
+  }
+
+  async getFormBySlug(clubId: string, slug: string): Promise<Form | null> {
+    return this.db.prepare(`SELECT * FROM forms WHERE club_id = ? AND slug = ?`).bind(clubId, slug).first<Form>();
+  }
+
+  async createForm(data: {
+    clubId: string;
+    name: string;
+    slug: string;
+    description?: string | null;
+    isActive?: number;
+    successMessage?: string | null;
+  }): Promise<Form> {
+    const id = generateId();
+    await this.db.prepare(`
+      INSERT INTO forms (id, club_id, name, slug, description, is_active, success_message)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `).bind(
+      id,
+      data.clubId,
+      data.name,
+      data.slug,
+      data.description || null,
+      data.isActive ?? 1,
+      data.successMessage || null
+    ).run();
+
+    return this.db.prepare(`SELECT * FROM forms WHERE id = ?`).bind(id).first<Form>() as Promise<Form>;
+  }
+
+  async updateForm(id: string, data: Partial<Form>): Promise<void> {
+    const fields = Object.keys(data).filter(k => k !== 'id' && k !== 'club_id');
+    if (fields.length === 0) return;
+    const values = fields.map(k => (data as any)[k]);
+    const setClause = fields.map(f => `${f} = ?`).join(', ');
+
+    await this.db.prepare(
+      `UPDATE forms SET ${setClause}, updated_at = datetime('now') WHERE id = ?`
+    ).bind(...values, id).run();
+  }
+
+  async deleteForm(id: string): Promise<void> {
+    await this.db.prepare(`DELETE FROM forms WHERE id = ?`).bind(id).run();
+  }
+
+  async getFormFields(formId: string): Promise<FormField[]> {
+    const results = await this.db.prepare(`
+      SELECT * FROM form_fields WHERE form_id = ? ORDER BY order_index ASC
+    `).bind(formId).all<FormField>();
+    return results.results || [];
+  }
+
+  async replaceFormFields(formId: string, fields: Array<{
+    label: string;
+    type: string;
+    required?: number;
+    options?: string | null;
+    placeholder?: string | null;
+    help_text?: string | null;
+    order_index?: number;
+  }>): Promise<void> {
+    await this.db.prepare(`DELETE FROM form_fields WHERE form_id = ?`).bind(formId).run();
+    for (const field of fields) {
+      const id = generateId();
+      await this.db.prepare(`
+        INSERT INTO form_fields (
+          id, form_id, label, type, required, options, placeholder, help_text, order_index
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `).bind(
+        id,
+        formId,
+        field.label,
+        field.type,
+        field.required ?? 0,
+        field.options ?? null,
+        field.placeholder ?? null,
+        field.help_text ?? null,
+        field.order_index ?? 0
+      ).run();
+    }
+  }
+
+  async createFormSubmission(data: {
+    formId: string;
+    clubId: string;
+    payload: object;
+  }): Promise<FormSubmission> {
+    const id = generateId();
+    await this.db.prepare(`
+      INSERT INTO form_submissions (id, form_id, club_id, data)
+      VALUES (?, ?, ?, ?)
+    `).bind(
+      id,
+      data.formId,
+      data.clubId,
+      JSON.stringify(data.payload)
+    ).run();
+
+    return this.db.prepare(`SELECT * FROM form_submissions WHERE id = ?`).bind(id).first<FormSubmission>() as Promise<FormSubmission>;
+  }
+
+  async getFormSubmissions(formId: string): Promise<FormSubmission[]> {
+    const results = await this.db.prepare(`
+      SELECT * FROM form_submissions WHERE form_id = ? ORDER BY created_at DESC
+    `).bind(formId).all<FormSubmission>();
+    return results.results || [];
   }
 }

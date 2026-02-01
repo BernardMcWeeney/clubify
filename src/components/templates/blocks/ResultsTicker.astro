@@ -6,6 +6,11 @@ interface Result {
   away_team: string;
   home_score: number;
   away_score: number;
+  home_goals: number | null;
+  home_points: number | null;
+  away_goals: number | null;
+  away_points: number | null;
+  result: string | null;
   match_date: string;
 }
 
@@ -25,13 +30,16 @@ function formatDate(dateStr: string): string {
   });
 }
 
-function getResultColor(result: Result, clubName: string): string {
-  const isHome = result.home_team.toLowerCase().includes(clubName.toLowerCase());
-  const clubScore = isHome ? result.home_score : result.away_score;
-  const opponentScore = isHome ? result.away_score : result.home_score;
+function formatGAAScore(goals: number | null, points: number | null): string {
+  if (goals === null || points === null) {
+    return '0-00';
+  }
+  return `${goals}-${String(points).padStart(2, '0')}`;
+}
 
-  if (clubScore > opponentScore) return '#22c55e';
-  if (clubScore < opponentScore) return '#ef4444';
+function getResultColor(result: string | null): string {
+  if (result === 'win') return '#22c55e';
+  if (result === 'loss') return '#ef4444';
   return '#f59e0b';
 }
 ---
@@ -46,11 +54,11 @@ function getResultColor(result: Result, clubName: string): string {
             <div class="flex items-center gap-3 whitespace-nowrap">
               <span class="text-white/60 text-xs">{formatDate(result.match_date)}</span>
               <span class="text-white text-sm font-medium">
-                {result.home_team} {result.home_score} - {result.away_score} {result.away_team}
+                {result.home_team} {formatGAAScore(result.home_goals, result.home_points)} - {formatGAAScore(result.away_goals, result.away_points)} {result.away_team}
               </span>
               <span
                 class="w-2 h-2 rounded-full"
-                style={`background-color: ${getResultColor(result, clubName)}`}
+                style={`background-color: ${getResultColor(result.result)}`}
               ></span>
             </div>
           ))}

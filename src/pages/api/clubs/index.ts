@@ -2,6 +2,7 @@ import type { APIRoute } from 'astro';
 import { DatabaseService } from '../../../lib/db';
 import { getAuthContext } from '../../../lib/auth';
 import { slugify, isValidSlug } from '../../../lib/utils';
+import { getDefaultPages } from '../../../lib/default-pages';
 
 // Create a new club
 export const POST: APIRoute = async ({ request, locals, cookies }) => {
@@ -56,6 +57,19 @@ export const POST: APIRoute = async ({ request, locals, cookies }) => {
       county,
       ownerId: user.id
     });
+
+    // Create default pages
+    const defaultPages = getDefaultPages(club.name, club.contact_email || undefined);
+    for (const pageTemplate of defaultPages) {
+      await db.createPage({
+        clubId: club.id,
+        title: pageTemplate.title,
+        slug: pageTemplate.slug,
+        content: pageTemplate.content,
+        isPublished: pageTemplate.is_published,
+        authorId: user.id,
+      });
+    }
 
     // Log the event
     await db.logAudit({

@@ -2,9 +2,22 @@ import type { APIRoute } from 'astro';
 import { DatabaseService } from '../../../lib/db';
 import { sendMagicLinkEmail } from '../../../lib/auth';
 import { isValidEmail } from '../../../lib/utils';
+import { checkRateLimit, getRateLimitKey, rateLimitExceeded, rateLimitHeaders, RATE_LIMITS } from '../../../lib/rate-limit';
 
 export const POST: APIRoute = async ({ request, locals }) => {
   try {
+    // Rate limiting - prevent brute force/spam
+    const rateLimitKey = getRateLimitKey(request, 'magic-link');
+    const rateLimitResult = await checkRateLimit(
+      locals.runtime.env.RATE_LIMIT,
+      rateLimitKey,
+      RATE_LIMITS.magicLink
+    );
+
+    if (!rateLimitResult.allowed) {
+      return rateLimitExceeded(rateLimitResult, RATE_LIMITS.magicLink);
+    }
+
     // Check if database is configured
     if (!locals.runtime.env.DB) {
       return new Response(JSON.stringify({

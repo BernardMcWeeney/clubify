@@ -49,6 +49,55 @@
   --animate-slide-up: slideUp 0.6s ease-out forwards;
 }
 
+/* ========================================
+   Admin Design System Tokens
+   ======================================== */
+
+:root {
+  /* Border Radius - Consistent across all admin UI */
+  --radius-card: 1rem;         /* 16px - rounded-2xl for cards */
+  --radius-button: 0.75rem;    /* 12px - rounded-xl for buttons */
+  --radius-input: 0.75rem;     /* 12px - rounded-xl for inputs */
+  --radius-badge: 9999px;      /* Full round for badges/pills */
+  --radius-modal: 1rem;        /* 16px - rounded-2xl for modals */
+
+  /* Spacing - Consistent padding/gaps */
+  --spacing-card: 1.5rem;      /* 24px - p-6 for card content */
+  --spacing-section: 2rem;     /* 32px - gap between sections */
+  --spacing-button-x: 1rem;    /* 16px - px-4 for buttons */
+  --spacing-button-y: 0.75rem; /* 12px - py-3 for buttons */
+  --spacing-input-x: 1rem;     /* 16px - px-4 for inputs */
+  --spacing-input-y: 0.75rem;  /* 12px - py-3 for inputs */
+  --spacing-grid: 1.5rem;      /* 24px - gap-6 for grids */
+
+  /* Shadows - Elevation system */
+  --shadow-card: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-card-hover: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-button: 0 10px 15px -3px rgb(34 197 94 / 0.25);
+  --shadow-modal: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+  --shadow-dropdown: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+
+  /* Typography - Admin specific */
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  /* Borders */
+  --border-color: #e2e8f0;     /* slate-200 */
+  --border-color-focus: #22c55e; /* primary-500 */
+  --border-width: 1px;
+
+  /* Input backgrounds */
+  --input-bg: #f8fafc;         /* slate-50 */
+  --input-bg-focus: #ffffff;
+
+  /* Transitions */
+  --transition-fast: 150ms ease;
+  --transition-normal: 200ms ease;
+  --transition-slow: 300ms ease;
+}
+
 /* Keyframe animations */
 @keyframes gradient {
   0%, 100% {
@@ -163,4 +212,286 @@ body {
 ::selection {
   background-color: #22c55e;
   color: white;
+}
+
+/* Lightweight markdown styling */
+.markdown h1,
+.markdown h2,
+.markdown h3 {
+  color: #0f172a;
+  font-weight: 700;
+  margin: 1.5rem 0 0.75rem;
+}
+
+.markdown h1 {
+  font-size: 2rem;
+}
+
+.markdown h2 {
+  font-size: 1.5rem;
+}
+
+.markdown h3 {
+  font-size: 1.25rem;
+}
+
+.markdown p {
+  color: #475569;
+  line-height: 1.7;
+  margin: 0 0 1rem;
+}
+
+.markdown a {
+  color: #16a34a;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 2px;
+}
+
+.markdown strong {
+  color: #0f172a;
+  font-weight: 700;
+}
+
+.markdown em {
+  font-style: italic;
+}
+
+.markdown-list {
+  color: #475569;
+  margin: 0 0 1rem 1.25rem;
+  list-style: disc;
+  line-height: 1.7;
+}
+
+.markdown-list li {
+  margin-bottom: 0.4rem;
+}
+
+/* ========================================
+   Admin UI Component Classes
+   ======================================== */
+
+/* Card - Consistent admin card styling */
+.admin-card {
+  background: white;
+  border-radius: var(--radius-card);
+  border: var(--border-width) solid var(--border-color);
+  padding: var(--spacing-card);
+  box-shadow: var(--shadow-card);
+  transition: box-shadow var(--transition-normal);
+}
+
+.admin-card:hover {
+  box-shadow: var(--shadow-card-hover);
+}
+
+/* Card without hover effect */
+.admin-card-static {
+  background: white;
+  border-radius: var(--radius-card);
+  border: var(--border-width) solid var(--border-color);
+  padding: var(--spacing-card);
+  box-shadow: var(--shadow-card);
+}
+
+/* Button - Primary action */
+.admin-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: var(--spacing-button-y) var(--spacing-button-x);
+  background-color: #22c55e;
+  color: white;
+  font-weight: var(--font-weight-medium);
+  border-radius: var(--radius-button);
+  box-shadow: var(--shadow-button);
+  transition: background-color var(--transition-fast), transform var(--transition-fast);
+}
+
+.admin-btn-primary:hover {
+  background-color: #16a34a;
+}
+
+.admin-btn-primary:active {
+  transform: scale(0.98);
+}
+
+/* Button - Secondary action */
+.admin-btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: var(--spacing-button-y) var(--spacing-button-x);
+  background-color: #f1f5f9;
+  color: #475569;
+  font-weight: var(--font-weight-medium);
+  border-radius: var(--radius-button);
+  border: var(--border-width) solid var(--border-color);
+  transition: background-color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.admin-btn-secondary:hover {
+  background-color: #e2e8f0;
+  border-color: #cbd5e1;
+}
+
+/* Button - Danger action */
+.admin-btn-danger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: var(--spacing-button-y) var(--spacing-button-x);
+  background-color: #fee2e2;
+  color: #dc2626;
+  font-weight: var(--font-weight-medium);
+  border-radius: var(--radius-button);
+  transition: background-color var(--transition-fast);
+}
+
+.admin-btn-danger:hover {
+  background-color: #fecaca;
+}
+
+/* Input - Standard form input */
+.admin-input {
+  width: 100%;
+  padding: var(--spacing-input-y) var(--spacing-input-x);
+  background-color: var(--input-bg);
+  border: var(--border-width) solid #cbd5e1;
+  border-radius: var(--radius-input);
+  color: #0f172a;
+  transition: border-color var(--transition-fast), background-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.admin-input::placeholder {
+  color: #94a3b8;
+}
+
+.admin-input:focus {
+  outline: none;
+  background-color: var(--input-bg-focus);
+  border-color: var(--border-color-focus);
+  box-shadow: 0 0 0 3px rgb(34 197 94 / 0.1);
+}
+
+.admin-input:disabled {
+  background-color: #f1f5f9;
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Select - Standard dropdown */
+.admin-select {
+  width: 100%;
+  padding: var(--spacing-input-y) var(--spacing-input-x);
+  padding-right: 2.5rem;
+  background-color: var(--input-bg);
+  border: var(--border-width) solid #cbd5e1;
+  border-radius: var(--radius-input);
+  color: #0f172a;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2394a3b8' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 0.75rem center;
+  background-repeat: no-repeat;
+  background-size: 1.25rem;
+  transition: border-color var(--transition-fast), background-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.admin-select:focus {
+  outline: none;
+  background-color: var(--input-bg-focus);
+  border-color: var(--border-color-focus);
+  box-shadow: 0 0 0 3px rgb(34 197 94 / 0.1);
+}
+
+/* Label - Form labels */
+.admin-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: var(--font-weight-medium);
+  color: #334155;
+  margin-bottom: 0.5rem;
+}
+
+/* Badge - Status indicators */
+.admin-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: var(--font-weight-medium);
+  border-radius: var(--radius-badge);
+}
+
+.admin-badge-success {
+  background-color: #dcfce7;
+  color: #15803d;
+}
+
+.admin-badge-warning {
+  background-color: #fef3c7;
+  color: #b45309;
+}
+
+.admin-badge-error {
+  background-color: #fee2e2;
+  color: #dc2626;
+}
+
+.admin-badge-info {
+  background-color: #e0f2fe;
+  color: #0369a1;
+}
+
+.admin-badge-neutral {
+  background-color: #f1f5f9;
+  color: #475569;
+}
+
+/* Empty state */
+.admin-empty-state {
+  border-radius: var(--radius-card);
+  border: var(--border-width) solid var(--border-color);
+  padding: 3rem;
+  text-align: center;
+  box-shadow: var(--shadow-card);
+}
+
+/* Modal backdrop */
+.admin-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  z-index: 50;
+}
+
+/* Modal container */
+.admin-modal {
+  background: white;
+  border-radius: var(--radius-modal);
+  box-shadow: var(--shadow-modal);
+  border: var(--border-width) solid var(--border-color);
+  max-width: 32rem;
+  width: 100%;
+  margin: 1rem;
+}
+
+/* Section header */
+.admin-section-header {
+  font-size: 1.125rem;
+  font-weight: var(--font-weight-semibold);
+  color: #0f172a;
+  margin-bottom: 1rem;
+}
+
+/* Page header */
+.admin-page-header {
+  font-size: 1.875rem;
+  font-weight: var(--font-weight-bold);
+  color: #0f172a;
 }

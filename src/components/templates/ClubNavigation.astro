@@ -7,17 +7,31 @@ interface Props {
   };
   slug: string;
   currentPath?: string;
+  navItems?: Array<{ label: string; href: string }>;
+  headerSettings?: {
+    show_cta?: boolean;
+    cta_label?: string;
+    cta_url?: string;
+  };
 }
 
-const { club, slug, currentPath = '' } = Astro.props;
+const { club, slug, currentPath = '', navItems, headerSettings } = Astro.props;
 
-const navLinks = [
+const defaultNavLinks = [
   { href: `/${slug}`, label: 'Home' },
   { href: `/${slug}/news`, label: 'News' },
   { href: `/${slug}/fixtures`, label: 'Fixtures' },
   { href: `/${slug}/about`, label: 'About' },
   { href: `/${slug}/contact`, label: 'Contact' },
 ];
+
+const navLinks = navItems && navItems.length > 0 ? navItems : defaultNavLinks;
+const header = {
+  show_cta: true,
+  cta_label: 'Join the Club',
+  cta_url: `/${slug}/contact`,
+  ...headerSettings,
+};
 
 function isActive(href: string): boolean {
   if (href === `/${slug}`) {
@@ -41,7 +55,7 @@ function isActive(href: string): boolean {
             {club.name.charAt(0)}
           </div>
         )}
-        <span class="text-lg font-bold text-slate-900 group-hover:text-slate-700 transition-colors">{club.name}</span>
+        <span class="text-lg font-bold text-slate-900 group-hover:text-slate-700 transition-colors font-display">{club.name}</span>
       </a>
 
       <!-- Desktop Navigation -->
@@ -58,6 +72,14 @@ function isActive(href: string): boolean {
             {link.label}
           </a>
         ))}
+        {header.show_cta && (
+          <a
+            href={header.cta_url}
+            class="ml-2 inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-900 text-white text-sm font-semibold hover:bg-slate-800"
+          >
+            {header.cta_label}
+          </a>
+        )}
       </div>
 
       <!-- Mobile menu button -->
@@ -91,6 +113,14 @@ function isActive(href: string): boolean {
           {link.label}
         </a>
       ))}
+      {header.show_cta && (
+        <a
+          href={header.cta_url}
+          class="mt-2 block w-full text-center px-4 py-2 rounded-lg bg-slate-900 text-white text-sm font-semibold hover:bg-slate-800"
+        >
+          {header.cta_label}
+        </a>
+      )}
     </div>
   </div>
 </nav>

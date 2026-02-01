@@ -1,0 +1,102 @@
+---
+interface Option {
+  value: string;
+  label: string;
+  disabled?: boolean;
+}
+
+interface Props {
+  /** Select name */
+  name: string;
+  /** Select id (defaults to name) */
+  id?: string;
+  /** Options array */
+  options: Option[];
+  /** Current value */
+  value?: string;
+  /** Placeholder option */
+  placeholder?: string;
+  /** Label text */
+  label?: string;
+  /** Helper text */
+  helper?: string;
+  /** Error message */
+  error?: string;
+  /** Required field */
+  required?: boolean;
+  /** Disabled state */
+  disabled?: boolean;
+  /** Additional CSS classes */
+  class?: string;
+}
+
+const {
+  name,
+  id = name,
+  options,
+  value = '',
+  placeholder,
+  label,
+  helper,
+  error,
+  required = false,
+  disabled = false,
+  class: className = '',
+} = Astro.props;
+
+const selectClasses = `
+  w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl
+  text-slate-900 appearance-none
+  focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 focus:bg-white
+  disabled:bg-slate-100 disabled:opacity-60 disabled:cursor-not-allowed
+  transition-colors
+  ${error ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : ''}
+  ${className}
+`.trim();
+---
+
+<div class="space-y-1.5">
+  {label && (
+    <label for={id} class="block text-sm font-medium text-slate-700">
+      {label}
+      {required && <span class="text-red-500 ml-0.5">*</span>}
+    </label>
+  )}
+
+  <div class="relative">
+    <select
+      name={name}
+      id={id}
+      required={required}
+      disabled={disabled}
+      class={selectClasses}
+    >
+      {placeholder && (
+        <option value="" disabled selected={!value}>{placeholder}</option>
+      )}
+      {options.map((option) => (
+        <option
+          value={option.value}
+          selected={option.value === value}
+          disabled={option.disabled}
+        >
+          {option.label}
+        </option>
+      ))}
+    </select>
+
+    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+      <svg class="h-5 w-5 text-slate-400" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+      </svg>
+    </div>
+  </div>
+
+  {helper && !error && (
+    <p class="text-sm text-slate-500">{helper}</p>
+  )}
+
+  {error && (
+    <p class="text-sm text-red-600">{error}</p>
+  )}
+</div>
