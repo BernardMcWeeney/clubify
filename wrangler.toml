@@ -1,6 +1,28 @@
 name = "clubify"
+main = "dist/_worker.js"
 compatibility_date = "2025-01-01"
 compatibility_flags = ["nodejs_compat"]
 
-[site]
-bucket = "./dist"
+[assets]
+directory = "dist"
+
+# D1 Database
+[[d1_databases]]
+binding = "DB"
+database_name = "clubify-db"
+database_id = "local-dev-db"
+
+# R2 Storage for media
+[[r2_buckets]]
+binding = "MEDIA"
+bucket_name = "clubify-media"
+
+# KV for caching
+[[kv_namespaces]]
+binding = "CACHE"
+id = "local-dev-cache"
+
+# Environment variables
+[vars]
+SITE_URL = "https://clubify.ie"
+APP_NAME = "Clubify"

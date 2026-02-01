@@ -1,0 +1,121 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { DatabaseService } from '../../lib/db';
+import { setSessionCookie } from '../../lib/auth';
+
+const token = Astro.url.searchParams.get('token');
+let error = '';
+let success = false;
+let redirectUrl = '/admin';
+
+if (token) {
+  try {
+    const db = new DatabaseService(Astro.locals.runtime.env.DB);
+
+    // Verify the magic link
+    const result = await db.verifyMagicLink(token);
+
+    if (result) {
+      // Get user
+      let user = await db.getUserByEmail(result.email);
+
+      if (user) {
+        // Mark email as verified
+        if (!user.email_verified) {
+          await db.updateUser(user.id, { email_verified: 1 } as any);
+        }
+
+        // Create session
+        const sessionId = await db.createSession(user.id);
+        setSessionCookie(Astro.cookies, sessionId);
+
+        // Check if user has clubs
+        const clubs = await db.getUserClubs(user.id);
+
+        if (clubs.length > 0) {
+          // Redirect to first club's admin
+          redirectUrl = `/${clubs[0].slug}/admin-portal`;
+        } else {
+          // Redirect to complete onboarding
+          redirectUrl = '/admin/signup';
+        }
+
+        success = true;
+
+        // Log the auth event
+        await db.logAudit({
+          userId: user.id,
+          action: 'user_login',
+          details: 'Magic link authentication'
+        });
+      } else {
+        error = 'User not found. Please sign up again.';
+      }
+    } else {
+      error = 'Invalid or expired link. Please request a new one.';
+    }
+  } catch (e) {
+    console.error('Verify error:', e);
+    error = 'Verification failed. Please try again.';
+  }
+} else {
+  error = 'No token provided.';
+}
+
+if (success) {
+  return Astro.redirect(redirectUrl);
+}
+---
+
+<Layout title="Verify Email - Clubify">
+  <div class="min-h-screen mesh-gradient flex items-center justify-center p-4">
+    <div class="w-full max-w-md">
+      <!-- Logo -->
+      <div class="text-center mb-8">
+        <a href="/" class="inline-flex items-center gap-3">
+          <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center shadow-lg shadow-primary-500/25">
+            <svg class="w-7 h-7 text-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" fill="currentColor" opacity="0.3"/>
+              <path d="M12 6c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6zm0 10c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4z" fill="currentColor"/>
+              <circle cx="12" cy="12" r="2" fill="currentColor"/>
+            </svg>
+          </div>
+          <span class="text-2xl font-bold text-white">Clubify</span>
+        </a>
+      </div>
+
+      <!-- Card -->
+      <div class="bg-slate-800/50 backdrop-blur-xl rounded-2xl border border-slate-700/50 p-8 text-center">
+        {error ? (
+          <>
+            <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-red-500/20 flex items-center justify-center">
+              <svg class="w-8 h-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+              </svg>
+            </div>
+            <h1 class="text-xl font-bold text-white mb-2">Verification Failed</h1>
+            <p class="text-slate-400 mb-6">{error}</p>
+            <a href="/admin"
+              class="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white font-semibold rounded-xl transition-all">
+              Try again
+            </a>
+          </>
+        ) : (
+          <>
+            <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-primary-500/20 flex items-center justify-center">
+              <svg class="w-8 h-8 text-primary-400 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+              </svg>
+            </div>
+            <h1 class="text-xl font-bold text-white mb-2">Verifying...</h1>
+            <p class="text-slate-400">Please wait while we verify your email.</p>
+          </>
+        )}
+      </div>
+    </div>
+  </div>
+</Layout>
+
+<style>
+  @import "../../styles/global.css";
+</style>

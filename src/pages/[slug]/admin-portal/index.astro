@@ -1,0 +1,306 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import { DatabaseService } from '../../../lib/db';
+import { getAuthContext } from '../../../lib/auth';
+
+const { slug } = Astro.params;
+
+// Get auth context
+const db = new DatabaseService(Astro.locals.runtime.env.DB);
+const { user } = await getAuthContext(Astro.cookies, db);
+
+// Redirect if not logged in
+if (!user) {
+  return Astro.redirect('/admin/login');
+}
+
+// Get club
+const club = await db.getClubBySlug(slug!);
+if (!club) {
+  return Astro.redirect('/admin');
+}
+
+// Check membership
+const member = await db.getClubMember(club.id, user.id);
+if (!member) {
+  return Astro.redirect('/admin');
+}
+
+// Get club members
+const members = await db.getClubMembers(club.id);
+---
+
+<Layout title={`${club.name} - Admin Portal`}>
+  <div class="min-h-screen bg-slate-950">
+    <!-- Sidebar -->
+    <aside class="fixed inset-y-0 left-0 w-64 bg-slate-900 border-r border-slate-800 hidden lg:block">
+      <div class="flex flex-col h-full">
+        <!-- Logo -->
+        <div class="p-4 border-b border-slate-800">
+          <a href="/" class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center">
+              <svg class="w-6 h-6 text-white" viewBox="0 0 24 24" fill="none">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" fill="currentColor" opacity="0.3"/>
+                <circle cx="12" cy="12" r="2" fill="currentColor"/>
+              </svg>
+            </div>
+            <span class="text-lg font-bold text-white">Clubify</span>
+          </a>
+        </div>
+
+        <!-- Club info -->
+        <div class="p-4 border-b border-slate-800">
+          <div class="flex items-center gap-3">
+            {club.crest_url ? (
+              <img src={club.crest_url} alt={club.name} class="w-10 h-10 rounded-lg object-contain bg-slate-800"/>
+            ) : (
+              <div class="w-10 h-10 rounded-lg flex items-center justify-center text-white font-bold" style={`background-color: ${club.primary_color}`}>
+                {club.name.charAt(0)}
+              </div>
+            )}
+            <div class="flex-1 min-w-0">
+              <p class="text-white font-medium truncate">{club.name}</p>
+              <p class="text-slate-400 text-xs">{club.county}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Navigation -->
+        <nav class="flex-1 p-4 space-y-1">
+          <a href={`/${slug}/admin-portal`} class="flex items-center gap-3 px-3 py-2 rounded-lg bg-primary-500/10 text-primary-400">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+            </svg>
+            <span>Dashboard</span>
+          </a>
+
+          <a href={`/${slug}/admin-portal/posts`} class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/>
+            </svg>
+            <span>Posts</span>
+          </a>
+
+          <a href={`/${slug}/admin-portal/fixtures`} class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+            </svg>
+            <span>Fixtures</span>
+          </a>
+
+          <a href={`/${slug}/admin-portal/homepage`} class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/>
+            </svg>
+            <span>Homepage</span>
+          </a>
+
+          <a href={`/${slug}/admin-portal/team`} class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+            </svg>
+            <span>Team</span>
+          </a>
+
+          <a href={`/${slug}/admin-portal/settings`} class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+            </svg>
+            <span>Settings</span>
+          </a>
+        </nav>
+
+        <!-- User menu -->
+        <div class="p-4 border-t border-slate-800">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center text-white font-medium">
+              {user.name.charAt(0).toUpperCase()}
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-white text-sm font-medium truncate">{user.name}</p>
+              <p class="text-slate-400 text-xs truncate">{member.role}</p>
+            </div>
+            <button id="logout-btn" class="p-2 text-slate-400 hover:text-white transition-colors" title="Sign out">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main content -->
+    <main class="lg:ml-64">
+      <!-- Header -->
+      <header class="sticky top-0 z-40 bg-slate-900/80 backdrop-blur-xl border-b border-slate-800">
+        <div class="flex items-center justify-between px-6 py-4">
+          <div class="flex items-center gap-4">
+            <button id="mobile-menu-btn" class="lg:hidden p-2 text-slate-400 hover:text-white">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+              </svg>
+            </button>
+            <h1 class="text-xl font-bold text-white">Dashboard</h1>
+          </div>
+
+          <div class="flex items-center gap-3">
+            <a href={`/${slug}`} target="_blank" class="flex items-center gap-2 px-4 py-2 border border-slate-600 text-slate-300 rounded-lg hover:bg-slate-800 transition-colors text-sm">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+              </svg>
+              View site
+            </a>
+            <a href={`/${slug}/admin-portal/posts/new`} class="flex items-center gap-2 px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg transition-colors text-sm font-medium">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+              </svg>
+              New post
+            </a>
+          </div>
+        </div>
+      </header>
+
+      <!-- Dashboard content -->
+      <div class="p-6">
+        <!-- Quick stats -->
+        <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <div class="bg-slate-800/50 rounded-xl p-5 border border-slate-700/50">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-slate-400 text-sm">Status</span>
+              {club.is_live ? (
+                <span class="px-2 py-1 bg-primary-500/20 text-primary-400 rounded-full text-xs font-medium">Live</span>
+              ) : (
+                <span class="px-2 py-1 bg-amber-500/20 text-amber-400 rounded-full text-xs font-medium">Draft</span>
+              )}
+            </div>
+            <p class="text-2xl font-bold text-white">{slug}.clubify.ie</p>
+          </div>
+
+          <div class="bg-slate-800/50 rounded-xl p-5 border border-slate-700/50">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-slate-400 text-sm">Template</span>
+              <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5z"/>
+              </svg>
+            </div>
+            <p class="text-2xl font-bold text-white capitalize">{club.template}</p>
+          </div>
+
+          <div class="bg-slate-800/50 rounded-xl p-5 border border-slate-700/50">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-slate-400 text-sm">Team members</span>
+              <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1z"/>
+              </svg>
+            </div>
+            <p class="text-2xl font-bold text-white">{members.length}</p>
+          </div>
+
+          <div class="bg-slate-800/50 rounded-xl p-5 border border-slate-700/50">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-slate-400 text-sm">Your role</span>
+              <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+              </svg>
+            </div>
+            <p class="text-2xl font-bold text-white capitalize">{member.role}</p>
+          </div>
+        </div>
+
+        <!-- Quick actions -->
+        <div class="grid md:grid-cols-2 gap-6 mb-8">
+          <div class="bg-slate-800/50 rounded-xl p-6 border border-slate-700/50">
+            <h2 class="text-lg font-bold text-white mb-4">Quick actions</h2>
+            <div class="grid grid-cols-2 gap-3">
+              <a href={`/${slug}/admin-portal/posts/new`} class="flex flex-col items-center gap-2 p-4 bg-slate-700/30 rounded-lg hover:bg-slate-700/50 transition-colors">
+                <svg class="w-6 h-6 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                </svg>
+                <span class="text-slate-300 text-sm">New post</span>
+              </a>
+              <a href={`/${slug}/admin-portal/fixtures`} class="flex flex-col items-center gap-2 p-4 bg-slate-700/30 rounded-lg hover:bg-slate-700/50 transition-colors">
+                <svg class="w-6 h-6 text-accent-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+                <span class="text-slate-300 text-sm">Add fixture</span>
+              </a>
+              <a href={`/${slug}/admin-portal/homepage`} class="flex flex-col items-center gap-2 p-4 bg-slate-700/30 rounded-lg hover:bg-slate-700/50 transition-colors">
+                <svg class="w-6 h-6 text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5z"/>
+                </svg>
+                <span class="text-slate-300 text-sm">Edit homepage</span>
+              </a>
+              <a href={`/${slug}/admin-portal/team`} class="flex flex-col items-center gap-2 p-4 bg-slate-700/30 rounded-lg hover:bg-slate-700/50 transition-colors">
+                <svg class="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
+                </svg>
+                <span class="text-slate-300 text-sm">Invite member</span>
+              </a>
+            </div>
+          </div>
+
+          <div class="bg-slate-800/50 rounded-xl p-6 border border-slate-700/50">
+            <h2 class="text-lg font-bold text-white mb-4">Setup checklist</h2>
+            <div class="space-y-3">
+              <label class="flex items-center gap-3 cursor-pointer">
+                <input type="checkbox" checked={!!club.crest_url} disabled class="w-5 h-5 rounded border-slate-600 bg-slate-700 text-primary-500 focus:ring-primary-500">
+                <span class={club.crest_url ? 'text-slate-400 line-through' : 'text-slate-300'}>Upload club crest</span>
+              </label>
+              <label class="flex items-center gap-3 cursor-pointer">
+                <input type="checkbox" checked={!!club.primary_color} disabled class="w-5 h-5 rounded border-slate-600 bg-slate-700 text-primary-500 focus:ring-primary-500">
+                <span class={club.primary_color ? 'text-slate-400 line-through' : 'text-slate-300'}>Set club colours</span>
+              </label>
+              <label class="flex items-center gap-3 cursor-pointer">
+                <input type="checkbox" checked={!!club.contact_email} disabled class="w-5 h-5 rounded border-slate-600 bg-slate-700 text-primary-500 focus:ring-primary-500">
+                <span class={club.contact_email ? 'text-slate-400 line-through' : 'text-slate-300'}>Add contact info</span>
+              </label>
+              <label class="flex items-center gap-3 cursor-pointer">
+                <input type="checkbox" checked={members.length > 1} disabled class="w-5 h-5 rounded border-slate-600 bg-slate-700 text-primary-500 focus:ring-primary-500">
+                <span class={members.length > 1 ? 'text-slate-400 line-through' : 'text-slate-300'}>Invite team members</span>
+              </label>
+              <label class="flex items-center gap-3 cursor-pointer">
+                <input type="checkbox" checked={!!club.is_live} disabled class="w-5 h-5 rounded border-slate-600 bg-slate-700 text-primary-500 focus:ring-primary-500">
+                <span class={club.is_live ? 'text-slate-400 line-through' : 'text-slate-300'}>Go live</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Team members -->
+        <div class="bg-slate-800/50 rounded-xl p-6 border border-slate-700/50">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-lg font-bold text-white">Team members</h2>
+            <a href={`/${slug}/admin-portal/team`} class="text-primary-400 hover:text-primary-300 text-sm">Manage team</a>
+          </div>
+          <div class="space-y-3">
+            {members.map((m) => (
+              <div class="flex items-center gap-3 p-3 bg-slate-700/30 rounded-lg">
+                <div class="w-10 h-10 rounded-full bg-slate-600 flex items-center justify-center text-white font-medium">
+                  {m.user.name.charAt(0).toUpperCase()}
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-white font-medium truncate">{m.user.name}</p>
+                  <p class="text-slate-400 text-sm truncate">{m.user.email}</p>
+                </div>
+                <span class="px-3 py-1 bg-slate-600/50 text-slate-300 rounded-full text-xs font-medium capitalize">{m.role}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</Layout>
+
+<script>
+  document.getElementById('logout-btn')?.addEventListener('click', async () => {
+    await fetch('/api/auth/logout', { method: 'POST' });
+    window.location.href = '/admin';
+  });
+</script>
+
+<style>
+  @import "../../../styles/global.css";
+</style>
