@@ -3,6 +3,7 @@ import AdminLayout from '../../../../components/admin/AdminLayout.astro';
 import { DatabaseService } from '../../../../lib/db';
 import { getAuthContext } from '../../../../lib/auth';
 import { getDefaultConfig, TEMPLATES, type BlockConfig } from '../../../../lib/templates';
+import { hasPermission, type Role } from '../../../../lib/permissions';
 
 const { slug } = Astro.params;
 
@@ -27,7 +28,7 @@ if (!member) {
   return Astro.redirect('/admin');
 }
 
-const canEdit = ['admin', 'pro'].includes(member.role);
+const canEdit = hasPermission(member.role as Role, 'homepage.edit');
 
 // Get homepage config
 const homepageConfig = await db.getHomepageConfig(club.id);

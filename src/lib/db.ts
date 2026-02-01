@@ -501,6 +501,42 @@ export class DatabaseService {
     ).run();
   }
 
+  async getAuditLogs(clubId: string, limit: number = 50, offset: number = 0): Promise<Array<{
+    id: string;
+    club_id: string;
+    user_id: string | null;
+    user_name: string | null;
+    user_email: string | null;
+    action: string;
+    entity_type: string | null;
+    entity_id: string | null;
+    details: string | null;
+    ip_address: string | null;
+    created_at: string;
+  }>> {
+    const results = await this.db.prepare(`
+      SELECT
+        al.*,
+        u.name as user_name,
+        u.email as user_email
+      FROM audit_log al
+      LEFT JOIN users u ON al.user_id = u.id
+      WHERE al.club_id = ?
+      ORDER BY al.created_at DESC
+      LIMIT ? OFFSET ?
+    `).bind(clubId, limit, offset).all<any>();
+
+    return results.results || [];
+  }
+
+  async getAuditLogCount(clubId: string): Promise<number> {
+    const result = await this.db.prepare(`
+      SELECT COUNT(*) as count FROM audit_log WHERE club_id = ?
+    `).bind(clubId).first<{ count: number }>();
+
+    return result?.count || 0;
+  }
+
   // Post operations
   async getPublishedPosts(clubId: string, limit: number = 10): Promise<Post[]> {
     const results = await this.db.prepare(`

@@ -2,6 +2,7 @@
 import AdminLayout from '../../../../components/admin/AdminLayout.astro';
 import { DatabaseService } from '../../../../lib/db';
 import { getAuthContext } from '../../../../lib/auth';
+import { hasPermission, type Role } from '../../../../lib/permissions';
 
 const { slug } = Astro.params;
 
@@ -27,6 +28,7 @@ if (!member) {
 }
 
 const isAdmin = member.role === 'admin';
+const canViewAudit = hasPermission(member.role as Role, 'audit.view');
 
 // Get social connections for status
 const connections = await db.getSocialConnections(club.id);
@@ -132,6 +134,28 @@ const facebookConnected = connections.some(c => c.platform === 'facebook');
           <span class="px-3 py-1 bg-slate-700 text-slate-400 rounded-full text-xs font-medium">Coming soon</span>
         </div>
       </div>
+
+      {canViewAudit && (
+        <!-- Audit Log -->
+        <a href={`/${slug}/admin-portal/audit`} class="block bg-slate-800/50 rounded-xl border border-slate-700/50 p-6 hover:bg-slate-800 hover:border-slate-600 transition-colors">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-4">
+              <div class="w-12 h-12 rounded-xl bg-slate-500/10 flex items-center justify-center">
+                <svg class="w-6 h-6 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+              </div>
+              <div>
+                <h3 class="text-lg font-semibold text-white">Audit Log</h3>
+                <p class="text-slate-400 text-sm">View all activity and changes</p>
+              </div>
+            </div>
+            <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+            </svg>
+          </div>
+        </a>
+      )}
 
       {isAdmin && (
         <!-- Danger Zone -->
