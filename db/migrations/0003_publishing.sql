@@ -18,8 +18,8 @@ CREATE TABLE IF NOT EXISTS social_connections (
   UNIQUE(club_id, platform)
 );
 
-CREATE INDEX idx_social_connections_club ON social_connections(club_id);
-CREATE INDEX idx_social_connections_platform ON social_connections(platform);
+CREATE INDEX IF NOT EXISTS idx_social_connections_club ON social_connections(club_id);
+CREATE INDEX IF NOT EXISTS idx_social_connections_platform ON social_connections(platform);
 
 -- Publish jobs queue (for tracking published content)
 CREATE TABLE IF NOT EXISTS publish_jobs (
@@ -37,9 +37,9 @@ CREATE TABLE IF NOT EXISTS publish_jobs (
   completed_at TEXT
 );
 
-CREATE INDEX idx_publish_jobs_club ON publish_jobs(club_id);
-CREATE INDEX idx_publish_jobs_status ON publish_jobs(status);
-CREATE INDEX idx_publish_jobs_entity ON publish_jobs(entity_type, entity_id);
+CREATE INDEX IF NOT EXISTS idx_publish_jobs_club ON publish_jobs(club_id);
+CREATE INDEX IF NOT EXISTS idx_publish_jobs_status ON publish_jobs(status);
+CREATE INDEX IF NOT EXISTS idx_publish_jobs_entity ON publish_jobs(entity_type, entity_id);
 
 -- Push notification subscriptions
 CREATE TABLE IF NOT EXISTS push_subscriptions (
@@ -53,7 +53,7 @@ CREATE TABLE IF NOT EXISTS push_subscriptions (
   UNIQUE(club_id, endpoint)
 );
 
-CREATE INDEX idx_push_subscriptions_club ON push_subscriptions(club_id);
+CREATE INDEX IF NOT EXISTS idx_push_subscriptions_club ON push_subscriptions(club_id);
 
 -- Published content tracking (what was published where)
 CREATE TABLE IF NOT EXISTS publish_history (
@@ -68,5 +68,5 @@ CREATE TABLE IF NOT EXISTS publish_history (
   published_by TEXT REFERENCES users(id)
 );
 
-CREATE INDEX idx_publish_history_club ON publish_history(club_id);
-CREATE INDEX idx_publish_history_entity ON publish_history(entity_type, entity_id);
+CREATE INDEX IF NOT EXISTS idx_publish_history_club ON publish_history(club_id);
+CREATE INDEX IF NOT EXISTS idx_publish_history_entity ON publish_history(entity_type, entity_id);

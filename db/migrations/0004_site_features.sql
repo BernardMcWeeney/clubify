@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS sponsors (
   updated_at TEXT DEFAULT (datetime('now'))
 );
 
-CREATE INDEX idx_sponsors_club ON sponsors(club_id);
+CREATE INDEX IF NOT EXISTS idx_sponsors_club ON sponsors(club_id);
 
 -- Contact form settings
 CREATE TABLE IF NOT EXISTS contact_settings (
@@ -53,7 +53,7 @@ CREATE TABLE IF NOT EXISTS contact_submissions (
   created_at TEXT DEFAULT (datetime('now'))
 );
 
-CREATE INDEX idx_contact_submissions_club ON contact_submissions(club_id);
+CREATE INDEX IF NOT EXISTS idx_contact_submissions_club ON contact_submissions(club_id);
 
 -- Forms
 CREATE TABLE IF NOT EXISTS forms (
@@ -69,7 +69,7 @@ CREATE TABLE IF NOT EXISTS forms (
   UNIQUE(club_id, slug)
 );
 
-CREATE INDEX idx_forms_club ON forms(club_id);
+CREATE INDEX IF NOT EXISTS idx_forms_club ON forms(club_id);
 
 -- Form fields
 CREATE TABLE IF NOT EXISTS form_fields (
@@ -84,7 +84,7 @@ CREATE TABLE IF NOT EXISTS form_fields (
   order_index INTEGER DEFAULT 0
 );
 
-CREATE INDEX idx_form_fields_form ON form_fields(form_id);
+CREATE INDEX IF NOT EXISTS idx_form_fields_form ON form_fields(form_id);
 
 -- Form submissions
 CREATE TABLE IF NOT EXISTS form_submissions (
@@ -95,5 +95,5 @@ CREATE TABLE IF NOT EXISTS form_submissions (
   created_at TEXT DEFAULT (datetime('now'))
 );
 
-CREATE INDEX idx_form_submissions_form ON form_submissions(form_id);
-CREATE INDEX idx_form_submissions_club ON form_submissions(club_id);
+CREATE INDEX IF NOT EXISTS idx_form_submissions_form ON form_submissions(form_id);
+CREATE INDEX IF NOT EXISTS idx_form_submissions_club ON form_submissions(club_id);

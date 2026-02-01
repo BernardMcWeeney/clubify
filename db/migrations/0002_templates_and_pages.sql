@@ -16,8 +16,8 @@ CREATE TABLE IF NOT EXISTS pages (
   UNIQUE(club_id, slug)
 );
 
-CREATE INDEX idx_pages_club ON pages(club_id);
-CREATE INDEX idx_pages_slug ON pages(slug);
+CREATE INDEX IF NOT EXISTS idx_pages_club ON pages(club_id);
+CREATE INDEX IF NOT EXISTS idx_pages_slug ON pages(slug);
 
 -- Homepage configurations (template-specific block settings per club)
 CREATE TABLE IF NOT EXISTS homepage_configs (
@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS homepage_configs (
   UNIQUE(club_id)
 );
 
-CREATE INDEX idx_homepage_configs_club ON homepage_configs(club_id);
+CREATE INDEX IF NOT EXISTS idx_homepage_configs_club ON homepage_configs(club_id);
 
 -- Post categories for better organization
 CREATE TABLE IF NOT EXISTS post_categories (
@@ -46,4 +46,4 @@ CREATE TABLE IF NOT EXISTS post_categories (
   UNIQUE(club_id, slug)
 );
 
-CREATE INDEX idx_post_categories_club ON post_categories(club_id);
+CREATE INDEX IF NOT EXISTS idx_post_categories_club ON post_categories(club_id);

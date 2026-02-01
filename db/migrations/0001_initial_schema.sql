@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS users (
   updated_at TEXT DEFAULT (datetime('now'))
 );
 
-CREATE INDEX idx_users_email ON users(email);
+CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
 
 -- Clubs table
 CREATE TABLE IF NOT EXISTS clubs (
@@ -41,7 +41,7 @@ CREATE TABLE IF NOT EXISTS clubs (
   updated_at TEXT DEFAULT (datetime('now'))
 );
 
-CREATE INDEX idx_clubs_slug ON clubs(slug);
+CREATE INDEX IF NOT EXISTS idx_clubs_slug ON clubs(slug);
 
 -- Club members (users belonging to clubs with roles)
 CREATE TABLE IF NOT EXISTS club_members (
@@ -55,8 +55,8 @@ CREATE TABLE IF NOT EXISTS club_members (
   UNIQUE(club_id, user_id)
 );
 
-CREATE INDEX idx_club_members_club ON club_members(club_id);
-CREATE INDEX idx_club_members_user ON club_members(user_id);
+CREATE INDEX IF NOT EXISTS idx_club_members_club ON club_members(club_id);
+CREATE INDEX IF NOT EXISTS idx_club_members_user ON club_members(user_id);
 
 -- Auth sessions
 CREATE TABLE IF NOT EXISTS sessions (
@@ -66,7 +66,7 @@ CREATE TABLE IF NOT EXISTS sessions (
   created_at TEXT DEFAULT (datetime('now'))
 );
 
-CREATE INDEX idx_sessions_user ON sessions(user_id);
+CREATE INDEX IF NOT EXISTS idx_sessions_user ON sessions(user_id);
 
 -- Magic link tokens for passwordless auth
 CREATE TABLE IF NOT EXISTS magic_links (
@@ -78,8 +78,8 @@ CREATE TABLE IF NOT EXISTS magic_links (
   created_at TEXT DEFAULT (datetime('now'))
 );
 
-CREATE INDEX idx_magic_links_token ON magic_links(token);
-CREATE INDEX idx_magic_links_email ON magic_links(email);
+CREATE INDEX IF NOT EXISTS idx_magic_links_token ON magic_links(token);
+CREATE INDEX IF NOT EXISTS idx_magic_links_email ON magic_links(email);
 
 -- Club invitations
 CREATE TABLE IF NOT EXISTS club_invitations (
@@ -94,8 +94,8 @@ CREATE TABLE IF NOT EXISTS club_invitations (
   created_at TEXT DEFAULT (datetime('now'))
 );
 
-CREATE INDEX idx_club_invitations_token ON club_invitations(token);
-CREATE INDEX idx_club_invitations_club ON club_invitations(club_id);
+CREATE INDEX IF NOT EXISTS idx_club_invitations_token ON club_invitations(token);
+CREATE INDEX IF NOT EXISTS idx_club_invitations_club ON club_invitations(club_id);
 
 -- Posts/News
 CREATE TABLE IF NOT EXISTS posts (
@@ -115,8 +115,8 @@ CREATE TABLE IF NOT EXISTS posts (
   UNIQUE(club_id, slug)
 );
 
-CREATE INDEX idx_posts_club ON posts(club_id);
-CREATE INDEX idx_posts_status ON posts(status);
+CREATE INDEX IF NOT EXISTS idx_posts_club ON posts(club_id);
+CREATE INDEX IF NOT EXISTS idx_posts_status ON posts(status);
 
 -- Fixtures
 CREATE TABLE IF NOT EXISTS fixtures (
@@ -136,8 +136,8 @@ CREATE TABLE IF NOT EXISTS fixtures (
   updated_at TEXT DEFAULT (datetime('now'))
 );
 
-CREATE INDEX idx_fixtures_club ON fixtures(club_id);
-CREATE INDEX idx_fixtures_date ON fixtures(match_date);
+CREATE INDEX IF NOT EXISTS idx_fixtures_club ON fixtures(club_id);
+CREATE INDEX IF NOT EXISTS idx_fixtures_date ON fixtures(match_date);
 
 -- Media library
 CREATE TABLE IF NOT EXISTS media (
@@ -152,7 +152,7 @@ CREATE TABLE IF NOT EXISTS media (
   created_at TEXT DEFAULT (datetime('now'))
 );
 
-CREATE INDEX idx_media_club ON media(club_id);
+CREATE INDEX IF NOT EXISTS idx_media_club ON media(club_id);
 
 -- Audit log
 CREATE TABLE IF NOT EXISTS audit_log (
@@ -167,5 +167,5 @@ CREATE TABLE IF NOT EXISTS audit_log (
   created_at TEXT DEFAULT (datetime('now'))
 );
 
-CREATE INDEX idx_audit_log_club ON audit_log(club_id);
-CREATE INDEX idx_audit_log_user ON audit_log(user_id);
+CREATE INDEX IF NOT EXISTS idx_audit_log_club ON audit_log(club_id);
+CREATE INDEX IF NOT EXISTS idx_audit_log_user ON audit_log(user_id);

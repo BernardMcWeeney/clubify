@@ -5,15 +5,16 @@ const features = [
   { name: "3 professional templates", included: true },
   { name: "Fixtures & results management", included: true },
   { name: "News & posts with rich editor", included: true },
-  { name: "Media library (up to 1GB)", included: true },
+  { name: "Media library (up to 5GB)", included: true },
   { name: "Social media publishing", included: true },
-  { name: "Team member accounts", included: true },
+  { name: "Unlimited team member accounts", included: true },
   { name: "Contact forms & inbox", included: true },
   { name: "Sponsor showcase", included: true },
   { name: "SSL certificate included", included: true },
   { name: "Free yourclub.clubify.ie domain", included: true },
   { name: "Custom domain support", included: true },
   { name: "GDPR compliant", included: true },
+  { name: "Priority email support", included: true },
 ];
 ---
 
@@ -27,73 +28,93 @@ const features = [
         </svg>
         Simple Pricing
       </span>
-      <h2 class="text-4xl font-bold text-slate-900 mb-4">Free for Every GAA Club</h2>
+      <h2 class="text-4xl font-bold text-slate-900 mb-4">One Plan. Everything Included.</h2>
       <p class="text-xl text-slate-600 max-w-2xl mx-auto">
-        We believe every club deserves a professional online presence. That's why Clubify is free during our launch phase.
+        Professional club websites without the complexity. Start with a free trial, then choose what works for you.
       </p>
     </div>
 
-    <!-- Pricing Card -->
-    <div class="max-w-lg mx-auto">
+    <!-- Pricing Cards -->
+    <div class="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+      <!-- Monthly -->
+      <div class="relative bg-white rounded-3xl border border-slate-200 shadow-lg overflow-hidden">
+        <div class="p-8">
+          <h3 class="text-xl font-bold text-slate-900 mb-1">Monthly</h3>
+          <p class="text-slate-500 text-sm mb-6">Flexible month-to-month billing</p>
+          <div class="flex items-baseline gap-1 mb-6">
+            <span class="text-5xl font-black text-slate-900">€50</span>
+            <span class="text-slate-500">/month</span>
+          </div>
+          <a
+            href="/admin/signup"
+            class="block w-full py-3.5 px-6 bg-slate-900 hover:bg-slate-800 text-white text-center font-semibold rounded-xl transition-colors"
+          >
+            Start 7-day free trial
+          </a>
+          <p class="text-center text-slate-500 text-xs mt-3">
+            No credit card required to start
+          </p>
+        </div>
+      </div>
+
+      <!-- Annual -->
       <div class="relative">
-        <!-- Popular badge -->
+        <!-- Best value badge -->
         <div class="absolute -top-4 left-1/2 -translate-x-1/2 z-10">
           <span class="inline-flex items-center gap-1.5 px-4 py-1.5 bg-primary-600 text-white text-sm font-semibold rounded-full shadow-lg shadow-primary-600/30">
             <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
               <path fill-rule="evenodd" d="M5 2a1 1 0 011 1v1h1a1 1 0 010 2H6v1a1 1 0 01-2 0V6H3a1 1 0 010-2h1V3a1 1 0 011-1zm0 10a1 1 0 011 1v1h1a1 1 0 110 2H6v1a1 1 0 11-2 0v-1H3a1 1 0 110-2h1v-1a1 1 0 011-1zM12 2a1 1 0 01.967.744L14.146 7.2 17.5 9.134a1 1 0 010 1.732l-3.354 1.935-1.18 4.455a1 1 0 01-1.933 0L9.854 12.8 6.5 10.866a1 1 0 010-1.732l3.354-1.935 1.18-4.455A1 1 0 0112 2z" clip-rule="evenodd"/>
             </svg>
-            Launch Special
+            Save €100/year
           </span>
         </div>
 
         <div class="bg-white rounded-3xl border-2 border-primary-200 shadow-xl shadow-primary-100/50 overflow-hidden">
-          <!-- Header -->
-          <div class="p-8 text-center bg-gradient-to-br from-primary-50 to-white border-b border-primary-100">
-            <h3 class="text-2xl font-bold text-slate-900 mb-2">Club Starter</h3>
-            <div class="flex items-baseline justify-center gap-2">
-              <span class="text-5xl font-black text-primary-600">Free</span>
-              <span class="text-slate-500 text-lg line-through">€19/mo</span>
-            </div>
-            <p class="text-slate-600 mt-3">Everything you need to launch your club online</p>
-          </div>
-
-          <!-- Features -->
           <div class="p-8">
-            <ul class="space-y-3">
-              {features.map((feature) => (
-                <li class="flex items-center gap-3">
-                  <div class="flex-shrink-0 w-5 h-5 rounded-full bg-primary-100 flex items-center justify-center">
-                    <svg class="w-3.5 h-3.5 text-primary-600" fill="currentColor" viewBox="0 0 20 20">
-                      <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                    </svg>
-                  </div>
-                  <span class="text-slate-700">{feature.name}</span>
-                </li>
-              ))}
-            </ul>
-
-            <!-- CTA -->
-            <div class="mt-8">
-              <a
-                href="/admin/signup"
-                class="block w-full py-4 px-6 bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white text-center font-bold text-lg rounded-xl transition-all shadow-lg shadow-primary-500/25 hover:shadow-primary-500/40"
-              >
-                Get Started Free
-              </a>
-              <p class="text-center text-slate-500 text-sm mt-3">
-                No credit card required. Set up in under 5 minutes.
-              </p>
+            <h3 class="text-xl font-bold text-slate-900 mb-1">Annual</h3>
+            <p class="text-slate-500 text-sm mb-6">Best value - 2 months free</p>
+            <div class="flex items-baseline gap-2 mb-2">
+              <span class="text-5xl font-black text-primary-600">€500</span>
+              <span class="text-slate-500">/year</span>
             </div>
+            <p class="text-sm text-slate-500 mb-6">
+              <span class="line-through">€600</span> · That's just €41.67/month
+            </p>
+            <a
+              href="/admin/signup"
+              class="block w-full py-3.5 px-6 bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white text-center font-semibold rounded-xl transition-all shadow-lg shadow-primary-500/25"
+            >
+              Start 7-day free trial
+            </a>
+            <p class="text-center text-slate-500 text-xs mt-3">
+              No credit card required to start
+            </p>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Bottom note -->
-    <div class="mt-12 text-center">
-      <p class="text-slate-600">
-        <strong class="text-slate-900">Premium features coming soon:</strong> Push notifications, advanced analytics,
-        multiple teams, and more. Early adopters get locked-in pricing.
+    <!-- Features list -->
+    <div class="mt-16 max-w-3xl mx-auto">
+      <h4 class="text-center text-lg font-semibold text-slate-900 mb-8">Everything included in your subscription</h4>
+      <div class="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
+        {features.map((feature) => (
+          <div class="flex items-center gap-2">
+            <svg class="w-5 h-5 text-primary-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+            </svg>
+            <span class="text-slate-700 text-sm">{feature.name}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    <!-- Trial note -->
+    <div class="mt-12 text-center p-6 bg-primary-50 rounded-2xl border border-primary-100 max-w-2xl mx-auto">
+      <h4 class="font-bold text-slate-900 mb-2">7-Day Free Trial</h4>
+      <p class="text-slate-600 text-sm">
+        Try Clubify risk-free for 7 days. No credit card required to start.
+        Set up your club, explore all features, and see the difference before you commit.
       </p>
     </div>
   </div>
