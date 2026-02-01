@@ -31,11 +31,11 @@ bucket_name = "clubify-media"
 
 # Queue for async publishing jobs
 # Run: wrangler queues create clubify-publish-queue
-[[queues.producers]]
-binding = "PUBLISH_QUEUE"
-queue = "clubify-publish-queue"
+# [[queues.producers]]
+# binding = "PUBLISH_QUEUE"
+# queue = "clubify-publish-queue"
 
-[[queues.consumers]]
-queue = "clubify-publish-queue"
-max_batch_size = 10
-max_batch_timeout = 30
+# [[queues.consumers]]
+# queue = "clubify-publish-queue"
+# max_batch_size = 10
+# max_batch_timeout = 30
