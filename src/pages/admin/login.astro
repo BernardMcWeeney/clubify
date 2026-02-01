@@ -174,10 +174,15 @@ import Button from '../../components/Button.astro';
           const data = await res.json();
 
           if (data.user) {
-            // User is logged in, redirect
-            if (data.clubs && data.clubs.length > 0) {
+            // User is logged in, redirect appropriately
+            if (data.isSuperAdmin) {
+              // Super admin goes to super admin dashboard
+              window.location.href = '/admin/super';
+            } else if (data.clubs && data.clubs.length > 0) {
+              // Regular user with clubs goes to their club
               window.location.href = `/${data.clubs[0].slug}/admin-portal`;
             } else {
+              // New user without clubs goes to onboarding
               window.location.href = '/admin/signup';
             }
             return;

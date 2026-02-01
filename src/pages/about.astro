@@ -1,0 +1,110 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Navigation from '../components/Navigation.astro';
+import PageHeader from '../components/PageHeader.astro';
+import Footer from '../components/Footer.astro';
+---
+
+<Layout title="About Us - Clubify">
+  <Navigation />
+  <PageHeader
+    title="About Clubify"
+    description="Built by GAA people, for GAA clubs"
+    badge="Our Story"
+  />
+
+  <section class="py-16 bg-white">
+    <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+      <!-- Mission Statement -->
+      <div class="text-center mb-16">
+        <h2 class="text-3xl font-bold text-slate-900 mb-6">Our Mission</h2>
+        <p class="text-xl text-slate-600 max-w-2xl mx-auto leading-relaxed">
+          To give every GAA club a professional online presence without the cost, complexity, or technical headaches of traditional website development.
+        </p>
+      </div>
+
+      <!-- Story -->
+      <div class="mb-16">
+        <h2 class="text-2xl font-bold text-slate-900 mb-6">Our Story</h2>
+        <div class="prose prose-lg prose-slate max-w-none">
+          <p>
+            Clubify was born out of frustration. As volunteers in GAA clubs ourselves, we saw the same problems everywhere: outdated websites, scattered information across Facebook groups, and PROs spending hours trying to keep members informed.
+          </p>
+          <p>
+            Most clubs either couldn't afford a professional website, or had one built years ago that nobody knew how to update. Meanwhile, other clubs were doing everything through Facebook posts and WhatsApp groups - making it impossible for anyone to find fixture lists or contact details.
+          </p>
+          <p>
+            We knew there had to be a better way. A platform designed specifically for the way GAA clubs actually work. Something that any committee member could use, without needing to know HTML or hire a web developer.
+          </p>
+          <p>
+            That's why we built Clubify. A purpose-built platform that lets clubs create beautiful, professional websites in minutes - and keep them updated just as easily. Fixtures, results, news, forms, sponsors - everything a modern GAA club needs, all in one place.
+          </p>
+        </div>
+      </div>
+
+      <!-- Values -->
+      <div class="mb-16">
+        <h2 class="text-2xl font-bold text-slate-900 mb-8 text-center">What We Believe</h2>
+        <div class="grid md:grid-cols-3 gap-6">
+          <div class="bg-slate-50 rounded-2xl p-6 border border-slate-200">
+            <div class="w-12 h-12 bg-primary-100 rounded-xl flex items-center justify-center mb-4">
+              <svg class="w-6 h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+              </svg>
+            </div>
+            <h3 class="text-lg font-semibold text-slate-900 mb-2">Community First</h3>
+            <p class="text-slate-600">
+              GAA clubs are the heart of Irish communities. We're here to help them thrive in the digital age.
+            </p>
+          </div>
+
+          <div class="bg-slate-50 rounded-2xl p-6 border border-slate-200">
+            <div class="w-12 h-12 bg-primary-100 rounded-xl flex items-center justify-center mb-4">
+              <svg class="w-6 h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+              </svg>
+            </div>
+            <h3 class="text-lg font-semibold text-slate-900 mb-2">Simple by Design</h3>
+            <p class="text-slate-600">
+              If your PRO can use Facebook, they can use Clubify. No training required.
+            </p>
+          </div>
+
+          <div class="bg-slate-50 rounded-2xl p-6 border border-slate-200">
+            <div class="w-12 h-12 bg-primary-100 rounded-xl flex items-center justify-center mb-4">
+              <svg class="w-6 h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+              </svg>
+            </div>
+            <h3 class="text-lg font-semibold text-slate-900 mb-2">Built to Last</h3>
+            <p class="text-slate-600">
+              Your club's website should work as reliably as the pitch on match day.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Irish Made -->
+      <div class="bg-gradient-to-br from-primary-50 to-accent-50 rounded-3xl p-8 md:p-12 text-center border border-primary-100">
+        <div class="inline-flex items-center gap-2 px-4 py-2 bg-white/80 rounded-full text-sm font-semibold text-slate-700 mb-6">
+          <span class="text-2xl">🇮🇪</span>
+          Proudly Irish
+        </div>
+        <h2 class="text-2xl font-bold text-slate-900 mb-4">Made in Ireland, for Ireland</h2>
+        <p class="text-slate-600 max-w-2xl mx-auto">
+          Clubify is designed, built, and hosted in Ireland. Your data stays in the EU, and our support team understands the unique needs of GAA clubs because we're part of the community ourselves.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <Footer />
+</Layout>
+
+<style>
+  @import "../styles/global.css";
+
+  .prose p {
+    @apply text-slate-600 mb-4 leading-relaxed;
+  }
+</style>

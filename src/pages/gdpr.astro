@@ -1,0 +1,179 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Navigation from '../components/Navigation.astro';
+import PageHeader from '../components/PageHeader.astro';
+import Footer from '../components/Footer.astro';
+
+const lastUpdated = "1 February 2026";
+---
+
+<Layout title="GDPR Compliance - Clubify">
+  <Navigation />
+  <PageHeader
+    title="GDPR Compliance"
+    description="How Clubify protects your data rights under GDPR"
+    badge="Legal"
+  />
+
+  <section class="py-16 bg-white">
+    <div class="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+      <p class="text-sm text-slate-500 mb-8">Last updated: {lastUpdated}</p>
+
+      <div class="prose prose-slate max-w-none">
+        <h2>Our Commitment to GDPR</h2>
+        <p>
+          Clubify is committed to protecting your personal data and complying with the General Data Protection Regulation (GDPR). As an Irish company, we adhere to both GDPR and the Irish Data Protection Act 2018.
+        </p>
+
+        <h2>Your Data Rights</h2>
+        <p>
+          Under GDPR, you have the following rights regarding your personal data:
+        </p>
+
+        <div class="grid gap-4 my-8">
+          <div class="bg-slate-50 rounded-xl p-5 border border-slate-200">
+            <h3 class="text-lg font-semibold text-slate-900 mb-2">Right to Access</h3>
+            <p class="text-slate-600 mb-0">
+              You can request a copy of all personal data we hold about you. We will provide this within 30 days.
+            </p>
+          </div>
+
+          <div class="bg-slate-50 rounded-xl p-5 border border-slate-200">
+            <h3 class="text-lg font-semibold text-slate-900 mb-2">Right to Rectification</h3>
+            <p class="text-slate-600 mb-0">
+              You can request that we correct any inaccurate or incomplete personal data.
+            </p>
+          </div>
+
+          <div class="bg-slate-50 rounded-xl p-5 border border-slate-200">
+            <h3 class="text-lg font-semibold text-slate-900 mb-2">Right to Erasure</h3>
+            <p class="text-slate-600 mb-0">
+              You can request that we delete your personal data. We will do so unless we have a legal obligation to retain it.
+            </p>
+          </div>
+
+          <div class="bg-slate-50 rounded-xl p-5 border border-slate-200">
+            <h3 class="text-lg font-semibold text-slate-900 mb-2">Right to Data Portability</h3>
+            <p class="text-slate-600 mb-0">
+              You can request your data in a machine-readable format (JSON) to transfer to another service.
+            </p>
+          </div>
+
+          <div class="bg-slate-50 rounded-xl p-5 border border-slate-200">
+            <h3 class="text-lg font-semibold text-slate-900 mb-2">Right to Object</h3>
+            <p class="text-slate-600 mb-0">
+              You can object to certain types of processing, including processing for direct marketing.
+            </p>
+          </div>
+
+          <div class="bg-slate-50 rounded-xl p-5 border border-slate-200">
+            <h3 class="text-lg font-semibold text-slate-900 mb-2">Right to Restrict Processing</h3>
+            <p class="text-slate-600 mb-0">
+              You can request that we limit how we use your data while a complaint or query is being resolved.
+            </p>
+          </div>
+        </div>
+
+        <h2>How to Exercise Your Rights</h2>
+        <p>
+          To exercise any of these rights, you can:
+        </p>
+        <ul>
+          <li>Use the data export feature in your admin portal settings</li>
+          <li>Email us at <a href="mailto:privacy@clubify.ie">privacy@clubify.ie</a></li>
+          <li>Contact us by post at Clubify, Dublin, Ireland</li>
+        </ul>
+        <p>
+          We will respond to your request within 30 days. In complex cases, we may extend this by an additional 60 days, but we will inform you of this.
+        </p>
+
+        <h2>Legal Basis for Processing</h2>
+        <p>We process personal data based on:</p>
+        <ul>
+          <li><strong>Contract:</strong> To provide services you've subscribed to</li>
+          <li><strong>Legitimate Interest:</strong> To improve our services and prevent fraud</li>
+          <li><strong>Consent:</strong> For optional features like marketing communications</li>
+          <li><strong>Legal Obligation:</strong> To comply with applicable laws</li>
+        </ul>
+
+        <h2>Data Processing</h2>
+        <h3>Data Controller</h3>
+        <p>
+          Clubify is the data controller for personal data processed through our platform. We determine the purposes and means of processing.
+        </p>
+
+        <h3>Data Processors</h3>
+        <p>We use the following third-party processors:</p>
+        <ul>
+          <li><strong>Cloudflare:</strong> Web hosting and security (EU/US with appropriate safeguards)</li>
+          <li><strong>Resend:</strong> Email delivery (US with EU data processing agreement)</li>
+        </ul>
+        <p>
+          All processors are bound by data processing agreements that ensure GDPR compliance.
+        </p>
+
+        <h2>International Transfers</h2>
+        <p>
+          Where we transfer data outside the EU/EEA, we ensure appropriate safeguards are in place, such as:
+        </p>
+        <ul>
+          <li>EU-approved Standard Contractual Clauses</li>
+          <li>Adequacy decisions by the European Commission</li>
+        </ul>
+
+        <h2>Data Breach Procedures</h2>
+        <p>
+          In the event of a data breach that poses a risk to your rights, we will:
+        </p>
+        <ul>
+          <li>Notify the Data Protection Commission within 72 hours</li>
+          <li>Inform affected users without undue delay</li>
+          <li>Document the breach and our response</li>
+        </ul>
+
+        <h2>Supervisory Authority</h2>
+        <p>
+          If you believe we have not handled your data properly, you have the right to lodge a complaint with a supervisory authority. In Ireland, this is the Data Protection Commission:
+        </p>
+        <p class="bg-slate-50 p-4 rounded-lg border border-slate-200">
+          <strong>Data Protection Commission</strong><br>
+          21 Fitzwilliam Square South<br>
+          Dublin 2, D02 RD28<br>
+          Ireland<br>
+          <a href="https://www.dataprotection.ie" target="_blank" rel="noopener">www.dataprotection.ie</a>
+        </p>
+
+        <h2>Contact Our Data Protection Officer</h2>
+        <p>
+          For any questions about GDPR or data protection, contact us:
+        </p>
+        <ul>
+          <li>Email: <a href="mailto:privacy@clubify.ie">privacy@clubify.ie</a></li>
+          <li>Address: Clubify, Dublin, Ireland</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <Footer />
+</Layout>
+
+<style>
+  @import "../styles/global.css";
+
+  .prose h2 {
+    @apply text-2xl font-bold text-slate-900 mt-10 mb-4;
+  }
+  .prose h3 {
+    @apply text-lg font-semibold text-slate-900 mt-6 mb-3;
+  }
+  .prose p {
+    @apply text-slate-600 mb-4 leading-relaxed;
+  }
+  .prose ul {
+    @apply list-disc list-inside space-y-2 text-slate-600 mb-4;
+  }
+  .prose a {
+    @apply text-primary-600 hover:text-primary-700 underline;
+  }
+</style>

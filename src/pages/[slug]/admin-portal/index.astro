@@ -2,7 +2,6 @@
 import AdminLayout from '../../../components/admin/AdminLayout.astro';
 import { DatabaseService } from '../../../lib/db';
 import { getAuthContext } from '../../../lib/auth';
-import { formatDateTime } from '../../../lib/utils';
 
 const { slug } = Astro.params;
 
@@ -118,26 +117,32 @@ function formatDate(dateStr: string | null): string {
     </div>
 
     <!-- Site Status Banner -->
-    <div class={`rounded-2xl p-6 mb-8 ${club.is_live ? 'bg-gradient-to-r from-green-500 to-emerald-600' : 'bg-gradient-to-r from-amber-500 to-orange-600'}`}>
-      <div class="flex items-center justify-between">
+    <div class={`rounded-2xl p-5 mb-8 border ${club.is_live ? 'bg-green-50 border-green-200' : 'bg-amber-50 border-amber-200'}`}>
+      <div class="flex items-center justify-between flex-wrap gap-4">
         <div class="flex items-center gap-4">
-          <div class={`w-14 h-14 rounded-2xl ${club.is_live ? 'bg-white bg-opacity-20' : 'bg-white bg-opacity-20'} backdrop-blur-sm flex items-center justify-center`}>
-            <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div class={`w-12 h-12 rounded-xl flex items-center justify-center ${club.is_live ? 'bg-green-100' : 'bg-amber-100'}`}>
+            <svg class={`w-6 h-6 ${club.is_live ? 'text-green-600' : 'text-amber-600'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
             </svg>
           </div>
-          <div class="text-white">
-            <p class="text-sm font-medium text-white text-opacity-90">Website Status</p>
-            <p class="text-2xl font-bold">{club.is_live ? 'Live & Public' : 'Draft Mode'}</p>
-            <p class="text-sm text-white text-opacity-80 mt-1">{slug}.clubify.ie</p>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${club.is_live ? 'bg-green-500 text-white' : 'bg-amber-500 text-white'}`}>
+                {club.is_live ? 'Live' : 'Draft'}
+              </span>
+              <span class="text-slate-600 text-sm">{slug}.clubify.ie</span>
+            </div>
+            <p class={`text-sm mt-1 ${club.is_live ? 'text-green-700' : 'text-amber-700'}`}>
+              {club.is_live ? 'Your website is public and visible to everyone' : 'Your website is in draft mode and only visible to you'}
+            </p>
           </div>
         </div>
         <button
           id="toggle-live"
           data-live={club.is_live ? '1' : '0'}
           data-club-id={club.id}
-          class="px-6 py-3 bg-white bg-opacity-20 backdrop-blur-sm hover:bg-opacity-30 text-white rounded-xl font-semibold transition-all shadow-lg"
+          class={`px-5 py-2.5 rounded-xl font-semibold text-sm transition-all ${club.is_live ? 'bg-white border border-green-200 text-green-700 hover:bg-green-100' : 'bg-amber-500 text-white hover:bg-amber-600'}`}
         >
           {club.is_live ? 'Set to Draft' : 'Go Live'}
         </button>
@@ -145,84 +150,84 @@ function formatDate(dateStr: string | null): string {
     </div>
 
     <!-- Stats Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-      <a href={`/${slug}/admin-portal/posts`} class="group bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-6 border border-green-100 hover:shadow-xl transition-all duration-300">
-        <div class="flex items-center justify-between mb-4">
-          <div class="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center transform group-hover:scale-110 transition-transform">
-            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <a href={`/${slug}/admin-portal/posts`} class="group bg-white rounded-xl p-5 border border-slate-200 hover:border-primary-200 hover:shadow-md transition-all">
+        <div class="flex items-center justify-between mb-3">
+          <div class="w-10 h-10 bg-slate-100 group-hover:bg-primary-50 rounded-lg flex items-center justify-center transition-colors">
+            <svg class="w-5 h-5 text-slate-500 group-hover:text-primary-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/>
             </svg>
           </div>
-          <svg class="w-5 h-5 text-green-400 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="w-4 h-4 text-slate-300 group-hover:text-primary-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
           </svg>
         </div>
-        <p class="text-sm font-medium text-green-700 mb-1">Posts</p>
-        <p class="text-3xl font-bold text-green-900">{postCount}</p>
+        <p class="text-xs font-medium text-slate-500 uppercase tracking-wide">Posts</p>
+        <p class="text-2xl font-bold text-slate-900 mt-0.5">{postCount}</p>
       </a>
 
-      <a href={`/${slug}/admin-portal/fixtures`} class="group bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-100 hover:shadow-xl transition-all duration-300">
-        <div class="flex items-center justify-between mb-4">
-          <div class="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center transform group-hover:scale-110 transition-transform">
-            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <a href={`/${slug}/admin-portal/fixtures`} class="group bg-white rounded-xl p-5 border border-slate-200 hover:border-primary-200 hover:shadow-md transition-all">
+        <div class="flex items-center justify-between mb-3">
+          <div class="w-10 h-10 bg-slate-100 group-hover:bg-primary-50 rounded-lg flex items-center justify-center transition-colors">
+            <svg class="w-5 h-5 text-slate-500 group-hover:text-primary-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
             </svg>
           </div>
-          <svg class="w-5 h-5 text-blue-400 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="w-4 h-4 text-slate-300 group-hover:text-primary-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
           </svg>
         </div>
-        <p class="text-sm font-medium text-blue-700 mb-1">Fixtures</p>
-        <p class="text-3xl font-bold text-blue-900">{fixtureCount}</p>
+        <p class="text-xs font-medium text-slate-500 uppercase tracking-wide">Fixtures</p>
+        <p class="text-2xl font-bold text-slate-900 mt-0.5">{fixtureCount}</p>
       </a>
 
-      <a href={`/${slug}/admin-portal/inbox`} class="group bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-6 border border-purple-100 hover:shadow-xl transition-all duration-300">
-        <div class="flex items-center justify-between mb-4">
-          <div class="w-12 h-12 bg-purple-500 rounded-xl flex items-center justify-center transform group-hover:scale-110 transition-transform">
-            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <a href={`/${slug}/admin-portal/inbox`} class="group bg-white rounded-xl p-5 border border-slate-200 hover:border-primary-200 hover:shadow-md transition-all">
+        <div class="flex items-center justify-between mb-3">
+          <div class="w-10 h-10 bg-slate-100 group-hover:bg-primary-50 rounded-lg flex items-center justify-center transition-colors">
+            <svg class="w-5 h-5 text-slate-500 group-hover:text-primary-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V7a2 2 0 00-2-2H6a2 2 0 00-2 2v6m16 0l-3 5H7l-3-5m16 0H4"/>
             </svg>
           </div>
-          <svg class="w-5 h-5 text-purple-400 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="w-4 h-4 text-slate-300 group-hover:text-primary-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
           </svg>
         </div>
-        <p class="text-sm font-medium text-purple-700 mb-1">Inbox (7 days)</p>
-        <p class="text-3xl font-bold text-purple-900">{contactCount + formCount}</p>
+        <p class="text-xs font-medium text-slate-500 uppercase tracking-wide">Inbox (7d)</p>
+        <p class="text-2xl font-bold text-slate-900 mt-0.5">{contactCount + formCount}</p>
       </a>
 
-      <a href={`/${slug}/admin-portal/pages`} class="group bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl p-6 border border-amber-100 hover:shadow-xl transition-all duration-300">
-        <div class="flex items-center justify-between mb-4">
-          <div class="w-12 h-12 bg-amber-500 rounded-xl flex items-center justify-center transform group-hover:scale-110 transition-transform">
-            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <a href={`/${slug}/admin-portal/pages`} class="group bg-white rounded-xl p-5 border border-slate-200 hover:border-primary-200 hover:shadow-md transition-all">
+        <div class="flex items-center justify-between mb-3">
+          <div class="w-10 h-10 bg-slate-100 group-hover:bg-primary-50 rounded-lg flex items-center justify-center transition-colors">
+            <svg class="w-5 h-5 text-slate-500 group-hover:text-primary-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
             </svg>
           </div>
-          <svg class="w-5 h-5 text-amber-400 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="w-4 h-4 text-slate-300 group-hover:text-primary-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
           </svg>
         </div>
-        <p class="text-sm font-medium text-amber-700 mb-1">Pages</p>
-        <p class="text-3xl font-bold text-amber-900">{pageCount}</p>
+        <p class="text-xs font-medium text-slate-500 uppercase tracking-wide">Pages</p>
+        <p class="text-2xl font-bold text-slate-900 mt-0.5">{pageCount}</p>
       </a>
     </div>
 
     <!-- What to Do Today -->
     {draftPostsCount > 0 && (
-      <div class="bg-gradient-to-r from-slate-900 to-slate-800 rounded-2xl p-6 mb-8 text-white">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-4">
-            <div class="w-12 h-12 bg-white bg-opacity-10 backdrop-blur-sm rounded-xl flex items-center justify-center">
-              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 mb-8">
+        <div class="flex items-center justify-between flex-wrap gap-4">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center">
+              <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
               </svg>
             </div>
             <div>
-              <p class="text-sm font-medium text-white text-opacity-80">What to do today</p>
-              <p class="text-lg font-bold">You have {draftPostsCount} draft post{draftPostsCount > 1 ? 's' : ''} ready to publish</p>
+              <p class="text-sm font-medium text-slate-900">You have {draftPostsCount} draft post{draftPostsCount > 1 ? 's' : ''} ready to publish</p>
+              <p class="text-xs text-slate-500 mt-0.5">Review and publish when ready</p>
             </div>
           </div>
-          <a href={`/${slug}/admin-portal/posts`} class="px-5 py-3 bg-white bg-opacity-10 backdrop-blur-sm hover:bg-opacity-20 rounded-xl font-semibold transition-all">
+          <a href={`/${slug}/admin-portal/posts`} class="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium rounded-lg transition-colors">
             Review Drafts
           </a>
         </div>
@@ -234,70 +239,70 @@ function formatDate(dateStr: string | null): string {
       <!-- Left Column - 2/3 width -->
       <div class="lg:col-span-2 space-y-6">
         <!-- Quick Actions -->
-        <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
-          <h2 class="text-lg font-semibold text-slate-900 mb-4">Quick Actions</h2>
-          <div class="grid grid-cols-2 gap-4">
-            <a href={`/${slug}/admin-portal/posts/new`} class="group flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl border border-green-100 hover:shadow-lg transition-all duration-300">
-              <div class="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center transform group-hover:scale-110 transition-transform">
-                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div class="bg-white rounded-xl border border-slate-200 p-5">
+          <h2 class="text-base font-semibold text-slate-900 mb-4">Quick Actions</h2>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <a href={`/${slug}/admin-portal/posts/new`} class="group flex flex-col items-center gap-2 p-4 bg-slate-50 hover:bg-primary-50 rounded-xl border border-slate-200 hover:border-primary-200 transition-all">
+              <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-sm group-hover:shadow transition-shadow">
+                <svg class="w-5 h-5 text-slate-600 group-hover:text-primary-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                 </svg>
               </div>
-              <span class="text-sm font-semibold text-green-900">New Post</span>
+              <span class="text-xs font-medium text-slate-700 group-hover:text-primary-700 transition-colors">New Post</span>
             </a>
 
-            <a href={`/${slug}/admin-portal/fixtures/new`} class="group flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border border-blue-100 hover:shadow-lg transition-all duration-300">
-              <div class="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center transform group-hover:scale-110 transition-transform">
-                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <a href={`/${slug}/admin-portal/fixtures/new`} class="group flex flex-col items-center gap-2 p-4 bg-slate-50 hover:bg-primary-50 rounded-xl border border-slate-200 hover:border-primary-200 transition-all">
+              <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-sm group-hover:shadow transition-shadow">
+                <svg class="w-5 h-5 text-slate-600 group-hover:text-primary-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                 </svg>
               </div>
-              <span class="text-sm font-semibold text-blue-900">Add Fixture</span>
+              <span class="text-xs font-medium text-slate-700 group-hover:text-primary-700 transition-colors">Add Fixture</span>
             </a>
 
-            <a href={`/${slug}/admin-portal/website`} class="group flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl border border-purple-100 hover:shadow-lg transition-all duration-300">
-              <div class="w-12 h-12 bg-purple-500 rounded-xl flex items-center justify-center transform group-hover:scale-110 transition-transform">
-                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <a href={`/${slug}/admin-portal/website`} class="group flex flex-col items-center gap-2 p-4 bg-slate-50 hover:bg-primary-50 rounded-xl border border-slate-200 hover:border-primary-200 transition-all">
+              <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-sm group-hover:shadow transition-shadow">
+                <svg class="w-5 h-5 text-slate-600 group-hover:text-primary-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/>
                 </svg>
               </div>
-              <span class="text-sm font-semibold text-purple-900">Website Builder</span>
+              <span class="text-xs font-medium text-slate-700 group-hover:text-primary-700 transition-colors">Website</span>
             </a>
 
-            <a href={`/${slug}/admin-portal/sponsors`} class="group flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl border border-amber-100 hover:shadow-lg transition-all duration-300">
-              <div class="w-12 h-12 bg-amber-500 rounded-xl flex items-center justify-center transform group-hover:scale-110 transition-transform">
-                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <a href={`/${slug}/admin-portal/sponsors`} class="group flex flex-col items-center gap-2 p-4 bg-slate-50 hover:bg-primary-50 rounded-xl border border-slate-200 hover:border-primary-200 transition-all">
+              <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-sm group-hover:shadow transition-shadow">
+                <svg class="w-5 h-5 text-slate-600 group-hover:text-primary-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l.7 2.154a1 1 0 00.95.69h2.264c.969 0 1.371 1.24.588 1.81l-1.833 1.332a1 1 0 00-.364 1.118l.7 2.154c.3.922-.755 1.688-1.538 1.118l-1.833-1.332a1 1 0 00-1.176 0l-1.833 1.332c-.783.57-1.838-.196-1.539-1.118l.7-2.154a1 1 0 00-.363-1.118L6.497 7.58c-.783-.57-.38-1.81.588-1.81h2.264a1 1 0 00.95-.69l.7-2.154z"/>
                 </svg>
               </div>
-              <span class="text-sm font-semibold text-amber-900">Sponsors</span>
+              <span class="text-xs font-medium text-slate-700 group-hover:text-primary-700 transition-colors">Sponsors</span>
             </a>
           </div>
         </div>
 
         <!-- Latest Posts -->
-        <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+        <div class="bg-white rounded-xl border border-slate-200 p-5">
           <div class="flex items-center justify-between mb-4">
-            <h2 class="text-lg font-semibold text-slate-900">Latest Posts</h2>
-            <a href={`/${slug}/admin-portal/posts`} class="text-sm text-green-600 font-semibold hover:text-green-700">View all</a>
+            <h2 class="text-base font-semibold text-slate-900">Latest Posts</h2>
+            <a href={`/${slug}/admin-portal/posts`} class="text-sm text-primary-600 font-medium hover:text-primary-700">View all</a>
           </div>
-          <div class="space-y-3">
+          <div class="space-y-2">
             {posts.length > 0 ? (
               posts.map((post: any) => (
-                <a href={`/${slug}/admin-portal/posts/${post.id}`} class="flex items-start justify-between gap-4 border border-slate-200 rounded-xl p-4 hover:border-green-300 hover:shadow-md transition-all">
-                  <div class="flex-1">
-                    <p class="text-slate-900 font-medium line-clamp-1">{post.title}</p>
-                    <p class="text-xs text-slate-500 mt-1">{formatDate(post.published_at || post.created_at)}</p>
+                <a href={`/${slug}/admin-portal/posts/${post.id}`} class="flex items-start justify-between gap-4 border border-slate-200 rounded-lg p-3 hover:border-slate-300 hover:bg-slate-50 transition-all">
+                  <div class="flex-1 min-w-0">
+                    <p class="text-sm text-slate-900 font-medium truncate">{post.title}</p>
+                    <p class="text-xs text-slate-500 mt-0.5">{formatDate(post.published_at || post.created_at)}</p>
                   </div>
-                  <span class={`px-2.5 py-1 rounded-full text-xs font-medium flex-shrink-0 ${post.status === 'published' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
+                  <span class={`px-2 py-0.5 rounded text-xs font-medium flex-shrink-0 ${post.status === 'published' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
                     {post.status === 'published' ? 'Published' : 'Draft'}
                   </span>
                 </a>
               ))
             ) : (
-              <div class="border border-dashed border-slate-200 rounded-xl p-8 text-center">
-                <p class="text-slate-500 mb-4">No posts yet</p>
-                <a href={`/${slug}/admin-portal/posts/new`} class="inline-flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg text-sm font-semibold hover:bg-green-600">
+              <div class="border border-dashed border-slate-200 rounded-lg p-6 text-center">
+                <p class="text-slate-500 text-sm mb-3">No posts yet</p>
+                <a href={`/${slug}/admin-portal/posts/new`} class="inline-flex items-center gap-2 px-3 py-2 bg-slate-900 text-white rounded-lg text-sm font-medium hover:bg-slate-800">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                   </svg>
@@ -309,33 +314,31 @@ function formatDate(dateStr: string | null): string {
         </div>
 
         <!-- Upcoming Fixtures -->
-        <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+        <div class="bg-white rounded-xl border border-slate-200 p-5">
           <div class="flex items-center justify-between mb-4">
-            <h2 class="text-lg font-semibold text-slate-900">Upcoming Fixtures</h2>
-            <a href={`/${slug}/admin-portal/fixtures`} class="text-sm text-green-600 font-semibold hover:text-green-700">Manage</a>
+            <h2 class="text-base font-semibold text-slate-900">Upcoming Fixtures</h2>
+            <a href={`/${slug}/admin-portal/fixtures`} class="text-sm text-primary-600 font-medium hover:text-primary-700">Manage</a>
           </div>
           {upcomingFixtures.length > 0 ? (
-            <div class="space-y-3">
+            <div class="space-y-2">
               {upcomingFixtures.map((fixture: any) => (
-                <div class="flex items-center justify-between gap-4 border border-slate-200 rounded-xl p-4">
-                  <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                      <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                      </svg>
-                    </div>
-                    <div>
-                      <p class="text-slate-900 font-medium">vs {fixture.opponent}</p>
-                      <p class="text-xs text-slate-500 mt-0.5">{formatDate(fixture.match_date)} • {fixture.venue || 'Venue TBC'}</p>
-                    </div>
+                <div class="flex items-center gap-3 border border-slate-200 rounded-lg p-3">
+                  <div class="w-9 h-9 bg-slate-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                    </svg>
+                  </div>
+                  <div class="min-w-0 flex-1">
+                    <p class="text-sm text-slate-900 font-medium truncate">vs {fixture.opponent}</p>
+                    <p class="text-xs text-slate-500">{formatDate(fixture.match_date)} • {fixture.venue || 'Venue TBC'}</p>
                   </div>
                 </div>
               ))}
             </div>
           ) : (
-            <div class="border border-dashed border-slate-200 rounded-xl p-8 text-center">
-              <p class="text-slate-500 mb-4">No upcoming fixtures</p>
-              <a href={`/${slug}/admin-portal/fixtures/new`} class="inline-flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg text-sm font-semibold hover:bg-blue-600">
+            <div class="border border-dashed border-slate-200 rounded-lg p-6 text-center">
+              <p class="text-slate-500 text-sm mb-3">No upcoming fixtures</p>
+              <a href={`/${slug}/admin-portal/fixtures/new`} class="inline-flex items-center gap-2 px-3 py-2 bg-slate-900 text-white rounded-lg text-sm font-medium hover:bg-slate-800">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                 </svg>
@@ -347,62 +350,61 @@ function formatDate(dateStr: string | null): string {
       </div>
 
       <!-- Right Column - 1/3 width -->
-      <div class="space-y-6">
+      <div class="space-y-4">
         <!-- Latest Result -->
         {latestResult ? (
-          <div class="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl p-6 shadow-lg text-white">
-            <div class="flex items-center gap-2 mb-4">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-              </svg>
-              <h2 class="text-sm font-semibold text-white text-opacity-80">Latest Result</h2>
-            </div>
-            <div class="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-4">
-              <p class="text-lg font-bold">{latestResult.home_team} {latestResult.home_score} - {latestResult.away_score} {latestResult.away_team}</p>
-              <p class="text-sm text-white text-opacity-70 mt-2">{formatDate(latestResult.match_date)}</p>
+          <div class="bg-white rounded-xl border border-slate-200 p-5">
+            <h2 class="text-sm font-medium text-slate-500 uppercase tracking-wide mb-3">Latest Result</h2>
+            <div class="bg-slate-50 rounded-lg p-4 text-center">
+              <p class="text-lg font-bold text-slate-900">{latestResult.home_team} {latestResult.home_score} - {latestResult.away_score} {latestResult.away_team}</p>
+              <p class="text-xs text-slate-500 mt-1">{formatDate(latestResult.match_date)}</p>
             </div>
           </div>
         ) : (
-          <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
-            <h2 class="text-lg font-semibold text-slate-900 mb-2">Latest Result</h2>
-            <div class="border border-dashed border-slate-200 rounded-xl p-6 text-center">
+          <div class="bg-white rounded-xl border border-slate-200 p-5">
+            <h2 class="text-sm font-medium text-slate-500 uppercase tracking-wide mb-3">Latest Result</h2>
+            <div class="border border-dashed border-slate-200 rounded-lg p-4 text-center">
               <p class="text-slate-500 text-sm">No results yet</p>
             </div>
           </div>
         )}
 
         <!-- Team -->
-        <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
-          <h2 class="text-lg font-semibold text-slate-900 mb-1">Team</h2>
-          <p class="text-sm text-slate-500 mb-4">{members.length} active member{members.length !== 1 ? 's' : ''}</p>
-          <div class="space-y-3 mb-4">
+        <div class="bg-white rounded-xl border border-slate-200 p-5">
+          <div class="flex items-center justify-between mb-3">
+            <h2 class="text-sm font-medium text-slate-500 uppercase tracking-wide">Team</h2>
+            <span class="text-xs text-slate-400">{members.length} member{members.length !== 1 ? 's' : ''}</span>
+          </div>
+          <div class="space-y-2 mb-3">
             {members.slice(0, 4).map((m) => (
               <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 text-white flex items-center justify-center text-sm font-semibold">
+                <div class="w-8 h-8 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center text-xs font-semibold">
                   {m.user.name.charAt(0).toUpperCase()}
                 </div>
-                <div class="flex-1">
-                  <p class="text-sm text-slate-900 font-medium">{m.user.name}</p>
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm text-slate-900 font-medium truncate">{m.user.name}</p>
                   <p class="text-xs text-slate-500 capitalize">{m.role}</p>
                 </div>
               </div>
             ))}
           </div>
-          <a href={`/${slug}/admin-portal/team`} class="inline-flex items-center gap-2 text-sm text-green-600 font-semibold hover:text-green-700">
+          <a href={`/${slug}/admin-portal/team`} class="inline-flex items-center gap-1 text-sm text-primary-600 font-medium hover:text-primary-700">
             <span>Manage team</span>
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
             </svg>
           </a>
         </div>
 
         <!-- Pages -->
-        <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
-          <h2 class="text-lg font-semibold text-slate-900 mb-1">Pages</h2>
-          <p class="text-sm text-slate-500 mb-4">{pageCount} page{pageCount !== 1 ? 's' : ''} published</p>
-          <a href={`/${slug}/admin-portal/pages`} class="inline-flex items-center gap-2 text-sm text-green-600 font-semibold hover:text-green-700">
+        <div class="bg-white rounded-xl border border-slate-200 p-5">
+          <div class="flex items-center justify-between mb-3">
+            <h2 class="text-sm font-medium text-slate-500 uppercase tracking-wide">Pages</h2>
+            <span class="text-xs text-slate-400">{pageCount} page{pageCount !== 1 ? 's' : ''}</span>
+          </div>
+          <a href={`/${slug}/admin-portal/pages`} class="inline-flex items-center gap-1 text-sm text-primary-600 font-medium hover:text-primary-700">
             <span>Manage pages</span>
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
             </svg>
           </a>
@@ -432,10 +434,10 @@ function formatDate(dateStr: string | null): string {
       if (!res.ok) throw new Error(data.error || 'Failed to update');
 
       window.location.reload();
-    } catch (error) {
+    } catch (error: any) {
       toggleBtn.textContent = originalText;
       toggleBtn.disabled = false;
-      alert(error.message || 'Failed to update status');
+      alert(error?.message || 'Failed to update status');
     }
   });
 </script>

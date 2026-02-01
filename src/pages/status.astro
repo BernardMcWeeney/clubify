@@ -1,0 +1,156 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Navigation from '../components/Navigation.astro';
+import PageHeader from '../components/PageHeader.astro';
+import Footer from '../components/Footer.astro';
+
+// In production, this would come from a status monitoring service
+const services = [
+  { name: "Website Platform", status: "operational", description: "Club websites and public pages" },
+  { name: "Admin Portal", status: "operational", description: "Club management dashboard" },
+  { name: "API", status: "operational", description: "External integrations" },
+  { name: "Media Storage", status: "operational", description: "Image and video uploads" },
+  { name: "Email Delivery", status: "operational", description: "Magic links and notifications" },
+  { name: "Social Publishing", status: "operational", description: "Facebook, Twitter, Instagram" }
+];
+
+const recentIncidents: { date: string; title: string; status: string; description: string }[] = [];
+
+function getStatusColor(status: string) {
+  switch (status) {
+    case 'operational': return { bg: 'bg-green-500', text: 'text-green-700', badge: 'bg-green-100' };
+    case 'degraded': return { bg: 'bg-yellow-500', text: 'text-yellow-700', badge: 'bg-yellow-100' };
+    case 'outage': return { bg: 'bg-red-500', text: 'text-red-700', badge: 'bg-red-100' };
+    default: return { bg: 'bg-slate-500', text: 'text-slate-700', badge: 'bg-slate-100' };
+  }
+}
+
+function getStatusLabel(status: string) {
+  switch (status) {
+    case 'operational': return 'Operational';
+    case 'degraded': return 'Degraded';
+    case 'outage': return 'Outage';
+    default: return 'Unknown';
+  }
+}
+
+const allOperational = services.every(s => s.status === 'operational');
+---
+
+<Layout title="System Status - Clubify">
+  <Navigation />
+  <PageHeader
+    title="System Status"
+    description="Real-time status of Clubify services"
+    badge="Status"
+  />
+
+  <section class="py-16 bg-white">
+    <div class="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+      <!-- Overall Status Banner -->
+      <div class={`rounded-2xl p-6 mb-8 ${allOperational ? 'bg-green-50 border border-green-200' : 'bg-yellow-50 border border-yellow-200'}`}>
+        <div class="flex items-center gap-4">
+          <div class={`w-12 h-12 rounded-full flex items-center justify-center ${allOperational ? 'bg-green-500' : 'bg-yellow-500'}`}>
+            {allOperational ? (
+              <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+              </svg>
+            ) : (
+              <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+              </svg>
+            )}
+          </div>
+          <div>
+            <h2 class={`text-xl font-bold ${allOperational ? 'text-green-900' : 'text-yellow-900'}`}>
+              {allOperational ? 'All Systems Operational' : 'Some Systems Experiencing Issues'}
+            </h2>
+            <p class={`text-sm ${allOperational ? 'text-green-700' : 'text-yellow-700'}`}>
+              Last updated: {new Date().toLocaleString('en-IE', { dateStyle: 'medium', timeStyle: 'short' })}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Services List -->
+      <div class="bg-slate-50 rounded-2xl border border-slate-200 overflow-hidden mb-8">
+        <div class="px-6 py-4 border-b border-slate-200">
+          <h3 class="font-semibold text-slate-900">Services</h3>
+        </div>
+        <div class="divide-y divide-slate-200">
+          {services.map((service) => {
+            const colors = getStatusColor(service.status);
+            return (
+              <div class="px-6 py-4 flex items-center justify-between">
+                <div>
+                  <p class="font-medium text-slate-900">{service.name}</p>
+                  <p class="text-sm text-slate-500">{service.description}</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class={`w-2.5 h-2.5 rounded-full ${colors.bg}`}></span>
+                  <span class={`text-sm font-medium ${colors.text}`}>
+                    {getStatusLabel(service.status)}
+                  </span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      <!-- Recent Incidents -->
+      <div class="bg-slate-50 rounded-2xl border border-slate-200 overflow-hidden">
+        <div class="px-6 py-4 border-b border-slate-200">
+          <h3 class="font-semibold text-slate-900">Recent Incidents</h3>
+        </div>
+        {recentIncidents.length > 0 ? (
+          <div class="divide-y divide-slate-200">
+            {recentIncidents.map((incident) => (
+              <div class="px-6 py-4">
+                <div class="flex items-start justify-between gap-4">
+                  <div>
+                    <p class="font-medium text-slate-900">{incident.title}</p>
+                    <p class="text-sm text-slate-500 mt-1">{incident.description}</p>
+                  </div>
+                  <div class="text-right flex-shrink-0">
+                    <p class="text-sm text-slate-500">{incident.date}</p>
+                    <span class={`inline-flex px-2 py-0.5 rounded text-xs font-medium ${
+                      incident.status === 'resolved' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
+                    }`}>
+                      {incident.status === 'resolved' ? 'Resolved' : 'Investigating'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div class="px-6 py-8 text-center">
+            <svg class="w-12 h-12 text-slate-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <p class="text-slate-500">No recent incidents</p>
+          </div>
+        )}
+      </div>
+
+      <!-- Subscribe to Updates -->
+      <div class="mt-8 text-center">
+        <p class="text-slate-600 mb-4">
+          Want to be notified of status updates?
+        </p>
+        <a
+          href="mailto:status@clubify.ie?subject=Subscribe%20to%20status%20updates"
+          class="text-primary-600 font-medium hover:text-primary-700 inline-flex items-center gap-1"
+        >
+          Subscribe to updates
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <Footer />
+</Layout>

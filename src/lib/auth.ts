@@ -3,9 +3,14 @@ import type { AstroCookies } from 'astro';
 import { DatabaseService, type User } from './db';
 
 const SESSION_COOKIE = 'clubify_session';
+
+// Only use secure cookies in production (HTTPS)
+// This allows cookies to work on localhost (HTTP) during development
+const isProduction = import.meta.env.PROD;
+
 const COOKIE_OPTIONS = {
   httpOnly: true,
-  secure: true,
+  secure: isProduction,
   sameSite: 'lax' as const,
   path: '/',
   maxAge: 60 * 60 * 24 * 30 // 30 days

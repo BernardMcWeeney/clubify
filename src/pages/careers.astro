@@ -1,0 +1,105 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Navigation from '../components/Navigation.astro';
+import PageHeader from '../components/PageHeader.astro';
+import Footer from '../components/Footer.astro';
+---
+
+<Layout title="Careers - Clubify">
+  <Navigation />
+  <PageHeader
+    title="Join Our Team"
+    description="Help us build the future of GAA club technology"
+    badge="Careers"
+  />
+
+  <section class="py-16 bg-white">
+    <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+      <!-- Current Openings -->
+      <div class="text-center mb-16">
+        <div class="inline-flex items-center justify-center w-20 h-20 bg-slate-100 rounded-full mb-6">
+          <svg class="w-10 h-10 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+          </svg>
+        </div>
+        <h2 class="text-2xl font-bold text-slate-900 mb-4">No Open Positions</h2>
+        <p class="text-slate-600 max-w-lg mx-auto">
+          We don't have any open positions at the moment, but we're always interested in hearing from talented people who are passionate about GAA and technology.
+        </p>
+      </div>
+
+      <!-- Why Work With Us -->
+      <div class="mb-16">
+        <h2 class="text-2xl font-bold text-slate-900 mb-8 text-center">Why Clubify?</h2>
+        <div class="grid md:grid-cols-2 gap-6">
+          <div class="bg-slate-50 rounded-2xl p-6 border border-slate-200">
+            <div class="w-12 h-12 bg-primary-100 rounded-xl flex items-center justify-center mb-4">
+              <svg class="w-6 h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+              </svg>
+            </div>
+            <h3 class="text-lg font-semibold text-slate-900 mb-2">Meaningful Work</h3>
+            <p class="text-slate-600">
+              Help thousands of GAA clubs across Ireland connect with their communities. Your work has real impact.
+            </p>
+          </div>
+
+          <div class="bg-slate-50 rounded-2xl p-6 border border-slate-200">
+            <div class="w-12 h-12 bg-primary-100 rounded-xl flex items-center justify-center mb-4">
+              <svg class="w-6 h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+            </div>
+            <h3 class="text-lg font-semibold text-slate-900 mb-2">Remote First</h3>
+            <p class="text-slate-600">
+              Work from anywhere in Ireland. We believe great work can happen from the sideline of a match.
+            </p>
+          </div>
+
+          <div class="bg-slate-50 rounded-2xl p-6 border border-slate-200">
+            <div class="w-12 h-12 bg-primary-100 rounded-xl flex items-center justify-center mb-4">
+              <svg class="w-6 h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+              </svg>
+            </div>
+            <h3 class="text-lg font-semibold text-slate-900 mb-2">Modern Tech Stack</h3>
+            <p class="text-slate-600">
+              Work with cutting-edge technologies: Astro, TypeScript, Cloudflare Workers, and more.
+            </p>
+          </div>
+
+          <div class="bg-slate-50 rounded-2xl p-6 border border-slate-200">
+            <div class="w-12 h-12 bg-primary-100 rounded-xl flex items-center justify-center mb-4">
+              <svg class="w-6 h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+            </div>
+            <h3 class="text-lg font-semibold text-slate-900 mb-2">Competitive Package</h3>
+            <p class="text-slate-600">
+              Fair compensation, equity options, and flexibility to balance work with your own club commitments.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Speculative Applications -->
+      <div class="bg-gradient-to-br from-primary-50 to-accent-50 rounded-3xl p-8 md:p-12 text-center border border-primary-100">
+        <h2 class="text-2xl font-bold text-slate-900 mb-4">Interested in Joining?</h2>
+        <p class="text-slate-600 max-w-xl mx-auto mb-6">
+          Even if we don't have an open position that fits your skills, we'd love to hear from you. Send us your CV and tell us how you could help Clubify grow.
+        </p>
+        <a
+          href="mailto:careers@clubify.ie"
+          class="inline-flex items-center gap-2 px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-xl transition-colors shadow-lg shadow-primary-600/25"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+          </svg>
+          Email careers@clubify.ie
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <Footer />
+</Layout>
