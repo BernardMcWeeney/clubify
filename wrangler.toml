@@ -14,7 +14,7 @@ APP_NAME = "Clubify"
 
 
 [[d1_databases]]
-binding = "clubify_db"
+binding = "DB"
 database_name = "clubify-db"
 database_id = "2bac1f43-2fbc-40b6-a129-a02b1d2b61cc"
 

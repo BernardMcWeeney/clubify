@@ -25,11 +25,17 @@ if (!club.is_live) {
 }
 
 // Fetch content for the template
-const [posts, upcomingFixtures, playedFixtures] = await Promise.all([
+const [posts, upcomingFixtures, playedFixtures, homepageConfigRecord] = await Promise.all([
   db.getPublishedPosts(club.id, 6),
   db.getUpcomingFixtures(club.id, 5),
   db.getPlayedFixtures(club.id, 5),
+  db.getHomepageConfig(club.id),
 ]);
+
+// Parse homepage config if it exists
+const homepageConfig = homepageConfigRecord
+  ? JSON.parse(homepageConfigRecord.config)
+  : null;
 
 // Get the next upcoming fixture
 const nextFixture = upcomingFixtures[0] || null;
@@ -75,6 +81,7 @@ const newsPosts = posts.filter((p) => p.category !== 'notice');
       recentResults={playedFixtures}
       posts={newsPosts}
       notices={notices}
+      homepageConfig={homepageConfig}
     />
   </main>
 

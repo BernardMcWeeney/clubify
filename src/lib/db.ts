@@ -160,6 +160,16 @@ export interface PublishHistory {
   published_by: string | null;
 }
 
+export interface HomepageConfig {
+  id: string;
+  club_id: string;
+  config: string; // JSON string
+  version: number;
+  updated_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export class DatabaseService {
   constructor(private db: D1Database) {}
 
@@ -931,5 +941,55 @@ export class DatabaseService {
     await this.db.prepare(
       `DELETE FROM push_subscriptions WHERE endpoint = ?`
     ).bind(endpoint).run();
+  }
+
+  // Homepage config operations
+  async getHomepageConfig(clubId: string): Promise<HomepageConfig | null> {
+    return this.db.prepare(
+      `SELECT * FROM homepage_configs WHERE club_id = ?`
+    ).bind(clubId).first<HomepageConfig>();
+  }
+
+  async saveHomepageConfig(data: {
+    clubId: string;
+    config: object;
+    updatedBy: string;
+  }): Promise<HomepageConfig> {
+    const existing = await this.getHomepageConfig(data.clubId);
+
+    if (existing) {
+      // Update existing config
+      await this.db.prepare(`
+        UPDATE homepage_configs
+        SET config = ?, version = version + 1, updated_by = ?, updated_at = datetime('now')
+        WHERE club_id = ?
+      `).bind(
+        JSON.stringify(data.config),
+        data.updatedBy,
+        data.clubId
+      ).run();
+
+      return this.getHomepageConfig(data.clubId) as Promise<HomepageConfig>;
+    } else {
+      // Create new config
+      const id = generateId();
+      await this.db.prepare(`
+        INSERT INTO homepage_configs (id, club_id, config, updated_by)
+        VALUES (?, ?, ?, ?)
+      `).bind(
+        id,
+        data.clubId,
+        JSON.stringify(data.config),
+        data.updatedBy
+      ).run();
+
+      return this.db.prepare(`SELECT * FROM homepage_configs WHERE id = ?`).bind(id).first<HomepageConfig>() as Promise<HomepageConfig>;
+    }
+  }
+
+  async deleteHomepageConfig(clubId: string): Promise<void> {
+    await this.db.prepare(
+      `DELETE FROM homepage_configs WHERE club_id = ?`
+    ).bind(clubId).run();
   }
 }
