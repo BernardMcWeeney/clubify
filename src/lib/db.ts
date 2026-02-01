@@ -109,6 +109,57 @@ export interface Page {
   updated_at: string;
 }
 
+export interface SocialConnection {
+  id: string;
+  club_id: string;
+  platform: 'facebook' | 'twitter' | 'instagram';
+  access_token: string;
+  refresh_token: string | null;
+  page_id: string | null;
+  page_name: string | null;
+  expires_at: string | null;
+  connected_by: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PublishJob {
+  id: string;
+  club_id: string;
+  entity_type: 'post' | 'fixture_result';
+  entity_id: string;
+  platforms: string; // JSON array
+  status: 'pending' | 'processing' | 'completed' | 'failed';
+  scheduled_at: string | null;
+  results: string | null; // JSON
+  error_message: string | null;
+  created_by: string;
+  created_at: string;
+  completed_at: string | null;
+}
+
+export interface PushSubscription {
+  id: string;
+  club_id: string;
+  endpoint: string;
+  keys: string; // JSON
+  user_agent: string | null;
+  user_id: string | null;
+  created_at: string;
+}
+
+export interface PublishHistory {
+  id: string;
+  club_id: string;
+  entity_type: string;
+  entity_id: string;
+  platform: string;
+  external_id: string | null;
+  external_url: string | null;
+  published_at: string;
+  published_by: string | null;
+}
+
 export class DatabaseService {
   constructor(private db: D1Database) {}
 
@@ -665,5 +716,220 @@ export class DatabaseService {
 
   async deletePage(id: string): Promise<void> {
     await this.db.prepare(`DELETE FROM pages WHERE id = ?`).bind(id).run();
+  }
+
+  // Social connection operations
+  async getSocialConnections(clubId: string): Promise<SocialConnection[]> {
+    const results = await this.db.prepare(`
+      SELECT * FROM social_connections WHERE club_id = ? ORDER BY platform ASC
+    `).bind(clubId).all<SocialConnection>();
+
+    return results.results || [];
+  }
+
+  async getSocialConnection(clubId: string, platform: string): Promise<SocialConnection | null> {
+    return this.db.prepare(
+      `SELECT * FROM social_connections WHERE club_id = ? AND platform = ?`
+    ).bind(clubId, platform).first<SocialConnection>();
+  }
+
+  async createSocialConnection(data: {
+    clubId: string;
+    platform: 'facebook' | 'twitter' | 'instagram';
+    accessToken: string;
+    refreshToken?: string;
+    pageId?: string;
+    pageName?: string;
+    expiresAt?: string;
+    connectedBy: string;
+  }): Promise<SocialConnection> {
+    const id = generateId();
+
+    await this.db.prepare(`
+      INSERT INTO social_connections (id, club_id, platform, access_token, refresh_token, page_id, page_name, expires_at, connected_by)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).bind(
+      id,
+      data.clubId,
+      data.platform,
+      data.accessToken,
+      data.refreshToken || null,
+      data.pageId || null,
+      data.pageName || null,
+      data.expiresAt || null,
+      data.connectedBy
+    ).run();
+
+    return this.db.prepare(`SELECT * FROM social_connections WHERE id = ?`).bind(id).first<SocialConnection>() as Promise<SocialConnection>;
+  }
+
+  async updateSocialConnection(id: string, data: Partial<SocialConnection>): Promise<void> {
+    const fields = Object.keys(data).filter(k => k !== 'id');
+    if (fields.length === 0) return;
+
+    const values = fields.map(k => (data as any)[k]);
+    const setClause = fields.map(f => `${f} = ?`).join(', ');
+
+    await this.db.prepare(
+      `UPDATE social_connections SET ${setClause}, updated_at = datetime('now') WHERE id = ?`
+    ).bind(...values, id).run();
+  }
+
+  async deleteSocialConnection(clubId: string, platform: string): Promise<void> {
+    await this.db.prepare(
+      `DELETE FROM social_connections WHERE club_id = ? AND platform = ?`
+    ).bind(clubId, platform).run();
+  }
+
+  // Publish job operations
+  async createPublishJob(data: {
+    clubId: string;
+    entityType: 'post' | 'fixture_result';
+    entityId: string;
+    platforms: string[];
+    scheduledAt?: string;
+    createdBy: string;
+  }): Promise<PublishJob> {
+    const id = generateId();
+
+    await this.db.prepare(`
+      INSERT INTO publish_jobs (id, club_id, entity_type, entity_id, platforms, scheduled_at, created_by)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `).bind(
+      id,
+      data.clubId,
+      data.entityType,
+      data.entityId,
+      JSON.stringify(data.platforms),
+      data.scheduledAt || null,
+      data.createdBy
+    ).run();
+
+    return this.db.prepare(`SELECT * FROM publish_jobs WHERE id = ?`).bind(id).first<PublishJob>() as Promise<PublishJob>;
+  }
+
+  async getPublishJob(id: string): Promise<PublishJob | null> {
+    return this.db.prepare(
+      `SELECT * FROM publish_jobs WHERE id = ?`
+    ).bind(id).first<PublishJob>();
+  }
+
+  async getPendingPublishJobs(limit: number = 10): Promise<PublishJob[]> {
+    const results = await this.db.prepare(`
+      SELECT * FROM publish_jobs
+      WHERE status = 'pending'
+        AND (scheduled_at IS NULL OR scheduled_at <= datetime('now'))
+      ORDER BY created_at ASC
+      LIMIT ?
+    `).bind(limit).all<PublishJob>();
+
+    return results.results || [];
+  }
+
+  async updatePublishJob(id: string, data: {
+    status?: string;
+    results?: string;
+    errorMessage?: string;
+    completedAt?: string;
+  }): Promise<void> {
+    const updates: string[] = [];
+    const values: any[] = [];
+
+    if (data.status !== undefined) {
+      updates.push('status = ?');
+      values.push(data.status);
+    }
+    if (data.results !== undefined) {
+      updates.push('results = ?');
+      values.push(data.results);
+    }
+    if (data.errorMessage !== undefined) {
+      updates.push('error_message = ?');
+      values.push(data.errorMessage);
+    }
+    if (data.completedAt !== undefined) {
+      updates.push('completed_at = ?');
+      values.push(data.completedAt);
+    }
+
+    if (updates.length === 0) return;
+
+    await this.db.prepare(
+      `UPDATE publish_jobs SET ${updates.join(', ')} WHERE id = ?`
+    ).bind(...values, id).run();
+  }
+
+  // Publish history operations
+  async recordPublishHistory(data: {
+    clubId: string;
+    entityType: string;
+    entityId: string;
+    platform: string;
+    externalId?: string;
+    externalUrl?: string;
+    publishedBy?: string;
+  }): Promise<void> {
+    const id = generateId();
+
+    await this.db.prepare(`
+      INSERT INTO publish_history (id, club_id, entity_type, entity_id, platform, external_id, external_url, published_by)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `).bind(
+      id,
+      data.clubId,
+      data.entityType,
+      data.entityId,
+      data.platform,
+      data.externalId || null,
+      data.externalUrl || null,
+      data.publishedBy || null
+    ).run();
+  }
+
+  async getPublishHistory(clubId: string, entityType: string, entityId: string): Promise<PublishHistory[]> {
+    const results = await this.db.prepare(`
+      SELECT * FROM publish_history
+      WHERE club_id = ? AND entity_type = ? AND entity_id = ?
+      ORDER BY published_at DESC
+    `).bind(clubId, entityType, entityId).all<PublishHistory>();
+
+    return results.results || [];
+  }
+
+  // Push subscription operations
+  async createPushSubscription(data: {
+    clubId: string;
+    endpoint: string;
+    keys: { p256dh: string; auth: string };
+    userAgent?: string;
+    userId?: string;
+  }): Promise<void> {
+    const id = generateId();
+
+    await this.db.prepare(`
+      INSERT OR REPLACE INTO push_subscriptions (id, club_id, endpoint, keys, user_agent, user_id)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `).bind(
+      id,
+      data.clubId,
+      data.endpoint,
+      JSON.stringify(data.keys),
+      data.userAgent || null,
+      data.userId || null
+    ).run();
+  }
+
+  async getPushSubscriptions(clubId: string): Promise<PushSubscription[]> {
+    const results = await this.db.prepare(`
+      SELECT * FROM push_subscriptions WHERE club_id = ?
+    `).bind(clubId).all<PushSubscription>();
+
+    return results.results || [];
+  }
+
+  async deletePushSubscription(endpoint: string): Promise<void> {
+    await this.db.prepare(
+      `DELETE FROM push_subscriptions WHERE endpoint = ?`
+    ).bind(endpoint).run();
   }
 }

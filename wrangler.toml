@@ -11,21 +11,7 @@ directory = "dist"
 SITE_URL = "https://clubify.ie"
 APP_NAME = "Clubify"
 
-# ===========================================
-# CLOUDFLARE RESOURCES - CREATE THESE FIRST:
-# ===========================================
-#
-# 1. Create D1 database:
-#    wrangler d1 create clubify-db
-#
-# 2. Create R2 bucket (optional, for media):
-#    wrangler r2 bucket create clubify-media
-#
-# 3. Create KV namespace (optional, for caching):
-#    wrangler kv:namespace create CACHE
-#
-# Then uncomment and update the IDs below:
-# ===========================================
+
 
 [[d1_databases]]
 binding = "clubify_db"
@@ -42,3 +28,14 @@ bucket_name = "clubify-media"
 # [[kv_namespaces]]
 # binding = "CACHE"
 # id = "YOUR_KV_NAMESPACE_ID_HERE"
+
+# Queue for async publishing jobs
+# Run: wrangler queues create clubify-publish-queue
+[[queues.producers]]
+binding = "PUBLISH_QUEUE"
+queue = "clubify-publish-queue"
+
+[[queues.consumers]]
+queue = "clubify-publish-queue"
+max_batch_size = 10
+max_batch_timeout = 30

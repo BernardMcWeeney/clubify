@@ -77,4 +77,4 @@ src/
 
 ## License
 
-Copyright © 2024 Clubify. All rights reserved.
+Copyright © 2026 Clubify. All rights reserved.
