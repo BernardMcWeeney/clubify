@@ -1,0 +1,207 @@
+---
+import AdminLayout from '../../../../components/admin/AdminLayout.astro';
+import { DatabaseService } from '../../../../lib/db';
+import { getAuthContext } from '../../../../lib/auth';
+
+const { slug } = Astro.params;
+
+if (!Astro.locals.runtime.env.DB) {
+  return Astro.redirect('/admin?error=db_not_configured');
+}
+
+const db = new DatabaseService(Astro.locals.runtime.env.DB);
+const { user } = await getAuthContext(Astro.cookies, db);
+
+if (!user) {
+  return Astro.redirect('/admin/login');
+}
+
+const club = await db.getClubBySlug(slug!);
+if (!club) {
+  return Astro.redirect('/admin');
+}
+
+const member = await db.getClubMember(club.id, user.id);
+if (!member) {
+  return Astro.redirect('/admin');
+}
+
+// Check permissions
+if (!['admin', 'pro', 'editor'].includes(member.role)) {
+  return Astro.redirect(`/${slug}/admin-portal/posts`);
+}
+
+const canPublish = ['admin', 'pro'].includes(member.role);
+---
+
+<AdminLayout
+  title="New Post"
+  club={club}
+  user={user}
+  member={member}
+  currentPage="posts"
+>
+  <Fragment slot="header-left">
+    <div class="flex items-center gap-4">
+      <a href={`/${slug}/admin-portal/posts`} class="p-2 text-slate-400 hover:text-white transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+        </svg>
+      </a>
+      <h1 class="text-xl font-bold text-white">New Post</h1>
+    </div>
+  </Fragment>
+
+  <form id="post-form" class="max-w-4xl">
+    <div class="space-y-6">
+      <!-- Title -->
+      <div>
+        <label for="title" class="block text-sm font-medium text-slate-300 mb-2">Title *</label>
+        <input
+          type="text"
+          id="title"
+          name="title"
+          required
+          maxlength="200"
+          class="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+          placeholder="Enter post title..."
+        />
+      </div>
+
+      <!-- Summary -->
+      <div>
+        <label for="summary" class="block text-sm font-medium text-slate-300 mb-2">Summary</label>
+        <textarea
+          id="summary"
+          name="summary"
+          rows="2"
+          maxlength="300"
+          class="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
+          placeholder="Brief summary for previews..."
+        ></textarea>
+        <p class="text-slate-500 text-xs mt-1">Max 300 characters. Shows in news listings.</p>
+      </div>
+
+      <!-- Category -->
+      <div>
+        <label for="category" class="block text-sm font-medium text-slate-300 mb-2">Category</label>
+        <select
+          id="category"
+          name="category"
+          class="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+        >
+          <option value="news">News</option>
+          <option value="match-report">Match Report</option>
+          <option value="fundraiser">Fundraiser</option>
+          <option value="notice">Notice</option>
+        </select>
+      </div>
+
+      <!-- Featured Image URL -->
+      <div>
+        <label for="featuredImage" class="block text-sm font-medium text-slate-300 mb-2">Featured Image URL</label>
+        <input
+          type="url"
+          id="featuredImage"
+          name="featuredImage"
+          class="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+          placeholder="https://..."
+        />
+        <p class="text-slate-500 text-xs mt-1">Upload images in the Media library, then paste the URL here.</p>
+      </div>
+
+      <!-- Content -->
+      <div>
+        <label for="content" class="block text-sm font-medium text-slate-300 mb-2">Content</label>
+        <textarea
+          id="content"
+          name="content"
+          rows="15"
+          class="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent font-mono text-sm"
+          placeholder="Write your post content here. You can use Markdown for formatting..."
+        ></textarea>
+        <p class="text-slate-500 text-xs mt-1">Supports Markdown: **bold**, *italic*, [links](url), # headings</p>
+      </div>
+
+      <!-- Actions -->
+      <div class="flex items-center gap-4 pt-4 border-t border-slate-700">
+        <button
+          type="submit"
+          name="action"
+          value="draft"
+          class="px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors font-medium"
+        >
+          Save as Draft
+        </button>
+        {canPublish ? (
+          <button
+            type="submit"
+            name="action"
+            value="publish"
+            class="px-6 py-3 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors font-medium"
+          >
+            Publish Now
+          </button>
+        ) : (
+          <p class="text-slate-500 text-sm">Only Admins and PROs can publish directly.</p>
+        )}
+      </div>
+    </div>
+
+    <!-- Loading state -->
+    <div id="loading" class="hidden fixed inset-0 bg-slate-950/80 flex items-center justify-center z-50">
+      <div class="bg-slate-800 rounded-xl p-6 text-center">
+        <div class="w-8 h-8 border-2 border-green-500 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+        <p class="text-white">Saving post...</p>
+      </div>
+    </div>
+  </form>
+</AdminLayout>
+
+<script define:vars={{ clubId: club.id, slug }}>
+  const form = document.getElementById('post-form');
+  const loading = document.getElementById('loading');
+
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const formData = new FormData(form);
+    const action = e.submitter?.value || 'draft';
+
+    const data = {
+      title: formData.get('title'),
+      summary: formData.get('summary') || null,
+      category: formData.get('category'),
+      featuredImage: formData.get('featuredImage') || null,
+      content: formData.get('content') || null,
+      status: action === 'publish' ? 'published' : 'draft',
+    };
+
+    if (!data.title?.trim()) {
+      alert('Title is required');
+      return;
+    }
+
+    loading?.classList.remove('hidden');
+
+    try {
+      const response = await fetch(`/api/clubs/${clubId}/posts`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to create post');
+      }
+
+      // Redirect to posts list
+      window.location.href = `/${slug}/admin-portal/posts`;
+    } catch (error) {
+      alert(error.message || 'Failed to create post');
+      loading?.classList.add('hidden');
+    }
+  });
+</script>

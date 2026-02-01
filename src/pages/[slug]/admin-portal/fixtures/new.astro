@@ -1,0 +1,250 @@
+---
+import AdminLayout from '../../../../components/admin/AdminLayout.astro';
+import { DatabaseService } from '../../../../lib/db';
+import { getAuthContext } from '../../../../lib/auth';
+
+const { slug } = Astro.params;
+
+if (!Astro.locals.runtime.env.DB) {
+  return Astro.redirect('/admin?error=db_not_configured');
+}
+
+const db = new DatabaseService(Astro.locals.runtime.env.DB);
+const { user } = await getAuthContext(Astro.cookies, db);
+
+if (!user) {
+  return Astro.redirect('/admin/login');
+}
+
+const club = await db.getClubBySlug(slug!);
+if (!club) {
+  return Astro.redirect('/admin');
+}
+
+const member = await db.getClubMember(club.id, user.id);
+if (!member) {
+  return Astro.redirect('/admin');
+}
+
+// Only admin and pro can manage fixtures
+if (!['admin', 'pro'].includes(member.role)) {
+  return Astro.redirect(`/${slug}/admin-portal/fixtures`);
+}
+
+// Get today's date in YYYY-MM-DD format
+const today = new Date().toISOString().split('T')[0];
+---
+
+<AdminLayout
+  title="Add Fixture"
+  club={club}
+  user={user}
+  member={member}
+  currentPage="fixtures"
+>
+  <Fragment slot="header-left">
+    <div class="flex items-center gap-4">
+      <a href={`/${slug}/admin-portal/fixtures`} class="p-2 text-slate-400 hover:text-white transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+        </svg>
+      </a>
+      <h1 class="text-xl font-bold text-white">Add Fixture</h1>
+    </div>
+  </Fragment>
+
+  <form id="fixture-form" class="max-w-2xl">
+    <div class="space-y-6">
+      <!-- Opponent -->
+      <div>
+        <label for="opponent" class="block text-sm font-medium text-slate-300 mb-2">Opponent *</label>
+        <input
+          type="text"
+          id="opponent"
+          name="opponent"
+          required
+          maxlength="100"
+          class="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+          placeholder="e.g., Castleknock GAA"
+        />
+      </div>
+
+      <!-- Date and Time -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label for="matchDate" class="block text-sm font-medium text-slate-300 mb-2">Date *</label>
+          <input
+            type="date"
+            id="matchDate"
+            name="matchDate"
+            required
+            min={today}
+            class="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+          />
+        </div>
+        <div>
+          <label for="matchTime" class="block text-sm font-medium text-slate-300 mb-2">Time</label>
+          <input
+            type="time"
+            id="matchTime"
+            name="matchTime"
+            class="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+          />
+        </div>
+      </div>
+
+      <!-- Home/Away -->
+      <div>
+        <label class="block text-sm font-medium text-slate-300 mb-2">Home or Away *</label>
+        <div class="flex gap-4">
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input
+              type="radio"
+              name="isHome"
+              value="true"
+              checked
+              class="w-4 h-4 text-green-500 bg-slate-800 border-slate-600 focus:ring-green-500"
+            />
+            <span class="text-white">Home</span>
+          </label>
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input
+              type="radio"
+              name="isHome"
+              value="false"
+              class="w-4 h-4 text-green-500 bg-slate-800 border-slate-600 focus:ring-green-500"
+            />
+            <span class="text-white">Away</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Venue -->
+      <div>
+        <label for="venue" class="block text-sm font-medium text-slate-300 mb-2">Venue</label>
+        <input
+          type="text"
+          id="venue"
+          name="venue"
+          maxlength="200"
+          class="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+          placeholder="e.g., Club Grounds, Porterstown Road"
+        />
+      </div>
+
+      <!-- Competition -->
+      <div>
+        <label for="competition" class="block text-sm font-medium text-slate-300 mb-2">Competition</label>
+        <input
+          type="text"
+          id="competition"
+          name="competition"
+          maxlength="100"
+          class="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+          placeholder="e.g., Division 1 League, Championship"
+        />
+      </div>
+
+      <!-- Team Name -->
+      <div>
+        <label for="teamName" class="block text-sm font-medium text-slate-300 mb-2">Team</label>
+        <input
+          type="text"
+          id="teamName"
+          name="teamName"
+          maxlength="100"
+          class="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+          placeholder="e.g., Senior Football, Minor Hurling"
+        />
+      </div>
+
+      <!-- Notes -->
+      <div>
+        <label for="notes" class="block text-sm font-medium text-slate-300 mb-2">Notes</label>
+        <textarea
+          id="notes"
+          name="notes"
+          rows="3"
+          class="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
+          placeholder="Any additional information..."
+        ></textarea>
+      </div>
+
+      <!-- Actions -->
+      <div class="flex items-center gap-4 pt-4 border-t border-slate-700">
+        <button
+          type="submit"
+          class="px-6 py-3 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors font-medium"
+        >
+          Add Fixture
+        </button>
+        <a
+          href={`/${slug}/admin-portal/fixtures`}
+          class="px-6 py-3 text-slate-300 hover:text-white transition-colors font-medium"
+        >
+          Cancel
+        </a>
+      </div>
+    </div>
+
+    <div id="loading" class="hidden fixed inset-0 bg-slate-950/80 flex items-center justify-center z-50">
+      <div class="bg-slate-800 rounded-xl p-6 text-center">
+        <div class="w-8 h-8 border-2 border-green-500 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+        <p class="text-white">Saving...</p>
+      </div>
+    </div>
+  </form>
+</AdminLayout>
+
+<script define:vars={{ clubId: club.id, slug }}>
+  const form = document.getElementById('fixture-form');
+  const loading = document.getElementById('loading');
+
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const formData = new FormData(form);
+
+    const data = {
+      opponent: formData.get('opponent'),
+      matchDate: formData.get('matchDate'),
+      matchTime: formData.get('matchTime') || null,
+      venue: formData.get('venue') || null,
+      competition: formData.get('competition') || null,
+      isHome: formData.get('isHome') === 'true',
+      teamName: formData.get('teamName') || null,
+      notes: formData.get('notes') || null,
+    };
+
+    if (!data.opponent?.trim()) {
+      alert('Opponent is required');
+      return;
+    }
+
+    if (!data.matchDate) {
+      alert('Date is required');
+      return;
+    }
+
+    loading?.classList.remove('hidden');
+
+    try {
+      const response = await fetch(`/api/clubs/${clubId}/fixtures`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to create fixture');
+      }
+
+      window.location.href = `/${slug}/admin-portal/fixtures`;
+    } catch (error) {
+      alert(error.message || 'Failed to create fixture');
+      loading?.classList.add('hidden');
+    }
+  });
+</script>

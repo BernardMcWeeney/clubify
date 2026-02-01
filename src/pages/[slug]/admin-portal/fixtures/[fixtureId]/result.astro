@@ -1,0 +1,332 @@
+---
+import AdminLayout from '../../../../../components/admin/AdminLayout.astro';
+import { DatabaseService } from '../../../../../lib/db';
+import { getAuthContext } from '../../../../../lib/auth';
+
+const { slug, fixtureId } = Astro.params;
+
+if (!Astro.locals.runtime.env.DB) {
+  return Astro.redirect('/admin?error=db_not_configured');
+}
+
+const db = new DatabaseService(Astro.locals.runtime.env.DB);
+const { user } = await getAuthContext(Astro.cookies, db);
+
+if (!user) {
+  return Astro.redirect('/admin/login');
+}
+
+const club = await db.getClubBySlug(slug!);
+if (!club) {
+  return Astro.redirect('/admin');
+}
+
+const member = await db.getClubMember(club.id, user.id);
+if (!member) {
+  return Astro.redirect('/admin');
+}
+
+// Only admin and pro can manage fixtures
+if (!['admin', 'pro'].includes(member.role)) {
+  return Astro.redirect(`/${slug}/admin-portal/fixtures`);
+}
+
+// Get fixture
+const fixture = await Astro.locals.runtime.env.DB.prepare(`
+  SELECT * FROM fixtures WHERE id = ? AND club_id = ?
+`).bind(fixtureId, club.id).first();
+
+if (!fixture) {
+  return Astro.redirect(`/${slug}/admin-portal/fixtures`);
+}
+
+function formatDate(dateStr: string): string {
+  return new Date(dateStr).toLocaleDateString('en-IE', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+}
+
+const isPlayed = fixture.status === 'played';
+const homeLabel = fixture.is_home ? club.name : fixture.opponent;
+const awayLabel = fixture.is_home ? fixture.opponent : club.name;
+---
+
+<AdminLayout
+  title="Enter Result"
+  club={club}
+  user={user}
+  member={member}
+  currentPage="fixtures"
+>
+  <Fragment slot="header-left">
+    <div class="flex items-center gap-4">
+      <a href={`/${slug}/admin-portal/fixtures`} class="p-2 text-slate-400 hover:text-white transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+        </svg>
+      </a>
+      <h1 class="text-xl font-bold text-white">{isPlayed ? 'Edit Result' : 'Enter Result'}</h1>
+    </div>
+  </Fragment>
+
+  <!-- Match Info -->
+  <div class="bg-slate-800/50 rounded-xl border border-slate-700/50 p-6 mb-6 max-w-2xl">
+    <div class="flex items-center gap-3 mb-3">
+      <span class={`px-2 py-0.5 rounded text-xs font-medium ${fixture.is_home ? 'bg-blue-500/20 text-blue-400' : 'bg-purple-500/20 text-purple-400'}`}>
+        {fixture.is_home ? 'Home' : 'Away'}
+      </span>
+      {fixture.competition && (
+        <span class="text-slate-500 text-sm">{fixture.competition}</span>
+      )}
+    </div>
+    <h2 class="text-2xl font-bold text-white mb-2">vs {fixture.opponent}</h2>
+    <div class="flex items-center gap-4 text-sm text-slate-400">
+      <span>{formatDate(fixture.match_date)}</span>
+      {fixture.venue && (
+        <>
+          <span class="text-slate-600">•</span>
+          <span>{fixture.venue}</span>
+        </>
+      )}
+    </div>
+  </div>
+
+  <form id="result-form" class="max-w-2xl">
+    <!-- Score Entry -->
+    <div class="bg-slate-800/50 rounded-xl border border-slate-700/50 p-6 mb-6">
+      <h3 class="text-lg font-semibold text-white mb-6">Score</h3>
+
+      <!-- GAA Score Format: Goals-Points -->
+      <div class="space-y-6">
+        <!-- Home Team -->
+        <div>
+          <label class="block text-sm font-medium text-slate-300 mb-3">{homeLabel}</label>
+          <div class="flex items-center gap-4">
+            <div class="flex-1">
+              <label class="block text-xs text-slate-500 mb-1">Goals</label>
+              <input
+                type="number"
+                id="homeGoals"
+                name="homeGoals"
+                min="0"
+                max="99"
+                required
+                value={fixture.home_goals ?? ''}
+                class="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white text-2xl font-bold text-center focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                placeholder="0"
+              />
+            </div>
+            <span class="text-3xl text-slate-500 font-bold mt-5">-</span>
+            <div class="flex-1">
+              <label class="block text-xs text-slate-500 mb-1">Points</label>
+              <input
+                type="number"
+                id="homePoints"
+                name="homePoints"
+                min="0"
+                max="99"
+                required
+                value={fixture.home_points ?? ''}
+                class="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white text-2xl font-bold text-center focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                placeholder="0"
+              />
+            </div>
+            <div class="w-20 text-center mt-5">
+              <span id="homeTotal" class="text-lg text-slate-400 font-mono">= 0</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="border-t border-slate-700"></div>
+
+        <!-- Away Team -->
+        <div>
+          <label class="block text-sm font-medium text-slate-300 mb-3">{awayLabel}</label>
+          <div class="flex items-center gap-4">
+            <div class="flex-1">
+              <label class="block text-xs text-slate-500 mb-1">Goals</label>
+              <input
+                type="number"
+                id="awayGoals"
+                name="awayGoals"
+                min="0"
+                max="99"
+                required
+                value={fixture.away_goals ?? ''}
+                class="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white text-2xl font-bold text-center focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                placeholder="0"
+              />
+            </div>
+            <span class="text-3xl text-slate-500 font-bold mt-5">-</span>
+            <div class="flex-1">
+              <label class="block text-xs text-slate-500 mb-1">Points</label>
+              <input
+                type="number"
+                id="awayPoints"
+                name="awayPoints"
+                min="0"
+                max="99"
+                required
+                value={fixture.away_points ?? ''}
+                class="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white text-2xl font-bold text-center focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                placeholder="0"
+              />
+            </div>
+            <div class="w-20 text-center mt-5">
+              <span id="awayTotal" class="text-lg text-slate-400 font-mono">= 0</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Result Preview -->
+      <div id="result-preview" class="mt-6 p-4 bg-slate-900/50 rounded-lg text-center hidden">
+        <span id="result-text" class="text-lg font-bold"></span>
+      </div>
+    </div>
+
+    <!-- Match Report (Optional) -->
+    <div class="bg-slate-800/50 rounded-xl border border-slate-700/50 p-6 mb-6">
+      <h3 class="text-lg font-semibold text-white mb-4">Match Report (Optional)</h3>
+      <textarea
+        id="matchReport"
+        name="matchReport"
+        rows="6"
+        class="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
+        placeholder="Write a brief match report..."
+      >{fixture.match_report || ''}</textarea>
+      <p class="text-slate-500 text-xs mt-2">This will be displayed with the result on your website.</p>
+    </div>
+
+    <!-- Actions -->
+    <div class="flex items-center gap-4">
+      <button
+        type="submit"
+        class="px-6 py-3 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors font-medium"
+      >
+        {isPlayed ? 'Update Result' : 'Save Result'}
+      </button>
+      <a
+        href={`/${slug}/admin-portal/fixtures`}
+        class="px-6 py-3 text-slate-300 hover:text-white transition-colors font-medium"
+      >
+        Cancel
+      </a>
+    </div>
+
+    <div id="loading" class="hidden fixed inset-0 bg-slate-950/80 flex items-center justify-center z-50">
+      <div class="bg-slate-800 rounded-xl p-6 text-center">
+        <div class="w-8 h-8 border-2 border-green-500 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+        <p class="text-white">Saving...</p>
+      </div>
+    </div>
+  </form>
+</AdminLayout>
+
+<script define:vars={{ clubId: club.id, fixtureId, slug, isHome: fixture.is_home }}>
+  const form = document.getElementById('result-form');
+  const loading = document.getElementById('loading');
+
+  const homeGoalsInput = document.getElementById('homeGoals');
+  const homePointsInput = document.getElementById('homePoints');
+  const awayGoalsInput = document.getElementById('awayGoals');
+  const awayPointsInput = document.getElementById('awayPoints');
+  const homeTotalSpan = document.getElementById('homeTotal');
+  const awayTotalSpan = document.getElementById('awayTotal');
+  const resultPreview = document.getElementById('result-preview');
+  const resultText = document.getElementById('result-text');
+
+  function calculateTotals() {
+    const homeGoals = parseInt(homeGoalsInput.value) || 0;
+    const homePoints = parseInt(homePointsInput.value) || 0;
+    const awayGoals = parseInt(awayGoalsInput.value) || 0;
+    const awayPoints = parseInt(awayPointsInput.value) || 0;
+
+    const homeTotal = (homeGoals * 3) + homePoints;
+    const awayTotal = (awayGoals * 3) + awayPoints;
+
+    homeTotalSpan.textContent = `= ${homeTotal}`;
+    awayTotalSpan.textContent = `= ${awayTotal}`;
+
+    // Show result preview
+    if (homeGoalsInput.value !== '' || awayGoalsInput.value !== '') {
+      resultPreview.classList.remove('hidden');
+
+      let result, resultClass;
+      if (isHome) {
+        if (homeTotal > awayTotal) {
+          result = 'Win';
+          resultClass = 'text-green-400';
+        } else if (homeTotal < awayTotal) {
+          result = 'Loss';
+          resultClass = 'text-red-400';
+        } else {
+          result = 'Draw';
+          resultClass = 'text-yellow-400';
+        }
+      } else {
+        if (awayTotal > homeTotal) {
+          result = 'Win';
+          resultClass = 'text-green-400';
+        } else if (awayTotal < homeTotal) {
+          result = 'Loss';
+          resultClass = 'text-red-400';
+        } else {
+          result = 'Draw';
+          resultClass = 'text-yellow-400';
+        }
+      }
+
+      resultText.textContent = result;
+      resultText.className = `text-lg font-bold ${resultClass}`;
+    } else {
+      resultPreview.classList.add('hidden');
+    }
+  }
+
+  homeGoalsInput?.addEventListener('input', calculateTotals);
+  homePointsInput?.addEventListener('input', calculateTotals);
+  awayGoalsInput?.addEventListener('input', calculateTotals);
+  awayPointsInput?.addEventListener('input', calculateTotals);
+
+  // Calculate on load
+  calculateTotals();
+
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const formData = new FormData(form);
+
+    const data = {
+      homeGoals: parseInt(formData.get('homeGoals')) || 0,
+      homePoints: parseInt(formData.get('homePoints')) || 0,
+      awayGoals: parseInt(formData.get('awayGoals')) || 0,
+      awayPoints: parseInt(formData.get('awayPoints')) || 0,
+      matchReport: formData.get('matchReport') || null,
+    };
+
+    loading?.classList.remove('hidden');
+
+    try {
+      const response = await fetch(`/api/clubs/${clubId}/fixtures/${fixtureId}/result`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to save result');
+      }
+
+      window.location.href = `/${slug}/admin-portal/fixtures`;
+    } catch (error) {
+      alert(error.message || 'Failed to save result');
+      loading?.classList.add('hidden');
+    }
+  });
+</script>

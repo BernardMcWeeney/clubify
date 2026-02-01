@@ -1,0 +1,417 @@
+---
+import AdminLayout from '../../../../components/admin/AdminLayout.astro';
+import { DatabaseService } from '../../../../lib/db';
+import { getAuthContext } from '../../../../lib/auth';
+
+const { slug } = Astro.params;
+
+if (!Astro.locals.runtime.env.DB) {
+  return Astro.redirect('/admin?error=db_not_configured');
+}
+
+const db = new DatabaseService(Astro.locals.runtime.env.DB);
+const { user } = await getAuthContext(Astro.cookies, db);
+
+if (!user) {
+  return Astro.redirect('/admin/login');
+}
+
+const club = await db.getClubBySlug(slug!);
+if (!club) {
+  return Astro.redirect('/admin');
+}
+
+const member = await db.getClubMember(club.id, user.id);
+if (!member) {
+  return Astro.redirect('/admin');
+}
+
+const canUpload = ['admin', 'pro', 'editor'].includes(member.role);
+const canDelete = ['admin', 'pro'].includes(member.role);
+
+// Check if R2 is configured
+const r2Configured = !!Astro.locals.runtime.env.MEDIA;
+
+// Get media
+const results = await Astro.locals.runtime.env.DB.prepare(`
+  SELECT m.*, u.name as uploaded_by_name
+  FROM media m
+  LEFT JOIN users u ON m.uploaded_by = u.id
+  WHERE m.club_id = ?
+  ORDER BY m.created_at DESC
+`).bind(club.id).all();
+
+const media = results.results || [];
+
+function formatFileSize(bytes: number): string {
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+  return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+}
+
+function formatDate(dateStr: string): string {
+  return new Date(dateStr).toLocaleDateString('en-IE', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  });
+}
+---
+
+<AdminLayout
+  title="Media Library"
+  club={club}
+  user={user}
+  member={member}
+  currentPage="media"
+>
+  <Fragment slot="header-actions">
+    {canUpload && r2Configured && (
+      <button
+        id="upload-btn"
+        class="flex items-center gap-2 px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors text-sm font-medium"
+      >
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+        </svg>
+        Upload
+      </button>
+    )}
+  </Fragment>
+
+  {!r2Configured && (
+    <div class="bg-amber-500/10 border border-amber-500/30 rounded-xl p-6 mb-6">
+      <div class="flex items-start gap-4">
+        <svg class="w-6 h-6 text-amber-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+        </svg>
+        <div>
+          <h3 class="text-amber-400 font-medium mb-1">Media storage not configured</h3>
+          <p class="text-amber-400/80 text-sm">
+            R2 bucket needs to be created. Run <code class="bg-amber-500/20 px-1 rounded">wrangler r2 bucket create clubify-media</code> to enable media uploads.
+          </p>
+        </div>
+      </div>
+    </div>
+  )}
+
+  {media.length > 0 ? (
+    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+      {media.map((item: any) => (
+        <div
+          class="group bg-slate-800/50 rounded-xl border border-slate-700/50 overflow-hidden hover:border-slate-600 transition-colors"
+          data-media-id={item.id}
+          data-media-url={item.url}
+        >
+          <div class="aspect-square relative overflow-hidden bg-slate-900">
+            {item.mime_type.startsWith('image/') ? (
+              <img
+                src={item.url}
+                alt={item.alt_text || item.filename}
+                class="w-full h-full object-cover"
+                loading="lazy"
+              />
+            ) : (
+              <div class="w-full h-full flex items-center justify-center">
+                <svg class="w-12 h-12 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+              </div>
+            )}
+
+            <!-- Overlay actions -->
+            <div class="absolute inset-0 bg-slate-900/80 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+              <button
+                class="copy-url-btn p-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors"
+                title="Copy URL"
+              >
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/>
+                </svg>
+              </button>
+              {canDelete && (
+                <button
+                  class="delete-btn p-2 bg-red-500/80 hover:bg-red-500 text-white rounded-lg transition-colors"
+                  title="Delete"
+                >
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                  </svg>
+                </button>
+              )}
+            </div>
+          </div>
+
+          <div class="p-3">
+            <p class="text-white text-sm font-medium truncate" title={item.filename}>{item.filename}</p>
+            <p class="text-slate-500 text-xs mt-1">{formatFileSize(item.size)} • {formatDate(item.created_at)}</p>
+          </div>
+        </div>
+      ))}
+    </div>
+  ) : (
+    <div class="bg-slate-800/50 rounded-xl border border-slate-700/50 p-12 text-center">
+      <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-slate-700/50 flex items-center justify-center">
+        <svg class="w-8 h-8 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+        </svg>
+      </div>
+      <h3 class="text-lg font-semibold text-white mb-2">No media yet</h3>
+      <p class="text-slate-400 mb-6">Upload images to use in your posts and pages.</p>
+      {canUpload && r2Configured && (
+        <button
+          id="upload-btn-empty"
+          class="inline-flex items-center gap-2 px-6 py-3 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors font-medium"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+          </svg>
+          Upload your first image
+        </button>
+      )}
+    </div>
+  )}
+
+  <!-- Upload modal -->
+  <div id="upload-modal" class="hidden fixed inset-0 bg-slate-950/80 flex items-center justify-center z-50">
+    <div class="bg-slate-800 rounded-xl p-6 max-w-md w-full mx-4">
+      <h3 class="text-lg font-bold text-white mb-4">Upload Media</h3>
+
+      <form id="upload-form">
+        <div class="space-y-4">
+          <div
+            id="drop-zone"
+            class="border-2 border-dashed border-slate-600 rounded-lg p-8 text-center cursor-pointer hover:border-slate-500 transition-colors"
+          >
+            <svg class="w-10 h-10 mx-auto text-slate-500 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+            </svg>
+            <p class="text-slate-400 mb-2">Drop image here or click to browse</p>
+            <p class="text-slate-500 text-xs">JPEG, PNG, GIF, WebP, SVG (max 10MB)</p>
+            <input type="file" id="file-input" accept="image/*" class="hidden" />
+          </div>
+
+          <div id="file-preview" class="hidden">
+            <div class="flex items-center gap-3 p-3 bg-slate-700/50 rounded-lg">
+              <img id="preview-img" src="" alt="Preview" class="w-16 h-16 object-cover rounded" />
+              <div class="flex-1 min-w-0">
+                <p id="preview-name" class="text-white text-sm font-medium truncate"></p>
+                <p id="preview-size" class="text-slate-400 text-xs"></p>
+              </div>
+              <button type="button" id="clear-file" class="p-1 text-slate-400 hover:text-white">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <label for="alt-text" class="block text-sm font-medium text-slate-300 mb-2">Alt text (optional)</label>
+            <input
+              type="text"
+              id="alt-text"
+              name="altText"
+              class="w-full px-4 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-green-500"
+              placeholder="Describe the image..."
+            />
+          </div>
+        </div>
+
+        <div class="flex items-center gap-3 justify-end mt-6">
+          <button type="button" id="cancel-upload" class="px-4 py-2 text-slate-300 hover:text-white transition-colors">Cancel</button>
+          <button type="submit" id="submit-upload" disabled class="px-4 py-2 bg-green-500 hover:bg-green-600 disabled:bg-slate-600 disabled:cursor-not-allowed text-white rounded-lg transition-colors">Upload</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Loading overlay -->
+  <div id="loading" class="hidden fixed inset-0 bg-slate-950/80 flex items-center justify-center z-50">
+    <div class="bg-slate-800 rounded-xl p-6 text-center">
+      <div class="w-8 h-8 border-2 border-green-500 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+      <p class="text-white" id="loading-text">Uploading...</p>
+    </div>
+  </div>
+
+  <!-- Toast notification -->
+  <div id="toast" class="hidden fixed bottom-6 right-6 bg-green-500 text-white px-4 py-3 rounded-lg shadow-lg z-50">
+    <span id="toast-text">URL copied to clipboard!</span>
+  </div>
+</AdminLayout>
+
+<script define:vars={{ clubId: club.id, slug }}>
+  const uploadBtn = document.getElementById('upload-btn');
+  const uploadBtnEmpty = document.getElementById('upload-btn-empty');
+  const uploadModal = document.getElementById('upload-modal');
+  const cancelUpload = document.getElementById('cancel-upload');
+  const uploadForm = document.getElementById('upload-form');
+  const dropZone = document.getElementById('drop-zone');
+  const fileInput = document.getElementById('file-input');
+  const filePreview = document.getElementById('file-preview');
+  const previewImg = document.getElementById('preview-img');
+  const previewName = document.getElementById('preview-name');
+  const previewSize = document.getElementById('preview-size');
+  const clearFile = document.getElementById('clear-file');
+  const submitBtn = document.getElementById('submit-upload');
+  const loading = document.getElementById('loading');
+  const loadingText = document.getElementById('loading-text');
+  const toast = document.getElementById('toast');
+  const toastText = document.getElementById('toast-text');
+
+  let selectedFile = null;
+
+  function showToast(message) {
+    toastText.textContent = message;
+    toast?.classList.remove('hidden');
+    setTimeout(() => toast?.classList.add('hidden'), 3000);
+  }
+
+  function formatFileSize(bytes) {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+  }
+
+  function openModal() {
+    uploadModal?.classList.remove('hidden');
+  }
+
+  function closeModal() {
+    uploadModal?.classList.add('hidden');
+    clearFileSelection();
+  }
+
+  function clearFileSelection() {
+    selectedFile = null;
+    fileInput.value = '';
+    filePreview?.classList.add('hidden');
+    dropZone?.classList.remove('hidden');
+    submitBtn?.setAttribute('disabled', '');
+  }
+
+  function handleFile(file) {
+    if (!file) return;
+
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'];
+    if (!allowedTypes.includes(file.type)) {
+      alert('Invalid file type. Allowed: JPEG, PNG, GIF, WebP, SVG');
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      alert('File too large. Maximum size is 10MB');
+      return;
+    }
+
+    selectedFile = file;
+    previewName.textContent = file.name;
+    previewSize.textContent = formatFileSize(file.size);
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      previewImg.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+
+    dropZone?.classList.add('hidden');
+    filePreview?.classList.remove('hidden');
+    submitBtn?.removeAttribute('disabled');
+  }
+
+  uploadBtn?.addEventListener('click', openModal);
+  uploadBtnEmpty?.addEventListener('click', openModal);
+  cancelUpload?.addEventListener('click', closeModal);
+  clearFile?.addEventListener('click', clearFileSelection);
+
+  dropZone?.addEventListener('click', () => fileInput?.click());
+  fileInput?.addEventListener('change', (e) => handleFile(e.target.files[0]));
+
+  dropZone?.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    dropZone.classList.add('border-green-500');
+  });
+
+  dropZone?.addEventListener('dragleave', () => {
+    dropZone.classList.remove('border-green-500');
+  });
+
+  dropZone?.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropZone.classList.remove('border-green-500');
+    handleFile(e.dataTransfer.files[0]);
+  });
+
+  uploadForm?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!selectedFile) return;
+
+    loading?.classList.remove('hidden');
+    loadingText.textContent = 'Uploading...';
+
+    const formData = new FormData();
+    formData.append('file', selectedFile);
+    formData.append('altText', document.getElementById('alt-text')?.value || '');
+
+    try {
+      const response = await fetch(`/api/clubs/${clubId}/media`, {
+        method: 'POST',
+        body: formData,
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Upload failed');
+      }
+
+      window.location.reload();
+    } catch (error) {
+      alert(error.message || 'Upload failed');
+      loading?.classList.add('hidden');
+    }
+  });
+
+  // Copy URL functionality
+  document.querySelectorAll('.copy-url-btn').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      const card = btn.closest('[data-media-url]');
+      const url = card?.dataset.mediaUrl;
+      if (url) {
+        await navigator.clipboard.writeText(url);
+        showToast('URL copied to clipboard!');
+      }
+    });
+  });
+
+  // Delete functionality
+  document.querySelectorAll('.delete-btn').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      const card = btn.closest('[data-media-id]');
+      const mediaId = card?.dataset.mediaId;
+
+      if (!mediaId || !confirm('Delete this image?')) return;
+
+      loading?.classList.remove('hidden');
+      loadingText.textContent = 'Deleting...';
+
+      try {
+        const response = await fetch(`/api/clubs/${clubId}/media/${mediaId}`, {
+          method: 'DELETE',
+        });
+
+        if (!response.ok) {
+          const result = await response.json();
+          throw new Error(result.error || 'Delete failed');
+        }
+
+        card?.remove();
+        loading?.classList.add('hidden');
+        showToast('Image deleted');
+      } catch (error) {
+        alert(error.message || 'Delete failed');
+        loading?.classList.add('hidden');
+      }
+    });
+  });
+</script>

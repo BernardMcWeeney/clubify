@@ -32,10 +32,11 @@ binding = "clubify_db"
 database_name = "clubify-db"
 database_id = "2bac1f43-2fbc-40b6-a129-a02b1d2b61cc"
 
-# R2 Storage for media (OPTIONAL)
-# [[r2_buckets]]
-# binding = "MEDIA"
-# bucket_name = "clubify-media"
+# R2 Storage for media
+# Run: wrangler r2 bucket create clubify-media
+[[r2_buckets]]
+binding = "MEDIA"
+bucket_name = "clubify-media"
 
 # KV for caching (OPTIONAL)
 # [[kv_namespaces]]

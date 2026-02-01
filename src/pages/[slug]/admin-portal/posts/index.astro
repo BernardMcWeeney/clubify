@@ -1,0 +1,171 @@
+---
+import AdminLayout from '../../../../components/admin/AdminLayout.astro';
+import { DatabaseService } from '../../../../lib/db';
+import { getAuthContext } from '../../../../lib/auth';
+
+const { slug } = Astro.params;
+
+if (!Astro.locals.runtime.env.DB) {
+  return Astro.redirect('/admin?error=db_not_configured');
+}
+
+const db = new DatabaseService(Astro.locals.runtime.env.DB);
+const { user } = await getAuthContext(Astro.cookies, db);
+
+if (!user) {
+  return Astro.redirect('/admin/login');
+}
+
+const club = await db.getClubBySlug(slug!);
+if (!club) {
+  return Astro.redirect('/admin');
+}
+
+const member = await db.getClubMember(club.id, user.id);
+if (!member) {
+  return Astro.redirect('/admin');
+}
+
+// Get all posts
+const results = await Astro.locals.runtime.env.DB.prepare(`
+  SELECT p.*, u.name as author_name
+  FROM posts p
+  LEFT JOIN users u ON p.author_id = u.id
+  WHERE p.club_id = ?
+  ORDER BY p.created_at DESC
+`).bind(club.id).all();
+
+const posts = results.results || [];
+
+function formatDate(dateStr: string | null): string {
+  if (!dateStr) return '-';
+  return new Date(dateStr).toLocaleDateString('en-IE', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  });
+}
+
+function getCategoryColor(category: string): string {
+  const colors: Record<string, string> = {
+    news: 'bg-blue-500/20 text-blue-400',
+    'match-report': 'bg-green-500/20 text-green-400',
+    fundraiser: 'bg-amber-500/20 text-amber-400',
+    notice: 'bg-purple-500/20 text-purple-400',
+  };
+  return colors[category] || 'bg-slate-500/20 text-slate-400';
+}
+---
+
+<AdminLayout
+  title="Posts"
+  club={club}
+  user={user}
+  member={member}
+  currentPage="posts"
+>
+  <Fragment slot="header-actions">
+    <a
+      href={`/${slug}/admin-portal/posts/new`}
+      class="flex items-center gap-2 px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors text-sm font-medium"
+    >
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+      </svg>
+      New post
+    </a>
+  </Fragment>
+
+  {posts.length > 0 ? (
+    <div class="bg-slate-800/50 rounded-xl border border-slate-700/50 overflow-hidden">
+      <table class="w-full">
+        <thead>
+          <tr class="border-b border-slate-700/50">
+            <th class="text-left px-6 py-4 text-slate-400 font-medium text-sm">Title</th>
+            <th class="text-left px-6 py-4 text-slate-400 font-medium text-sm hidden md:table-cell">Category</th>
+            <th class="text-left px-6 py-4 text-slate-400 font-medium text-sm hidden lg:table-cell">Author</th>
+            <th class="text-left px-6 py-4 text-slate-400 font-medium text-sm">Status</th>
+            <th class="text-left px-6 py-4 text-slate-400 font-medium text-sm hidden sm:table-cell">Date</th>
+            <th class="px-6 py-4"></th>
+          </tr>
+        </thead>
+        <tbody>
+          {posts.map((post: any) => (
+            <tr class="border-b border-slate-700/50 hover:bg-slate-800/30 transition-colors">
+              <td class="px-6 py-4">
+                <a href={`/${slug}/admin-portal/posts/${post.id}`} class="text-white font-medium hover:text-green-400 transition-colors">
+                  {post.title}
+                </a>
+                {post.summary && (
+                  <p class="text-slate-500 text-sm mt-1 line-clamp-1">{post.summary}</p>
+                )}
+              </td>
+              <td class="px-6 py-4 hidden md:table-cell">
+                <span class={`px-2 py-1 rounded-full text-xs font-medium capitalize ${getCategoryColor(post.category)}`}>
+                  {post.category.replace('-', ' ')}
+                </span>
+              </td>
+              <td class="px-6 py-4 hidden lg:table-cell">
+                <span class="text-slate-400 text-sm">{post.author_name || 'Unknown'}</span>
+              </td>
+              <td class="px-6 py-4">
+                {post.status === 'published' ? (
+                  <span class="px-2 py-1 bg-green-500/20 text-green-400 rounded-full text-xs font-medium">Published</span>
+                ) : (
+                  <span class="px-2 py-1 bg-slate-500/20 text-slate-400 rounded-full text-xs font-medium">Draft</span>
+                )}
+              </td>
+              <td class="px-6 py-4 hidden sm:table-cell">
+                <span class="text-slate-400 text-sm">{formatDate(post.published_at || post.created_at)}</span>
+              </td>
+              <td class="px-6 py-4">
+                <div class="flex items-center justify-end gap-2">
+                  <a
+                    href={`/${slug}/admin-portal/posts/${post.id}`}
+                    class="p-2 text-slate-400 hover:text-white transition-colors"
+                    title="Edit"
+                  >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                    </svg>
+                  </a>
+                  {post.status === 'published' && (
+                    <a
+                      href={`/${slug}/news/${post.slug}`}
+                      target="_blank"
+                      class="p-2 text-slate-400 hover:text-white transition-colors"
+                      title="View"
+                    >
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                      </svg>
+                    </a>
+                  )}
+                </div>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  ) : (
+    <div class="bg-slate-800/50 rounded-xl border border-slate-700/50 p-12 text-center">
+      <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-slate-700/50 flex items-center justify-center">
+        <svg class="w-8 h-8 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/>
+        </svg>
+      </div>
+      <h3 class="text-lg font-semibold text-white mb-2">No posts yet</h3>
+      <p class="text-slate-400 mb-6">Create your first post to share news with your club.</p>
+      <a
+        href={`/${slug}/admin-portal/posts/new`}
+        class="inline-flex items-center gap-2 px-6 py-3 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors font-medium"
+      >
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+        </svg>
+        Create your first post
+      </a>
+    </div>
+  )}
+</AdminLayout>

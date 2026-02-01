@@ -1,0 +1,295 @@
+---
+import AdminLayout from '../../../../components/admin/AdminLayout.astro';
+import { DatabaseService } from '../../../../lib/db';
+import { getAuthContext } from '../../../../lib/auth';
+
+const { slug } = Astro.params;
+
+if (!Astro.locals.runtime.env.DB) {
+  return Astro.redirect('/admin?error=db_not_configured');
+}
+
+const db = new DatabaseService(Astro.locals.runtime.env.DB);
+const { user } = await getAuthContext(Astro.cookies, db);
+
+if (!user) {
+  return Astro.redirect('/admin/login');
+}
+
+const club = await db.getClubBySlug(slug!);
+if (!club) {
+  return Astro.redirect('/admin');
+}
+
+const member = await db.getClubMember(club.id, user.id);
+if (!member) {
+  return Astro.redirect('/admin');
+}
+
+// Get fixtures
+const upcomingFixtures = await db.getUpcomingFixtures(club.id, 20);
+const playedFixtures = await db.getPlayedFixtures(club.id, 20);
+
+const canManage = ['admin', 'pro'].includes(member.role);
+
+function formatDate(dateStr: string): string {
+  return new Date(dateStr).toLocaleDateString('en-IE', {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  });
+}
+
+function formatScore(fixture: any): string {
+  if (fixture.status !== 'played') return '-';
+  return `${fixture.home_goals}-${fixture.home_points} to ${fixture.away_goals}-${fixture.away_points}`;
+}
+
+function getResultBadge(result: string | null) {
+  if (!result) return null;
+  const badges: Record<string, { bg: string; text: string; label: string }> = {
+    win: { bg: 'bg-green-500/20', text: 'text-green-400', label: 'Win' },
+    loss: { bg: 'bg-red-500/20', text: 'text-red-400', label: 'Loss' },
+    draw: { bg: 'bg-yellow-500/20', text: 'text-yellow-400', label: 'Draw' },
+  };
+  return badges[result];
+}
+---
+
+<AdminLayout
+  title="Fixtures"
+  club={club}
+  user={user}
+  member={member}
+  currentPage="fixtures"
+>
+  <Fragment slot="header-actions">
+    {canManage && (
+      <a
+        href={`/${slug}/admin-portal/fixtures/new`}
+        class="flex items-center gap-2 px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors text-sm font-medium"
+      >
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+        </svg>
+        Add fixture
+      </a>
+    )}
+  </Fragment>
+
+  <!-- Tabs -->
+  <div class="mb-6 border-b border-slate-700">
+    <nav class="flex gap-6">
+      <button
+        id="tab-upcoming"
+        class="tab-btn pb-3 text-green-400 border-b-2 border-green-400 font-medium text-sm"
+        data-tab="upcoming"
+      >
+        Upcoming ({upcomingFixtures.length})
+      </button>
+      <button
+        id="tab-results"
+        class="tab-btn pb-3 text-slate-400 hover:text-white border-b-2 border-transparent font-medium text-sm transition-colors"
+        data-tab="results"
+      >
+        Results ({playedFixtures.length})
+      </button>
+    </nav>
+  </div>
+
+  <!-- Upcoming Fixtures -->
+  <div id="panel-upcoming" class="tab-panel">
+    {upcomingFixtures.length > 0 ? (
+      <div class="space-y-3">
+        {upcomingFixtures.map((fixture: any) => (
+          <div class="bg-slate-800/50 rounded-xl border border-slate-700/50 p-4 hover:bg-slate-800/70 transition-colors">
+            <div class="flex items-center justify-between">
+              <div class="flex-1">
+                <div class="flex items-center gap-3 mb-2">
+                  <span class={`px-2 py-0.5 rounded text-xs font-medium ${fixture.is_home ? 'bg-blue-500/20 text-blue-400' : 'bg-purple-500/20 text-purple-400'}`}>
+                    {fixture.is_home ? 'Home' : 'Away'}
+                  </span>
+                  {fixture.competition && (
+                    <span class="text-slate-500 text-xs">{fixture.competition}</span>
+                  )}
+                  {fixture.team_name && (
+                    <span class="text-slate-500 text-xs">• {fixture.team_name}</span>
+                  )}
+                </div>
+                <h3 class="text-lg font-semibold text-white mb-1">
+                  vs {fixture.opponent}
+                </h3>
+                <div class="flex items-center gap-4 text-sm text-slate-400">
+                  <span class="flex items-center gap-1">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                    </svg>
+                    {formatDate(fixture.match_date)}
+                  </span>
+                  {fixture.match_time && (
+                    <span class="flex items-center gap-1">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                      </svg>
+                      {fixture.match_time}
+                    </span>
+                  )}
+                  {fixture.venue && (
+                    <span class="flex items-center gap-1">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                      </svg>
+                      {fixture.venue}
+                    </span>
+                  )}
+                </div>
+              </div>
+              {canManage && (
+                <div class="flex items-center gap-2">
+                  <a
+                    href={`/${slug}/admin-portal/fixtures/${fixture.id}/result`}
+                    class="px-3 py-1.5 bg-green-500/10 hover:bg-green-500/20 text-green-400 rounded-lg text-sm font-medium transition-colors"
+                  >
+                    Enter Result
+                  </a>
+                  <a
+                    href={`/${slug}/admin-portal/fixtures/${fixture.id}`}
+                    class="p-2 text-slate-400 hover:text-white transition-colors"
+                    title="Edit"
+                  >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                    </svg>
+                  </a>
+                </div>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    ) : (
+      <div class="bg-slate-800/50 rounded-xl border border-slate-700/50 p-12 text-center">
+        <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-slate-700/50 flex items-center justify-center">
+          <svg class="w-8 h-8 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+          </svg>
+        </div>
+        <h3 class="text-lg font-semibold text-white mb-2">No upcoming fixtures</h3>
+        <p class="text-slate-400 mb-6">Add your first fixture to get started.</p>
+        {canManage && (
+          <a
+            href={`/${slug}/admin-portal/fixtures/new`}
+            class="inline-flex items-center gap-2 px-6 py-3 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors font-medium"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+            </svg>
+            Add fixture
+          </a>
+        )}
+      </div>
+    )}
+  </div>
+
+  <!-- Results -->
+  <div id="panel-results" class="tab-panel hidden">
+    {playedFixtures.length > 0 ? (
+      <div class="space-y-3">
+        {playedFixtures.map((fixture: any) => {
+          const badge = getResultBadge(fixture.result);
+          return (
+            <div class="bg-slate-800/50 rounded-xl border border-slate-700/50 p-4 hover:bg-slate-800/70 transition-colors">
+              <div class="flex items-center justify-between">
+                <div class="flex-1">
+                  <div class="flex items-center gap-3 mb-2">
+                    <span class={`px-2 py-0.5 rounded text-xs font-medium ${fixture.is_home ? 'bg-blue-500/20 text-blue-400' : 'bg-purple-500/20 text-purple-400'}`}>
+                      {fixture.is_home ? 'Home' : 'Away'}
+                    </span>
+                    {badge && (
+                      <span class={`px-2 py-0.5 rounded text-xs font-medium ${badge.bg} ${badge.text}`}>
+                        {badge.label}
+                      </span>
+                    )}
+                    {fixture.competition && (
+                      <span class="text-slate-500 text-xs">{fixture.competition}</span>
+                    )}
+                  </div>
+                  <h3 class="text-lg font-semibold text-white mb-1">
+                    vs {fixture.opponent}
+                  </h3>
+                  <div class="flex items-center gap-4 text-sm">
+                    <span class="text-white font-mono font-semibold">
+                      {fixture.home_goals}-{fixture.home_points} to {fixture.away_goals}-{fixture.away_points}
+                    </span>
+                    <span class="text-slate-500">•</span>
+                    <span class="text-slate-400">{formatDate(fixture.match_date)}</span>
+                    {fixture.venue && (
+                      <>
+                        <span class="text-slate-500">•</span>
+                        <span class="text-slate-400">{fixture.venue}</span>
+                      </>
+                    )}
+                  </div>
+                </div>
+                {canManage && (
+                  <div class="flex items-center gap-2">
+                    <a
+                      href={`/${slug}/admin-portal/fixtures/${fixture.id}/result`}
+                      class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-sm font-medium transition-colors"
+                    >
+                      Edit Result
+                    </a>
+                    <a
+                      href={`/${slug}/admin-portal/fixtures/${fixture.id}`}
+                      class="p-2 text-slate-400 hover:text-white transition-colors"
+                      title="Edit"
+                    >
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                      </svg>
+                    </a>
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    ) : (
+      <div class="bg-slate-800/50 rounded-xl border border-slate-700/50 p-12 text-center">
+        <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-slate-700/50 flex items-center justify-center">
+          <svg class="w-8 h-8 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+        <h3 class="text-lg font-semibold text-white mb-2">No results yet</h3>
+        <p class="text-slate-400">Results will appear here once fixtures are played.</p>
+      </div>
+    )}
+  </div>
+</AdminLayout>
+
+<script>
+  const tabButtons = document.querySelectorAll('.tab-btn');
+  const panels = document.querySelectorAll('.tab-panel');
+
+  tabButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const tab = btn.getAttribute('data-tab');
+
+      // Update button styles
+      tabButtons.forEach(b => {
+        b.classList.remove('text-green-400', 'border-green-400');
+        b.classList.add('text-slate-400', 'border-transparent');
+      });
+      btn.classList.remove('text-slate-400', 'border-transparent');
+      btn.classList.add('text-green-400', 'border-green-400');
+
+      // Show correct panel
+      panels.forEach(p => p.classList.add('hidden'));
+      document.getElementById(`panel-${tab}`)?.classList.remove('hidden');
+    });
+  });
+</script>
