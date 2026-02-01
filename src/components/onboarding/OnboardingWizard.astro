@@ -695,8 +695,8 @@
   }
 
   function normalizeSlug(raw: string, name?: string, county?: string): string {
-    const countyValue = county ?? (document.getElementById('county') as HTMLSelectElement | null)?.value || '';
-    const nameValue = name ?? (document.getElementById('club-name') as HTMLInputElement | null)?.value || '';
+    const countyValue = county ?? (document.getElementById('county') as HTMLSelectElement | null)?.value ?? '';
+    const nameValue = name ?? (document.getElementById('club-name') as HTMLInputElement | null)?.value ?? '';
     const countySlug = slugify(countyValue);
     let slug = slugify(raw);
 
