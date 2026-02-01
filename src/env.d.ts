@@ -8,9 +8,9 @@ declare namespace App {
 }
 
 interface Env {
-  DB: D1Database;
-  MEDIA: R2Bucket;
-  CACHE: KVNamespace;
-  SITE_URL: string;
-  APP_NAME: string;
+  DB?: D1Database;
+  MEDIA?: R2Bucket;
+  CACHE?: KVNamespace;
+  SITE_URL?: string;
+  APP_NAME?: string;
 }

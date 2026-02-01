@@ -5,6 +5,11 @@ import { getAuthContext } from '../../../lib/auth';
 
 const { slug } = Astro.params;
 
+// Check if database is configured
+if (!Astro.locals.runtime.env.DB) {
+  return Astro.redirect('/admin?error=db_not_configured');
+}
+
 // Get auth context
 const db = new DatabaseService(Astro.locals.runtime.env.DB);
 const { user } = await getAuthContext(Astro.cookies, db);

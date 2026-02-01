@@ -10,6 +10,9 @@ let redirectUrl = '/admin';
 
 if (token) {
   try {
+    if (!Astro.locals.runtime.env.DB) {
+      error = 'Database not configured. Please contact support.';
+    } else {
     const db = new DatabaseService(Astro.locals.runtime.env.DB);
 
     // Verify the magic link
@@ -53,6 +56,7 @@ if (token) {
       }
     } else {
       error = 'Invalid or expired link. Please request a new one.';
+    }
     }
   } catch (e) {
     console.error('Verify error:', e);

@@ -12,6 +12,11 @@ function adjustColor(color: string, amount: number): string {
   return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
 }
 
+// Check if database is configured
+if (!Astro.locals.runtime.env.DB) {
+  return Astro.redirect('/?error=db_not_configured');
+}
+
 // Get club
 const db = new DatabaseService(Astro.locals.runtime.env.DB);
 const club = await db.getClubBySlug(slug!);

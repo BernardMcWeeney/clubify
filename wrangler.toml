@@ -6,23 +6,39 @@ compatibility_flags = ["nodejs_compat"]
 [assets]
 directory = "dist"
 
-# D1 Database
-[[d1_databases]]
-binding = "DB"
-database_name = "clubify-db"
-database_id = "local-dev-db"
-
-# R2 Storage for media
-[[r2_buckets]]
-binding = "MEDIA"
-bucket_name = "clubify-media"
-
-# KV for caching
-[[kv_namespaces]]
-binding = "CACHE"
-id = "local-dev-cache"
-
 # Environment variables
 [vars]
 SITE_URL = "https://clubify.ie"
 APP_NAME = "Clubify"
+
+# ===========================================
+# CLOUDFLARE RESOURCES - CREATE THESE FIRST:
+# ===========================================
+#
+# 1. Create D1 database:
+#    wrangler d1 create clubify-db
+#
+# 2. Create R2 bucket (optional, for media):
+#    wrangler r2 bucket create clubify-media
+#
+# 3. Create KV namespace (optional, for caching):
+#    wrangler kv:namespace create CACHE
+#
+# Then uncomment and update the IDs below:
+# ===========================================
+
+# D1 Database (REQUIRED)
+# [[d1_databases]]
+# binding = "DB"
+# database_name = "clubify-db"
+# database_id = "YOUR_D1_DATABASE_ID_HERE"
+
+# R2 Storage for media (OPTIONAL)
+# [[r2_buckets]]
+# binding = "MEDIA"
+# bucket_name = "clubify-media"
+
+# KV for caching (OPTIONAL)
+# [[kv_namespaces]]
+# binding = "CACHE"
+# id = "YOUR_KV_NAMESPACE_ID_HERE"
