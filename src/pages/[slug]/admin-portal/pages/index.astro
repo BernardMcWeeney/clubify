@@ -47,7 +47,7 @@ function formatDate(dateStr: string): string {
   <Fragment slot="header-actions">
     <a
       href={`/${slug}/admin-portal/pages/new`}
-      class="flex items-center gap-2 px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors text-sm font-medium"
+      class="flex items-center gap-2 px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-xl transition-colors text-sm font-medium shadow-lg shadow-green-500/25"
     >
       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
@@ -57,50 +57,50 @@ function formatDate(dateStr: string): string {
   </Fragment>
 
   <!-- Suggested pages -->
-  <div class="bg-slate-800/30 rounded-xl p-4 mb-6 border border-slate-700/30">
-    <p class="text-slate-400 text-sm">
-      <strong class="text-slate-300">Suggested pages:</strong> About, Contact, Sponsors, Safeguarding, Privacy Policy
+  <div class="bg-green-50 rounded-xl p-4 mb-6 border border-green-200">
+    <p class="text-green-700 text-sm">
+      <strong class="text-green-800">Suggested pages:</strong> About, Contact, Sponsors, Safeguarding, Privacy Policy
     </p>
   </div>
 
   {pages.length > 0 ? (
-    <div class="bg-slate-800/50 rounded-xl border border-slate-700/50 overflow-hidden">
+    <div class="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
       <table class="w-full">
         <thead>
-          <tr class="border-b border-slate-700/50">
-            <th class="text-left px-6 py-4 text-slate-400 font-medium text-sm">Title</th>
-            <th class="text-left px-6 py-4 text-slate-400 font-medium text-sm hidden md:table-cell">URL</th>
-            <th class="text-left px-6 py-4 text-slate-400 font-medium text-sm">Status</th>
-            <th class="text-left px-6 py-4 text-slate-400 font-medium text-sm hidden sm:table-cell">Updated</th>
+          <tr class="border-b border-slate-200 bg-slate-50">
+            <th class="text-left px-6 py-4 text-slate-600 font-semibold text-sm">Title</th>
+            <th class="text-left px-6 py-4 text-slate-600 font-semibold text-sm hidden md:table-cell">URL</th>
+            <th class="text-left px-6 py-4 text-slate-600 font-semibold text-sm">Status</th>
+            <th class="text-left px-6 py-4 text-slate-600 font-semibold text-sm hidden sm:table-cell">Updated</th>
             <th class="px-6 py-4"></th>
           </tr>
         </thead>
         <tbody>
           {pages.map((page: any) => (
-            <tr class="border-b border-slate-700/50 hover:bg-slate-800/30 transition-colors">
+            <tr class="border-b border-slate-100 hover:bg-slate-50 transition-colors">
               <td class="px-6 py-4">
-                <a href={`/${slug}/admin-portal/pages/${page.id}`} class="text-white font-medium hover:text-green-400 transition-colors">
+                <a href={`/${slug}/admin-portal/pages/${page.id}`} class="text-slate-900 font-medium hover:text-green-600 transition-colors">
                   {page.title}
                 </a>
               </td>
               <td class="px-6 py-4 hidden md:table-cell">
-                <span class="text-slate-500 text-sm font-mono">/{slug}/{page.slug}</span>
+                <span class="text-slate-500 text-sm font-mono bg-slate-100 px-2 py-1 rounded">/{slug}/{page.slug}</span>
               </td>
               <td class="px-6 py-4">
                 {page.is_published ? (
-                  <span class="px-2 py-1 bg-green-500/20 text-green-400 rounded-full text-xs font-medium">Published</span>
+                  <span class="px-2.5 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">Published</span>
                 ) : (
-                  <span class="px-2 py-1 bg-slate-500/20 text-slate-400 rounded-full text-xs font-medium">Draft</span>
+                  <span class="px-2.5 py-1 bg-slate-100 text-slate-500 rounded-full text-xs font-medium">Draft</span>
                 )}
               </td>
               <td class="px-6 py-4 hidden sm:table-cell">
-                <span class="text-slate-400 text-sm">{formatDate(page.updated_at)}</span>
+                <span class="text-slate-500 text-sm">{formatDate(page.updated_at)}</span>
               </td>
               <td class="px-6 py-4">
                 <div class="flex items-center justify-end gap-2">
                   <a
                     href={`/${slug}/admin-portal/pages/${page.id}`}
-                    class="p-2 text-slate-400 hover:text-white transition-colors"
+                    class="p-2 text-slate-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
                     title="Edit"
                   >
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -111,7 +111,7 @@ function formatDate(dateStr: string): string {
                     <a
                       href={`/${slug}/${page.slug}`}
                       target="_blank"
-                      class="p-2 text-slate-400 hover:text-white transition-colors"
+                      class="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                       title="View"
                     >
                       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -127,17 +127,17 @@ function formatDate(dateStr: string): string {
       </table>
     </div>
   ) : (
-    <div class="bg-slate-800/50 rounded-xl border border-slate-700/50 p-12 text-center">
-      <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-slate-700/50 flex items-center justify-center">
-        <svg class="w-8 h-8 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <div class="bg-white rounded-xl border border-slate-200 p-12 text-center shadow-sm">
+      <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-slate-100 flex items-center justify-center">
+        <svg class="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
         </svg>
       </div>
-      <h3 class="text-lg font-semibold text-white mb-2">No pages yet</h3>
-      <p class="text-slate-400 mb-6">Create pages like About, Contact, and Sponsors for your club.</p>
+      <h3 class="text-lg font-semibold text-slate-900 mb-2">No pages yet</h3>
+      <p class="text-slate-500 mb-6">Create pages like About, Contact, and Sponsors for your club.</p>
       <a
         href={`/${slug}/admin-portal/pages/new`}
-        class="inline-flex items-center gap-2 px-6 py-3 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors font-medium"
+        class="inline-flex items-center gap-2 px-6 py-3 bg-green-500 hover:bg-green-600 text-white rounded-xl transition-colors font-medium shadow-lg shadow-green-500/25"
       >
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>

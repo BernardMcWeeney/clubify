@@ -49,9 +49,9 @@ function formatScore(fixture: any): string {
 function getResultBadge(result: string | null) {
   if (!result) return null;
   const badges: Record<string, { bg: string; text: string; label: string }> = {
-    win: { bg: 'bg-green-500/20', text: 'text-green-400', label: 'Win' },
-    loss: { bg: 'bg-red-500/20', text: 'text-red-400', label: 'Loss' },
-    draw: { bg: 'bg-yellow-500/20', text: 'text-yellow-400', label: 'Draw' },
+    win: { bg: 'bg-green-100', text: 'text-green-700', label: 'Win' },
+    loss: { bg: 'bg-red-100', text: 'text-red-700', label: 'Loss' },
+    draw: { bg: 'bg-yellow-100', text: 'text-yellow-700', label: 'Draw' },
   };
   return badges[result];
 }
@@ -68,7 +68,7 @@ function getResultBadge(result: string | null) {
     {canManage && (
       <a
         href={`/${slug}/admin-portal/fixtures/new`}
-        class="flex items-center gap-2 px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors text-sm font-medium"
+        class="flex items-center gap-2 px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-xl transition-colors text-sm font-medium shadow-lg shadow-green-500/25"
       >
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
@@ -79,18 +79,18 @@ function getResultBadge(result: string | null) {
   </Fragment>
 
   <!-- Tabs -->
-  <div class="mb-6 border-b border-slate-700">
+  <div class="mb-6 border-b border-slate-200">
     <nav class="flex gap-6">
       <button
         id="tab-upcoming"
-        class="tab-btn pb-3 text-green-400 border-b-2 border-green-400 font-medium text-sm"
+        class="tab-btn pb-3 text-green-600 border-b-2 border-green-500 font-semibold text-sm"
         data-tab="upcoming"
       >
         Upcoming ({upcomingFixtures.length})
       </button>
       <button
         id="tab-results"
-        class="tab-btn pb-3 text-slate-400 hover:text-white border-b-2 border-transparent font-medium text-sm transition-colors"
+        class="tab-btn pb-3 text-slate-500 hover:text-slate-900 border-b-2 border-transparent font-medium text-sm transition-colors"
         data-tab="results"
       >
         Results ({playedFixtures.length})
@@ -103,11 +103,11 @@ function getResultBadge(result: string | null) {
     {upcomingFixtures.length > 0 ? (
       <div class="space-y-3">
         {upcomingFixtures.map((fixture: any) => (
-          <div class="bg-slate-800/50 rounded-xl border border-slate-700/50 p-4 hover:bg-slate-800/70 transition-colors">
+          <div class="bg-white rounded-xl border border-slate-200 p-5 hover:border-green-300 hover:shadow-md transition-all">
             <div class="flex items-center justify-between">
               <div class="flex-1">
                 <div class="flex items-center gap-3 mb-2">
-                  <span class={`px-2 py-0.5 rounded text-xs font-medium ${fixture.is_home ? 'bg-blue-500/20 text-blue-400' : 'bg-purple-500/20 text-purple-400'}`}>
+                  <span class={`px-2.5 py-1 rounded text-xs font-medium ${fixture.is_home ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700'}`}>
                     {fixture.is_home ? 'Home' : 'Away'}
                   </span>
                   {fixture.competition && (
@@ -117,18 +117,18 @@ function getResultBadge(result: string | null) {
                     <span class="text-slate-500 text-xs">• {fixture.team_name}</span>
                   )}
                 </div>
-                <h3 class="text-lg font-semibold text-white mb-1">
+                <h3 class="text-lg font-semibold text-slate-900 mb-2">
                   vs {fixture.opponent}
                 </h3>
-                <div class="flex items-center gap-4 text-sm text-slate-400">
-                  <span class="flex items-center gap-1">
+                <div class="flex items-center gap-4 text-sm text-slate-500">
+                  <span class="flex items-center gap-1.5">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                     </svg>
                     {formatDate(fixture.match_date)}
                   </span>
                   {fixture.match_time && (
-                    <span class="flex items-center gap-1">
+                    <span class="flex items-center gap-1.5">
                       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                       </svg>
@@ -136,7 +136,7 @@ function getResultBadge(result: string | null) {
                     </span>
                   )}
                   {fixture.venue && (
-                    <span class="flex items-center gap-1">
+                    <span class="flex items-center gap-1.5">
                       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
@@ -150,13 +150,13 @@ function getResultBadge(result: string | null) {
                 <div class="flex items-center gap-2">
                   <a
                     href={`/${slug}/admin-portal/fixtures/${fixture.id}/result`}
-                    class="px-3 py-1.5 bg-green-500/10 hover:bg-green-500/20 text-green-400 rounded-lg text-sm font-medium transition-colors"
+                    class="px-4 py-2 bg-green-100 hover:bg-green-200 text-green-700 rounded-lg text-sm font-medium transition-colors"
                   >
                     Enter Result
                   </a>
                   <a
                     href={`/${slug}/admin-portal/fixtures/${fixture.id}`}
-                    class="p-2 text-slate-400 hover:text-white transition-colors"
+                    class="p-2 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
                     title="Edit"
                   >
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -170,18 +170,18 @@ function getResultBadge(result: string | null) {
         ))}
       </div>
     ) : (
-      <div class="bg-slate-800/50 rounded-xl border border-slate-700/50 p-12 text-center">
-        <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-slate-700/50 flex items-center justify-center">
-          <svg class="w-8 h-8 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div class="bg-white rounded-xl border border-slate-200 p-12 text-center shadow-sm">
+        <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-slate-100 flex items-center justify-center">
+          <svg class="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
           </svg>
         </div>
-        <h3 class="text-lg font-semibold text-white mb-2">No upcoming fixtures</h3>
-        <p class="text-slate-400 mb-6">Add your first fixture to get started.</p>
+        <h3 class="text-lg font-semibold text-slate-900 mb-2">No upcoming fixtures</h3>
+        <p class="text-slate-500 mb-6">Add your first fixture to get started.</p>
         {canManage && (
           <a
             href={`/${slug}/admin-portal/fixtures/new`}
-            class="inline-flex items-center gap-2 px-6 py-3 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors font-medium"
+            class="inline-flex items-center gap-2 px-6 py-3 bg-green-500 hover:bg-green-600 text-white rounded-xl transition-colors font-medium shadow-lg shadow-green-500/25"
           >
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
@@ -200,15 +200,15 @@ function getResultBadge(result: string | null) {
         {playedFixtures.map((fixture: any) => {
           const badge = getResultBadge(fixture.result);
           return (
-            <div class="bg-slate-800/50 rounded-xl border border-slate-700/50 p-4 hover:bg-slate-800/70 transition-colors">
+            <div class="bg-white rounded-xl border border-slate-200 p-5 hover:border-green-300 hover:shadow-md transition-all">
               <div class="flex items-center justify-between">
                 <div class="flex-1">
                   <div class="flex items-center gap-3 mb-2">
-                    <span class={`px-2 py-0.5 rounded text-xs font-medium ${fixture.is_home ? 'bg-blue-500/20 text-blue-400' : 'bg-purple-500/20 text-purple-400'}`}>
+                    <span class={`px-2.5 py-1 rounded text-xs font-medium ${fixture.is_home ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700'}`}>
                       {fixture.is_home ? 'Home' : 'Away'}
                     </span>
                     {badge && (
-                      <span class={`px-2 py-0.5 rounded text-xs font-medium ${badge.bg} ${badge.text}`}>
+                      <span class={`px-2.5 py-1 rounded text-xs font-medium ${badge.bg} ${badge.text}`}>
                         {badge.label}
                       </span>
                     )}
@@ -216,19 +216,19 @@ function getResultBadge(result: string | null) {
                       <span class="text-slate-500 text-xs">{fixture.competition}</span>
                     )}
                   </div>
-                  <h3 class="text-lg font-semibold text-white mb-1">
+                  <h3 class="text-lg font-semibold text-slate-900 mb-2">
                     vs {fixture.opponent}
                   </h3>
                   <div class="flex items-center gap-4 text-sm">
-                    <span class="text-white font-mono font-semibold">
+                    <span class="text-slate-900 font-mono font-semibold bg-slate-100 px-2 py-1 rounded">
                       {fixture.home_goals}-{fixture.home_points} to {fixture.away_goals}-{fixture.away_points}
                     </span>
                     <span class="text-slate-500">•</span>
-                    <span class="text-slate-400">{formatDate(fixture.match_date)}</span>
+                    <span class="text-slate-500">{formatDate(fixture.match_date)}</span>
                     {fixture.venue && (
                       <>
                         <span class="text-slate-500">•</span>
-                        <span class="text-slate-400">{fixture.venue}</span>
+                        <span class="text-slate-500">{fixture.venue}</span>
                       </>
                     )}
                   </div>
@@ -237,13 +237,13 @@ function getResultBadge(result: string | null) {
                   <div class="flex items-center gap-2">
                     <a
                       href={`/${slug}/admin-portal/fixtures/${fixture.id}/result`}
-                      class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-sm font-medium transition-colors"
+                      class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-medium transition-colors"
                     >
                       Edit Result
                     </a>
                     <a
                       href={`/${slug}/admin-portal/fixtures/${fixture.id}`}
-                      class="p-2 text-slate-400 hover:text-white transition-colors"
+                      class="p-2 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
                       title="Edit"
                     >
                       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -258,14 +258,14 @@ function getResultBadge(result: string | null) {
         })}
       </div>
     ) : (
-      <div class="bg-slate-800/50 rounded-xl border border-slate-700/50 p-12 text-center">
-        <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-slate-700/50 flex items-center justify-center">
-          <svg class="w-8 h-8 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div class="bg-white rounded-xl border border-slate-200 p-12 text-center shadow-sm">
+        <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-slate-100 flex items-center justify-center">
+          <svg class="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
           </svg>
         </div>
-        <h3 class="text-lg font-semibold text-white mb-2">No results yet</h3>
-        <p class="text-slate-400">Results will appear here once fixtures are played.</p>
+        <h3 class="text-lg font-semibold text-slate-900 mb-2">No results yet</h3>
+        <p class="text-slate-500">Results will appear here once fixtures are played.</p>
       </div>
     )}
   </div>
@@ -281,11 +281,11 @@ function getResultBadge(result: string | null) {
 
       // Update button styles
       tabButtons.forEach(b => {
-        b.classList.remove('text-green-400', 'border-green-400');
-        b.classList.add('text-slate-400', 'border-transparent');
+        b.classList.remove('text-green-600', 'border-green-500', 'font-semibold');
+        b.classList.add('text-slate-500', 'border-transparent', 'font-medium');
       });
-      btn.classList.remove('text-slate-400', 'border-transparent');
-      btn.classList.add('text-green-400', 'border-green-400');
+      btn.classList.remove('text-slate-500', 'border-transparent', 'font-medium');
+      btn.classList.add('text-green-600', 'border-green-500', 'font-semibold');
 
       // Show correct panel
       panels.forEach(p => p.classList.add('hidden'));

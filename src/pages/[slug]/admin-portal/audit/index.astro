@@ -126,41 +126,41 @@ function formatRelativeTime(date: string) {
   <div class="max-w-5xl">
     <div class="flex items-center justify-between mb-6">
       <div>
-        <p class="text-slate-400">
+        <p class="text-slate-600">
           Track all changes and actions in your club's admin portal.
         </p>
       </div>
       <a
         href={`/${slug}/admin-portal/settings`}
-        class="text-slate-400 hover:text-white text-sm transition-colors"
+        class="text-slate-500 hover:text-slate-700 text-sm transition-colors"
       >
         Back to Settings
       </a>
     </div>
 
     {logs.length === 0 ? (
-      <div class="bg-slate-800/50 rounded-xl border border-slate-700/50 p-12 text-center">
-        <svg class="w-12 h-12 text-slate-600 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div class="bg-white rounded-xl border border-slate-200 p-12 text-center shadow-sm">
+        <svg class="w-12 h-12 text-slate-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
         </svg>
-        <h3 class="text-white font-medium mb-2">No activity yet</h3>
-        <p class="text-slate-400 text-sm">Activity will appear here as you use the admin portal.</p>
+        <h3 class="text-slate-900 font-medium mb-2">No activity yet</h3>
+        <p class="text-slate-500 text-sm">Activity will appear here as you use the admin portal.</p>
       </div>
     ) : (
       <>
         <!-- Logs table -->
-        <div class="bg-slate-800/50 rounded-xl border border-slate-700/50 overflow-hidden">
+        <div class="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
           <div class="overflow-x-auto">
             <table class="w-full">
               <thead>
-                <tr class="border-b border-slate-700/50">
-                  <th class="text-left text-slate-400 text-xs font-medium uppercase tracking-wider px-4 py-3">Action</th>
-                  <th class="text-left text-slate-400 text-xs font-medium uppercase tracking-wider px-4 py-3">User</th>
-                  <th class="text-left text-slate-400 text-xs font-medium uppercase tracking-wider px-4 py-3">Details</th>
-                  <th class="text-right text-slate-400 text-xs font-medium uppercase tracking-wider px-4 py-3">Time</th>
+                <tr class="border-b border-slate-200 bg-slate-50">
+                  <th class="text-left text-slate-600 text-xs font-semibold uppercase tracking-wider px-4 py-3">Action</th>
+                  <th class="text-left text-slate-600 text-xs font-semibold uppercase tracking-wider px-4 py-3">User</th>
+                  <th class="text-left text-slate-600 text-xs font-semibold uppercase tracking-wider px-4 py-3">Details</th>
+                  <th class="text-right text-slate-600 text-xs font-semibold uppercase tracking-wider px-4 py-3">Time</th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-slate-700/50">
+              <tbody class="divide-y divide-slate-100">
                 {logs.map((log) => {
                   const info = getActionInfo(log.action);
                   let details = '';
@@ -177,15 +177,15 @@ function formatRelativeTime(date: string) {
                   }
 
                   return (
-                    <tr class="hover:bg-slate-800/30 transition-colors">
+                    <tr class="hover:bg-slate-50 transition-colors">
                       <td class="px-4 py-3">
                         <span class={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          info.color === 'green' ? 'bg-green-500/20 text-green-400' :
-                          info.color === 'red' ? 'bg-red-500/20 text-red-400' :
-                          info.color === 'amber' ? 'bg-amber-500/20 text-amber-400' :
-                          info.color === 'blue' ? 'bg-blue-500/20 text-blue-400' :
-                          info.color === 'purple' ? 'bg-purple-500/20 text-purple-400' :
-                          'bg-slate-600 text-slate-300'
+                          info.color === 'green' ? 'bg-green-100 text-green-700' :
+                          info.color === 'red' ? 'bg-red-100 text-red-700' :
+                          info.color === 'amber' ? 'bg-amber-100 text-amber-700' :
+                          info.color === 'blue' ? 'bg-blue-100 text-blue-700' :
+                          info.color === 'purple' ? 'bg-purple-100 text-purple-700' :
+                          'bg-slate-100 text-slate-600'
                         }`}>
                           {info.label}
                         </span>
@@ -193,7 +193,7 @@ function formatRelativeTime(date: string) {
                       <td class="px-4 py-3">
                         {log.user_name ? (
                           <div>
-                            <p class="text-white text-sm">{log.user_name}</p>
+                            <p class="text-slate-900 text-sm">{log.user_name}</p>
                             <p class="text-slate-500 text-xs">{log.user_email}</p>
                           </div>
                         ) : (
@@ -201,12 +201,12 @@ function formatRelativeTime(date: string) {
                         )}
                       </td>
                       <td class="px-4 py-3">
-                        <span class="text-slate-400 text-sm truncate max-w-xs block" title={details}>
+                        <span class="text-slate-500 text-sm truncate max-w-xs block" title={details}>
                           {details || '-'}
                         </span>
                       </td>
                       <td class="px-4 py-3 text-right">
-                        <span class="text-slate-400 text-sm" title={formatDate(log.created_at)}>
+                        <span class="text-slate-500 text-sm" title={formatDate(log.created_at)}>
                           {formatRelativeTime(log.created_at)}
                         </span>
                       </td>
@@ -221,25 +221,25 @@ function formatRelativeTime(date: string) {
         <!-- Pagination -->
         {totalPages > 1 && (
           <div class="flex items-center justify-between mt-6">
-            <p class="text-slate-400 text-sm">
+            <p class="text-slate-500 text-sm">
               Showing {offset + 1} - {Math.min(offset + limit, totalCount)} of {totalCount} entries
             </p>
             <div class="flex items-center gap-2">
               {page > 1 && (
                 <a
                   href={`/${slug}/admin-portal/audit?page=${page - 1}`}
-                  class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-sm transition-colors"
+                  class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm transition-colors"
                 >
                   Previous
                 </a>
               )}
-              <span class="text-slate-400 text-sm">
+              <span class="text-slate-500 text-sm">
                 Page {page} of {totalPages}
               </span>
               {page < totalPages && (
                 <a
                   href={`/${slug}/admin-portal/audit?page=${page + 1}`}
-                  class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-sm transition-colors"
+                  class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm transition-colors"
                 >
                   Next
                 </a>

@@ -108,19 +108,19 @@ const blockInfo: Record<string, { name: string; description: string; icon: strin
 >
   <div class="max-w-4xl">
     <!-- Template info -->
-    <div class="bg-slate-800/50 rounded-xl border border-slate-700/50 p-6 mb-6">
+    <div class="bg-white rounded-xl border border-slate-200 p-6 mb-6 shadow-sm">
       <div class="flex items-center justify-between">
         <div>
           <div class="flex items-center gap-2 mb-1">
-            <h2 class="text-lg font-semibold text-white">{template.name}</h2>
-            <span class="px-2 py-0.5 bg-green-500/20 text-green-400 rounded text-xs font-medium">Active</span>
+            <h2 class="text-lg font-semibold text-slate-900">{template.name}</h2>
+            <span class="px-2.5 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">Active</span>
           </div>
-          <p class="text-slate-400 text-sm">{template.description}</p>
+          <p class="text-slate-500 text-sm">{template.description}</p>
         </div>
         <a
           href={`/${slug}`}
           target="_blank"
-          class="flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-sm transition-colors"
+          class="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-sm font-medium transition-colors"
         >
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
@@ -132,12 +132,12 @@ const blockInfo: Record<string, { name: string; description: string; icon: strin
     </div>
 
     {!canEdit && (
-      <div class="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 mb-6">
+      <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6">
         <div class="flex items-center gap-3">
-          <svg class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
           </svg>
-          <p class="text-amber-400 text-sm">You need Admin or PRO role to edit the homepage layout.</p>
+          <p class="text-amber-700 text-sm">You need Admin or PRO role to edit the homepage layout.</p>
         </div>
       </div>
     )}
@@ -148,7 +148,7 @@ const blockInfo: Record<string, { name: string; description: string; icon: strin
         const info = blockInfo[block.type] || { name: block.type, description: '', icon: '' };
         return (
           <div
-            class={`block-item bg-slate-800/50 rounded-xl border ${block.visible ? 'border-slate-700/50' : 'border-slate-700/50 opacity-50'} p-4 transition-all`}
+            class={`block-item bg-white rounded-xl border ${block.visible ? 'border-slate-200' : 'border-slate-200 opacity-50'} p-4 transition-all shadow-sm hover:shadow-md`}
             data-block-id={block.id}
             data-order={block.order}
             data-required={block.required}
@@ -160,7 +160,7 @@ const blockInfo: Record<string, { name: string; description: string; icon: strin
                 {canEdit && !block.locked && (
                   <>
                     <button
-                      class="move-up p-1 text-slate-500 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                      class="move-up p-1 text-slate-400 hover:text-green-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors rounded hover:bg-green-50"
                       disabled={index === 0}
                       title="Move up"
                     >
@@ -169,7 +169,7 @@ const blockInfo: Record<string, { name: string; description: string; icon: strin
                       </svg>
                     </button>
                     <button
-                      class="move-down p-1 text-slate-500 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                      class="move-down p-1 text-slate-400 hover:text-green-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors rounded hover:bg-green-50"
                       disabled={index === blocks.length - 1}
                       title="Move down"
                     >
@@ -180,7 +180,7 @@ const blockInfo: Record<string, { name: string; description: string; icon: strin
                   </>
                 )}
                 {block.locked && (
-                  <div class="p-1 text-slate-600" title="This block is locked">
+                  <div class="p-1 text-slate-300" title="This block is locked">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
                     </svg>
@@ -189,19 +189,19 @@ const blockInfo: Record<string, { name: string; description: string; icon: strin
               </div>
 
               <!-- Icon -->
-              <div class="w-10 h-10 rounded-lg bg-slate-700/50 flex items-center justify-center">
-                <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" set:html={info.icon} />
+              <div class="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center">
+                <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" set:html={info.icon} />
               </div>
 
               <!-- Info -->
               <div class="flex-1 min-w-0">
                 <div class="flex items-center gap-2">
-                  <h3 class="text-white font-medium">{info.name}</h3>
+                  <h3 class="text-slate-900 font-medium">{info.name}</h3>
                   {block.required && (
-                    <span class="px-1.5 py-0.5 bg-blue-500/20 text-blue-400 rounded text-xs">Required</span>
+                    <span class="px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-xs font-medium">Required</span>
                   )}
                   {block.locked && (
-                    <span class="px-1.5 py-0.5 bg-slate-600 text-slate-400 rounded text-xs">Locked</span>
+                    <span class="px-2 py-0.5 bg-slate-100 text-slate-500 rounded text-xs font-medium">Locked</span>
                   )}
                 </div>
                 <p class="text-slate-500 text-sm truncate">{info.description}</p>
@@ -216,11 +216,11 @@ const blockInfo: Record<string, { name: string; description: string; icon: strin
                     checked={block.visible}
                     data-block-id={block.id}
                   />
-                  <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-green-500/50 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500"></div>
+                  <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-green-500/50 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all after:shadow-sm peer-checked:bg-green-500"></div>
                 </label>
               )}
               {block.required && (
-                <div class="text-slate-500 text-sm">Always visible</div>
+                <div class="text-slate-400 text-sm">Always visible</div>
               )}
             </div>
           </div>
@@ -230,18 +230,18 @@ const blockInfo: Record<string, { name: string; description: string; icon: strin
 
     <!-- Actions -->
     {canEdit && (
-      <div class="flex items-center justify-between mt-6 pt-6 border-t border-slate-700/50">
+      <div class="flex items-center justify-between mt-6 pt-6 border-t border-slate-200">
         <button
           id="reset-btn"
-          class="px-4 py-2 text-slate-400 hover:text-white transition-colors text-sm"
+          class="px-4 py-2 text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors text-sm font-medium"
         >
           Reset to default
         </button>
         <div class="flex items-center gap-3">
-          <span id="save-status" class="text-slate-500 text-sm hidden">Saved</span>
+          <span id="save-status" class="text-green-600 text-sm hidden">Saved</span>
           <button
             id="save-btn"
-            class="px-6 py-2 bg-green-500 hover:bg-green-600 text-white font-medium rounded-lg transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+            class="px-6 py-2 bg-green-500 hover:bg-green-600 text-white font-medium rounded-xl transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-green-500/25"
           >
             Save Changes
           </button>
@@ -250,14 +250,39 @@ const blockInfo: Record<string, { name: string; description: string; icon: strin
     )}
 
     <!-- Help text -->
-    <div class="mt-8 p-4 bg-slate-800/30 rounded-xl border border-slate-700/30">
-      <h3 class="text-white font-medium mb-2">Tips</h3>
-      <ul class="text-slate-400 text-sm space-y-1">
-        <li>Use the arrow buttons to reorder blocks on your homepage</li>
-        <li>Toggle visibility to show or hide optional blocks</li>
-        <li><span class="text-blue-400">Required</span> blocks cannot be hidden</li>
-        <li><span class="text-slate-400">Locked</span> blocks cannot be moved or removed</li>
-        <li>Click "Preview" to see your changes on the live site</li>
+    <div class="mt-8 p-5 bg-slate-50 rounded-xl border border-slate-200">
+      <h3 class="text-slate-900 font-medium mb-3">Tips</h3>
+      <ul class="text-slate-600 text-sm space-y-2">
+        <li class="flex items-start gap-2">
+          <svg class="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+          </svg>
+          Use the arrow buttons to reorder blocks on your homepage
+        </li>
+        <li class="flex items-start gap-2">
+          <svg class="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+          </svg>
+          Toggle visibility to show or hide optional blocks
+        </li>
+        <li class="flex items-start gap-2">
+          <svg class="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+          </svg>
+          <span class="text-blue-600">Required</span> blocks cannot be hidden
+        </li>
+        <li class="flex items-start gap-2">
+          <svg class="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+          </svg>
+          <span class="text-slate-500">Locked</span> blocks cannot be moved or removed
+        </li>
+        <li class="flex items-start gap-2">
+          <svg class="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+          </svg>
+          Click "Preview" to see your changes on the live site
+        </li>
       </ul>
     </div>
   </div>

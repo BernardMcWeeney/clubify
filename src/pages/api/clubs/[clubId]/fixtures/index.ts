@@ -1,7 +1,6 @@
 import type { APIRoute } from 'astro';
 import { DatabaseService } from '../../../../../lib/db';
 import { getAuthContext } from '../../../../../lib/auth';
-import { generateId } from '../../../../../lib/utils';
 
 // GET /api/clubs/[clubId]/fixtures - List fixtures
 export const GET: APIRoute = async ({ params, url, cookies, locals }) => {
@@ -126,16 +125,28 @@ export const POST: APIRoute = async ({ params, request, cookies, locals }) => {
       });
     }
 
+    // Get club name for fixture
+    const club = await db.getClubById(clubId);
+    if (!club) {
+      return new Response(JSON.stringify({ error: 'Club not found' }), {
+        status: 404,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Build team names based on home/away
+    const clubTeamName = teamName ? `${club.name} ${teamName}` : club.name;
+    const homeTeam = isHome ? clubTeamName : opponent.trim();
+    const awayTeam = isHome ? opponent.trim() : clubTeamName;
+
     const fixture = await db.createFixture({
       clubId,
-      opponent: opponent.trim(),
+      competition: competition?.trim() || 'League',
+      homeTeam,
+      awayTeam,
+      venue: venue?.trim() || null,
       matchDate,
       matchTime: matchTime || null,
-      venue: venue?.trim() || null,
-      competition: competition?.trim() || null,
-      isHome: isHome ?? true,
-      teamName: teamName?.trim() || null,
-      notes: notes?.trim() || null,
     });
 
     // Log audit

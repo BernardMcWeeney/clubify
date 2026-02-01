@@ -43,36 +43,36 @@ const facebookConnected = connections.some(c => c.platform === 'facebook');
   currentPage="settings"
 >
   <div class="max-w-3xl">
-    <p class="text-slate-400 mb-8">
+    <p class="text-slate-600 mb-8">
       Manage your club's settings and integrations.
     </p>
 
     <div class="space-y-4">
       <!-- Social Connections -->
-      <a href={`/${slug}/admin-portal/settings/social`} class="block bg-slate-800/50 rounded-xl border border-slate-700/50 p-6 hover:bg-slate-800 hover:border-slate-600 transition-colors">
+      <a href={`/${slug}/admin-portal/settings/social`} class="block bg-white rounded-xl border border-slate-200 p-6 hover:border-green-300 hover:shadow-md transition-all">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-4">
-            <div class="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center">
-              <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center">
+              <svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
               </svg>
             </div>
             <div>
-              <h3 class="text-lg font-semibold text-white">Social Connections</h3>
-              <p class="text-slate-400 text-sm">Connect Facebook, Twitter, and Instagram</p>
+              <h3 class="text-lg font-semibold text-slate-900">Social Connections</h3>
+              <p class="text-slate-500 text-sm">Connect Facebook, Twitter, and Instagram</p>
             </div>
           </div>
           <div class="flex items-center gap-3">
             {facebookConnected ? (
-              <span class="px-2 py-1 bg-green-500/20 text-green-400 rounded-full text-xs font-medium">
+              <span class="px-2.5 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">
                 1 connected
               </span>
             ) : (
-              <span class="px-2 py-1 bg-slate-700 text-slate-400 rounded-full text-xs font-medium">
+              <span class="px-2.5 py-1 bg-slate-100 text-slate-500 rounded-full text-xs font-medium">
                 Not connected
               </span>
             )}
-            <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
             </svg>
           </div>
@@ -80,77 +80,77 @@ const facebookConnected = connections.some(c => c.platform === 'facebook');
       </a>
 
       <!-- Club Details -->
-      <a href={`/${slug}/admin-portal/settings/club`} class="block bg-slate-800/50 rounded-xl border border-slate-700/50 p-6 hover:bg-slate-800 hover:border-slate-600 transition-colors">
+      <a href={`/${slug}/admin-portal/settings/club`} class="block bg-white rounded-xl border border-slate-200 p-6 hover:border-green-300 hover:shadow-md transition-all">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-4">
-            <div class="w-12 h-12 rounded-xl bg-green-500/10 flex items-center justify-center">
-              <svg class="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="w-12 h-12 rounded-xl bg-green-50 flex items-center justify-center">
+              <svg class="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
               </svg>
             </div>
             <div>
-              <h3 class="text-lg font-semibold text-white">Club Details</h3>
-              <p class="text-slate-400 text-sm">Name, colors, contact info, and more</p>
+              <h3 class="text-lg font-semibold text-slate-900">Club Details</h3>
+              <p class="text-slate-500 text-sm">Name, colors, contact info, and more</p>
             </div>
           </div>
-          <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
           </svg>
         </div>
       </a>
 
       <!-- Domain (Coming soon) -->
-      <div class="bg-slate-800/50 rounded-xl border border-slate-700/50 p-6 opacity-50">
+      <div class="bg-white rounded-xl border border-slate-200 p-6 opacity-60">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-4">
-            <div class="w-12 h-12 rounded-xl bg-purple-500/10 flex items-center justify-center">
-              <svg class="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="w-12 h-12 rounded-xl bg-purple-50 flex items-center justify-center">
+              <svg class="w-6 h-6 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/>
               </svg>
             </div>
             <div>
-              <h3 class="text-lg font-semibold text-white">Custom Domain</h3>
-              <p class="text-slate-400 text-sm">Use your own domain name</p>
+              <h3 class="text-lg font-semibold text-slate-900">Custom Domain</h3>
+              <p class="text-slate-500 text-sm">Use your own domain name</p>
             </div>
           </div>
-          <span class="px-3 py-1 bg-slate-700 text-slate-400 rounded-full text-xs font-medium">Coming soon</span>
+          <span class="px-3 py-1 bg-slate-100 text-slate-500 rounded-full text-xs font-medium">Coming soon</span>
         </div>
       </div>
 
       <!-- Billing (Coming soon) -->
-      <div class="bg-slate-800/50 rounded-xl border border-slate-700/50 p-6 opacity-50">
+      <div class="bg-white rounded-xl border border-slate-200 p-6 opacity-60">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-4">
-            <div class="w-12 h-12 rounded-xl bg-amber-500/10 flex items-center justify-center">
-              <svg class="w-6 h-6 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="w-12 h-12 rounded-xl bg-amber-50 flex items-center justify-center">
+              <svg class="w-6 h-6 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
               </svg>
             </div>
             <div>
-              <h3 class="text-lg font-semibold text-white">Billing</h3>
-              <p class="text-slate-400 text-sm">Manage subscription and payments</p>
+              <h3 class="text-lg font-semibold text-slate-900">Billing</h3>
+              <p class="text-slate-500 text-sm">Manage subscription and payments</p>
             </div>
           </div>
-          <span class="px-3 py-1 bg-slate-700 text-slate-400 rounded-full text-xs font-medium">Coming soon</span>
+          <span class="px-3 py-1 bg-slate-100 text-slate-500 rounded-full text-xs font-medium">Coming soon</span>
         </div>
       </div>
 
       {canViewAudit && (
         <!-- Audit Log -->
-        <a href={`/${slug}/admin-portal/audit`} class="block bg-slate-800/50 rounded-xl border border-slate-700/50 p-6 hover:bg-slate-800 hover:border-slate-600 transition-colors">
+        <a href={`/${slug}/admin-portal/audit`} class="block bg-white rounded-xl border border-slate-200 p-6 hover:border-green-300 hover:shadow-md transition-all">
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-4">
-              <div class="w-12 h-12 rounded-xl bg-slate-500/10 flex items-center justify-center">
-                <svg class="w-6 h-6 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div class="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center">
+                <svg class="w-6 h-6 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                 </svg>
               </div>
               <div>
-                <h3 class="text-lg font-semibold text-white">Audit Log</h3>
-                <p class="text-slate-400 text-sm">View all activity and changes</p>
+                <h3 class="text-lg font-semibold text-slate-900">Audit Log</h3>
+                <p class="text-slate-500 text-sm">View all activity and changes</p>
               </div>
             </div>
-            <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
             </svg>
           </div>
@@ -159,15 +159,15 @@ const facebookConnected = connections.some(c => c.platform === 'facebook');
 
       {isAdmin && (
         <!-- Danger Zone -->
-        <div class="mt-8 pt-8 border-t border-slate-700/50">
-          <h2 class="text-lg font-semibold text-red-400 mb-4">Danger Zone</h2>
-          <div class="bg-red-500/5 rounded-xl border border-red-500/20 p-6">
+        <div class="mt-8 pt-8 border-t border-slate-200">
+          <h2 class="text-lg font-semibold text-red-600 mb-4">Danger Zone</h2>
+          <div class="bg-red-50 rounded-xl border border-red-200 p-6">
             <div class="flex items-center justify-between">
               <div>
-                <h3 class="text-white font-medium">Delete Club</h3>
-                <p class="text-slate-400 text-sm">Permanently delete this club and all its data</p>
+                <h3 class="text-slate-900 font-medium">Delete Club</h3>
+                <p class="text-slate-600 text-sm">Permanently delete this club and all its data</p>
               </div>
-              <button class="px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg text-sm font-medium transition-colors" disabled>
+              <button class="px-4 py-2 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg text-sm font-medium transition-colors" disabled>
                 Delete Club
               </button>
             </div>
