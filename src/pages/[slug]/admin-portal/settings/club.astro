@@ -135,65 +135,94 @@ const canEdit = hasPermission(member.role as Role, 'club.edit');
             </div>
           </div>
 
-          <div class="grid grid-cols-3 gap-4">
+          <!-- Color Preview -->
+          <div
+            id="color-preview"
+            class="rounded-xl p-4 border border-slate-200"
+            style={`background: linear-gradient(135deg, ${club.primary_color}, ${club.secondary_color})`}
+          >
+            <div class="flex items-center gap-3">
+              <div
+                class="w-14 h-14 rounded-xl flex items-center justify-center font-bold text-lg shadow-md"
+                style={`background-color: ${club.accent_color}; color: white;`}
+              >
+                {club.name.charAt(0)}
+              </div>
+              <div>
+                <div class="text-white font-bold text-lg drop-shadow-sm">{club.name}</div>
+                <div class="text-white/80 text-sm">Preview of your club colours</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label for="primary_color" class="block text-sm font-medium text-slate-700 mb-2">Primary Color</label>
-              <div class="flex items-center gap-2">
-                <input
-                  type="color"
-                  id="primary_color"
-                  name="primary_color"
-                  value={club.primary_color}
-                  disabled={!canEdit}
-                  class="w-12 h-12 rounded-lg cursor-pointer border border-slate-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                />
+              <div class="flex items-center gap-3">
+                <div class="relative">
+                  <input
+                    type="color"
+                    id="primary_color"
+                    name="primary_color"
+                    value={club.primary_color}
+                    disabled={!canEdit}
+                    class="w-14 h-14 rounded-xl cursor-pointer border-2 border-slate-200 disabled:opacity-50 disabled:cursor-not-allowed appearance-none bg-transparent"
+                    style="padding: 0;"
+                  />
+                </div>
                 <input
                   type="text"
                   value={club.primary_color}
                   id="primary_color_text"
-                  class="flex-1 px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-slate-900 text-sm font-mono"
+                  class="flex-1 px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-sm font-mono uppercase"
                   readonly
                 />
               </div>
             </div>
 
             <div>
-              <label for="secondary_color" class="block text-sm font-medium text-slate-700 mb-2">Secondary</label>
-              <div class="flex items-center gap-2">
-                <input
-                  type="color"
-                  id="secondary_color"
-                  name="secondary_color"
-                  value={club.secondary_color}
-                  disabled={!canEdit}
-                  class="w-12 h-12 rounded-lg cursor-pointer border border-slate-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                />
+              <label for="secondary_color" class="block text-sm font-medium text-slate-700 mb-2">Secondary Color</label>
+              <div class="flex items-center gap-3">
+                <div class="relative">
+                  <input
+                    type="color"
+                    id="secondary_color"
+                    name="secondary_color"
+                    value={club.secondary_color}
+                    disabled={!canEdit}
+                    class="w-14 h-14 rounded-xl cursor-pointer border-2 border-slate-200 disabled:opacity-50 disabled:cursor-not-allowed appearance-none bg-transparent"
+                    style="padding: 0;"
+                  />
+                </div>
                 <input
                   type="text"
                   value={club.secondary_color}
                   id="secondary_color_text"
-                  class="flex-1 px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-slate-900 text-sm font-mono"
+                  class="flex-1 px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-sm font-mono uppercase"
                   readonly
                 />
               </div>
             </div>
 
             <div>
-              <label for="accent_color" class="block text-sm font-medium text-slate-700 mb-2">Accent</label>
-              <div class="flex items-center gap-2">
-                <input
-                  type="color"
-                  id="accent_color"
-                  name="accent_color"
-                  value={club.accent_color}
-                  disabled={!canEdit}
-                  class="w-12 h-12 rounded-lg cursor-pointer border border-slate-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                />
+              <label for="accent_color" class="block text-sm font-medium text-slate-700 mb-2">Accent Color</label>
+              <div class="flex items-center gap-3">
+                <div class="relative">
+                  <input
+                    type="color"
+                    id="accent_color"
+                    name="accent_color"
+                    value={club.accent_color}
+                    disabled={!canEdit}
+                    class="w-14 h-14 rounded-xl cursor-pointer border-2 border-slate-200 disabled:opacity-50 disabled:cursor-not-allowed appearance-none bg-transparent"
+                    style="padding: 0;"
+                  />
+                </div>
                 <input
                   type="text"
                   value={club.accent_color}
                   id="accent_color_text"
-                  class="flex-1 px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-slate-900 text-sm font-mono"
+                  class="flex-1 px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-sm font-mono uppercase"
                   readonly
                 />
               </div>
@@ -318,12 +347,29 @@ const canEdit = hasPermission(member.role as Role, 'club.edit');
   const form = document.getElementById('club-form');
   const loading = document.getElementById('loading');
 
-  // Sync color pickers with text inputs
+  // Sync color pickers with text inputs and update preview
+  const colorPreview = document.getElementById('color-preview');
+  const accentBadge = colorPreview?.querySelector('div > div:first-child');
+
+  function updateColorPreview() {
+    const primary = (document.getElementById('primary_color') as HTMLInputElement)?.value || '#006838';
+    const secondary = (document.getElementById('secondary_color') as HTMLInputElement)?.value || '#FFFFFF';
+    const accent = (document.getElementById('accent_color') as HTMLInputElement)?.value || '#FFB300';
+
+    if (colorPreview) {
+      colorPreview.style.background = `linear-gradient(135deg, ${primary}, ${secondary})`;
+    }
+    if (accentBadge) {
+      (accentBadge as HTMLElement).style.backgroundColor = accent;
+    }
+  }
+
   ['primary', 'secondary', 'accent'].forEach(color => {
     const picker = document.getElementById(`${color}_color`);
     const text = document.getElementById(`${color}_color_text`);
     picker?.addEventListener('input', (e) => {
-      if (text) text.value = e.target.value;
+      if (text) text.value = (e.target as HTMLInputElement).value.toUpperCase();
+      updateColorPreview();
     });
   });
 

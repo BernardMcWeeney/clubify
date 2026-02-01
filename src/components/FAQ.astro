@@ -1,0 +1,130 @@
+---
+const faqs = [
+  {
+    question: "Is Clubify really free to use?",
+    answer: "Yes! Clubify is completely free during our launch phase. We believe every GAA club deserves a professional online presence, regardless of their budget. Premium features will be available later, but the core platform will always have a free tier."
+  },
+  {
+    question: "How long does it take to set up my club's website?",
+    answer: "Most clubs are up and running within 15 minutes. Our onboarding wizard guides you through choosing your template, uploading your crest, and customizing your club colours. You can start adding content immediately."
+  },
+  {
+    question: "Can I use my own domain name (e.g., www.myclub.ie)?",
+    answer: "Absolutely! Every club gets a free subdomain (yourclub.clubify.ie), but you can also connect your own custom domain. We'll guide you through the simple DNS setup process."
+  },
+  {
+    question: "Who can update the website?",
+    answer: "You control who has access. Invite committee members, PROs, or team managers with different permission levels. Admins can do everything, Editors can publish content, and Viewers can access drafts."
+  },
+  {
+    question: "Can I post to Facebook and Twitter from Clubify?",
+    answer: "Yes! Connect your club's social accounts and publish match results, news, and announcements directly to Facebook, Twitter/X, and Instagram. No need to copy and paste between platforms."
+  },
+  {
+    question: "Is my club's data secure?",
+    answer: "Security is our top priority. We use enterprise-grade encryption, GDPR-compliant data handling, and your data is stored securely in EU data centres. We never sell or share your club's information."
+  },
+  {
+    question: "Can I switch templates after I've set up my site?",
+    answer: "Yes, you can change your template anytime from the admin portal. All your content, posts, and settings will be preserved. Preview different templates before making the switch."
+  },
+  {
+    question: "What happens to my data if I decide to leave Clubify?",
+    answer: "Your data belongs to you. We provide a full export feature that downloads all your club's data, posts, and media. You can request this anytime from your admin settings."
+  }
+];
+---
+
+<section id="faq" class="py-24 bg-white">
+  <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+    <!-- Header -->
+    <div class="text-center mb-16">
+      <span class="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold bg-primary-50 text-primary-600 mb-4">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        Got Questions?
+      </span>
+      <h2 class="text-4xl font-bold text-slate-900 mb-4">Frequently Asked Questions</h2>
+      <p class="text-xl text-slate-600 max-w-2xl mx-auto">
+        Everything you need to know about Clubify. Can't find an answer?
+        <a href="/contact" class="text-primary-600 hover:text-primary-700 font-medium">Get in touch</a>.
+      </p>
+    </div>
+
+    <!-- FAQ List -->
+    <div class="space-y-4">
+      {faqs.map((faq, index) => (
+        <div class="faq-item border border-slate-200 rounded-2xl overflow-hidden bg-slate-50/50 hover:bg-white hover:shadow-md transition-all">
+          <button
+            class="faq-trigger w-full px-6 py-5 text-left flex items-center justify-between gap-4"
+            aria-expanded="false"
+            data-faq-index={index}
+          >
+            <span class="text-lg font-semibold text-slate-900">{faq.question}</span>
+            <span class="faq-icon flex-shrink-0 w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 transition-all">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+              </svg>
+            </span>
+          </button>
+          <div class="faq-content hidden px-6 pb-5">
+            <p class="text-slate-600 leading-relaxed">{faq.answer}</p>
+          </div>
+        </div>
+      ))}
+    </div>
+
+    <!-- Contact CTA -->
+    <div class="mt-12 text-center p-8 bg-gradient-to-br from-primary-50 to-primary-100/50 rounded-2xl border border-primary-200/50">
+      <h3 class="text-xl font-bold text-slate-900 mb-2">Still have questions?</h3>
+      <p class="text-slate-600 mb-4">Our team is here to help your club succeed.</p>
+      <a
+        href="mailto:hello@clubify.ie"
+        class="inline-flex items-center gap-2 px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-xl transition-colors shadow-lg shadow-primary-600/25"
+      >
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+        </svg>
+        Contact Us
+      </a>
+    </div>
+  </div>
+</section>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const triggers = document.querySelectorAll('.faq-trigger');
+
+    triggers.forEach(trigger => {
+      trigger.addEventListener('click', () => {
+        const item = trigger.parentElement;
+        const content = item?.querySelector('.faq-content');
+        const icon = trigger.querySelector('.faq-icon');
+        const isOpen = trigger.getAttribute('aria-expanded') === 'true';
+
+        // Close all other items
+        triggers.forEach(other => {
+          if (other !== trigger) {
+            other.setAttribute('aria-expanded', 'false');
+            other.parentElement?.querySelector('.faq-content')?.classList.add('hidden');
+            other.querySelector('.faq-icon')?.classList.remove('rotate-180', 'bg-primary-100', 'text-primary-600');
+          }
+        });
+
+        // Toggle current item
+        trigger.setAttribute('aria-expanded', (!isOpen).toString());
+        content?.classList.toggle('hidden', isOpen);
+        icon?.classList.toggle('rotate-180', !isOpen);
+        icon?.classList.toggle('bg-primary-100', !isOpen);
+        icon?.classList.toggle('text-primary-600', !isOpen);
+      });
+    });
+  });
+</script>
+
+<style>
+  .faq-icon {
+    transition: transform 0.2s ease, background-color 0.2s ease;
+  }
+</style>
