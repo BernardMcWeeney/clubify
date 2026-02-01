@@ -1,0 +1,88 @@
+---
+import Button from './Button.astro';
+---
+
+<nav class="fixed top-0 left-0 right-0 z-50 transition-all duration-300" id="navbar">
+  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <div class="flex h-20 items-center justify-between">
+      <!-- Logo -->
+      <a href="/" class="flex items-center gap-3 group">
+        <div class="relative">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center shadow-lg shadow-primary-500/25 group-hover:shadow-primary-500/40 transition-shadow">
+            <svg class="w-6 h-6 text-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" fill="currentColor" opacity="0.3"/>
+              <path d="M12 6c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6zm0 10c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4z" fill="currentColor"/>
+              <circle cx="12" cy="12" r="2" fill="currentColor"/>
+            </svg>
+          </div>
+        </div>
+        <span class="text-xl font-bold text-white">Clubify</span>
+      </a>
+
+      <!-- Desktop Navigation -->
+      <div class="hidden md:flex items-center gap-8">
+        <a href="#features" class="text-slate-300 hover:text-white transition-colors font-medium">Features</a>
+        <a href="#templates" class="text-slate-300 hover:text-white transition-colors font-medium">Templates</a>
+        <a href="#how-it-works" class="text-slate-300 hover:text-white transition-colors font-medium">How it works</a>
+      </div>
+
+      <!-- CTA Buttons -->
+      <div class="flex items-center gap-4">
+        <a href="/admin" class="hidden sm:block text-slate-300 hover:text-white transition-colors font-medium">
+          Log in
+        </a>
+        <Button href="/admin" variant="primary" size="sm">
+          Create your club
+        </Button>
+      </div>
+
+      <!-- Mobile Menu Button -->
+      <button class="md:hidden p-2 text-slate-300 hover:text-white" id="mobile-menu-btn" aria-label="Toggle menu">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Mobile Menu -->
+  <div class="hidden md:hidden glass" id="mobile-menu">
+    <div class="px-4 py-6 space-y-4">
+      <a href="#features" class="block text-slate-300 hover:text-white transition-colors font-medium py-2">Features</a>
+      <a href="#templates" class="block text-slate-300 hover:text-white transition-colors font-medium py-2">Templates</a>
+      <a href="#how-it-works" class="block text-slate-300 hover:text-white transition-colors font-medium py-2">How it works</a>
+      <hr class="border-slate-700/50" />
+      <a href="/admin" class="block text-slate-300 hover:text-white transition-colors font-medium py-2">Log in</a>
+      <Button href="/admin" variant="primary" size="md" class="w-full">
+        Create your club
+      </Button>
+    </div>
+  </div>
+</nav>
+
+<script>
+  // Navbar background on scroll
+  const navbar = document.getElementById('navbar');
+  const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+  const mobileMenu = document.getElementById('mobile-menu');
+
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 50) {
+      navbar?.classList.add('glass', 'bg-slate-950/80');
+    } else {
+      navbar?.classList.remove('glass', 'bg-slate-950/80');
+    }
+  });
+
+  // Mobile menu toggle
+  mobileMenuBtn?.addEventListener('click', () => {
+    mobileMenu?.classList.toggle('hidden');
+  });
+
+  // Close mobile menu on link click
+  mobileMenu?.querySelectorAll('a').forEach(link => {
+    link.addEventListener('click', () => {
+      mobileMenu?.classList.add('hidden');
+    });
+  });
+</script>

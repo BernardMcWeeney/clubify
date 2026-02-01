@@ -1,0 +1,27 @@
+---
+interface Props {
+  variant?: 'default' | 'glass' | 'gradient';
+  padding?: 'sm' | 'md' | 'lg';
+  class?: string;
+}
+
+const { variant = 'default', padding = 'md', class: className = '' } = Astro.props;
+
+const variants = {
+  default: 'bg-slate-800/50 border border-slate-700/50',
+  glass: 'glass',
+  gradient: 'bg-gradient-to-br from-slate-800/80 to-slate-900/80 border border-slate-700/30'
+};
+
+const paddings = {
+  sm: 'p-4',
+  md: 'p-6',
+  lg: 'p-8'
+};
+
+const classes = `rounded-2xl ${variants[variant]} ${paddings[padding]} ${className}`;
+---
+
+<div class={classes}>
+  <slot />
+</div>

@@ -1,0 +1,80 @@
+---
+import Section from './Section.astro';
+import Card from './Card.astro';
+
+const steps = [
+  {
+    number: "01",
+    title: "Sign up & set up",
+    description: "Create your account, upload your club crest, choose your colours, and pick your club URL. Takes less than 5 minutes.",
+    icon: `<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
+    </svg>`
+  },
+  {
+    number: "02",
+    title: "Pick your template",
+    description: "Choose from 3 professionally designed templates built specifically for GAA clubs. Customise the content, not the layout.",
+    icon: `<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/>
+    </svg>`
+  },
+  {
+    number: "03",
+    title: "Publish everywhere",
+    description: "Your content goes live on your website, mobile app, and social media automatically. One click, everywhere at once.",
+    icon: `<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
+    </svg>`
+  }
+];
+---
+
+<Section id="how-it-works" class="bg-slate-900/50">
+  <!-- Section header -->
+  <div class="text-center mb-16">
+    <span class="inline-block text-primary-400 font-semibold text-sm uppercase tracking-wider mb-4">How it works</span>
+    <h2 class="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-6">
+      From zero to live in minutes
+    </h2>
+    <p class="text-lg text-slate-400 max-w-2xl mx-auto">
+      No technical skills required. No complicated setup. Just your club crest and 5 minutes of your time.
+    </p>
+  </div>
+
+  <!-- Steps -->
+  <div class="grid md:grid-cols-3 gap-8">
+    {steps.map((step, index) => (
+      <Card variant="gradient" padding="lg" class="relative group hover:border-primary-500/30 transition-all duration-300">
+        <!-- Step number -->
+        <div class="absolute -top-4 -left-4 w-12 h-12 rounded-full bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-primary-500/25">
+          {step.number}
+        </div>
+
+        <!-- Icon -->
+        <div class="mb-6 mt-4 text-primary-400 group-hover:text-primary-300 transition-colors">
+          <Fragment set:html={step.icon} />
+        </div>
+
+        <!-- Content -->
+        <h3 class="text-xl font-bold text-white mb-3">{step.title}</h3>
+        <p class="text-slate-400 leading-relaxed">{step.description}</p>
+
+        <!-- Connector line (except last) -->
+        {index < steps.length - 1 && (
+          <div class="hidden md:block absolute top-1/2 -right-4 w-8 border-t-2 border-dashed border-slate-700"></div>
+        )}
+      </Card>
+    ))}
+  </div>
+
+  <!-- CTA -->
+  <div class="text-center mt-12">
+    <a href="/admin" class="inline-flex items-center gap-2 text-primary-400 hover:text-primary-300 font-semibold transition-colors group">
+      Get started now
+      <svg class="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+      </svg>
+    </a>
+  </div>
+</Section>
