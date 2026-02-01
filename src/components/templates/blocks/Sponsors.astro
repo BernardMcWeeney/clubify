@@ -1,0 +1,77 @@
+---
+interface Sponsor {
+  id: string;
+  name: string;
+  logo_url?: string | null;
+  website_url?: string | null;
+  tier?: 'main' | 'gold' | 'silver' | 'bronze';
+}
+
+interface Props {
+  sponsors?: Sponsor[];
+  primaryColor: string;
+}
+
+const { sponsors = [], primaryColor } = Astro.props;
+---
+
+<section class="py-12 bg-slate-950 border-t border-slate-800">
+  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    {sponsors.length > 0 ? (
+      <>
+        <h3 class="text-sm font-medium text-slate-500 text-center mb-8 uppercase tracking-wider">
+          Our Sponsors
+        </h3>
+        <div class="flex flex-wrap items-center justify-center gap-8 md:gap-12">
+          {sponsors.map((sponsor) => (
+            sponsor.website_url ? (
+              <a
+                href={sponsor.website_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="group"
+                title={sponsor.name}
+              >
+                {sponsor.logo_url ? (
+                  <img
+                    src={sponsor.logo_url}
+                    alt={sponsor.name}
+                    class="h-12 w-auto object-contain grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-300"
+                  />
+                ) : (
+                  <div
+                    class="px-4 py-2 rounded-lg text-slate-400 group-hover:text-white transition-colors"
+                    style={`border: 1px solid ${primaryColor}40`}
+                  >
+                    {sponsor.name}
+                  </div>
+                )}
+              </a>
+            ) : (
+              <div title={sponsor.name}>
+                {sponsor.logo_url ? (
+                  <img
+                    src={sponsor.logo_url}
+                    alt={sponsor.name}
+                    class="h-12 w-auto object-contain grayscale opacity-60"
+                  />
+                ) : (
+                  <div
+                    class="px-4 py-2 rounded-lg text-slate-400"
+                    style={`border: 1px solid ${primaryColor}40`}
+                  >
+                    {sponsor.name}
+                  </div>
+                )}
+              </div>
+            )
+          ))}
+        </div>
+      </>
+    ) : (
+      <div class="text-center py-4">
+        <p class="text-slate-600 text-sm">Interested in sponsoring? Contact us!</p>
+      </div>
+    )}
+  </div>
+</section>

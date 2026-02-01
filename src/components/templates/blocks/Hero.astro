@@ -1,0 +1,74 @@
+---
+interface Props {
+  club: {
+    name: string;
+    county: string;
+    tagline?: string | null;
+    crest_url?: string | null;
+    primary_color: string;
+  };
+  slug: string;
+  settings?: {
+    showCrest?: boolean;
+    ctaStyle?: 'buttons' | 'single' | 'none';
+  };
+}
+
+const { club, slug, settings = {} } = Astro.props;
+const { showCrest = true, ctaStyle = 'buttons' } = settings;
+
+// Helper function to adjust color brightness
+function adjustColor(color: string, amount: number): string {
+  const hex = color.replace('#', '');
+  const r = Math.max(0, Math.min(255, parseInt(hex.slice(0, 2), 16) + amount));
+  const g = Math.max(0, Math.min(255, parseInt(hex.slice(2, 4), 16) + amount));
+  const b = Math.max(0, Math.min(255, parseInt(hex.slice(4, 6), 16) + amount));
+  return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+}
+---
+
+<section class="relative min-h-[80vh] flex items-center justify-center overflow-hidden">
+  <!-- Background -->
+  <div
+    class="absolute inset-0"
+    style={`background: linear-gradient(135deg, ${club.primary_color}, ${adjustColor(club.primary_color, -30)})`}
+  ></div>
+  <div class="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg%20width%3D%2260%22%20height%3D%2260%22%20viewBox%3D%220%200%2060%2060%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cg%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%3Cg%20fill%3D%22%23ffffff%22%20fill-opacity%3D%220.05%22%3E%3Cpath%20d%3D%22M36%2034v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6%2034v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6%204V0H4v4H0v2h4v4h2V6h4V4H6z%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E')] opacity-50"></div>
+
+  <div class="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-32 text-center">
+    {showCrest && club.crest_url && (
+      <img
+        src={club.crest_url}
+        alt={club.name}
+        class="w-32 h-32 mx-auto mb-8 object-contain drop-shadow-2xl"
+      />
+    )}
+
+    <h1 class="text-4xl sm:text-5xl md:text-6xl font-bold text-white mb-4 drop-shadow-lg">
+      {club.name}
+    </h1>
+
+    <p class="text-xl text-white/80 mb-2">{club.county} GAA</p>
+
+    {club.tagline && (
+      <p class="text-lg text-white/70 max-w-2xl mx-auto mb-8">{club.tagline}</p>
+    )}
+
+    {ctaStyle === 'buttons' && (
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+        <a
+          href={`/${slug}/fixtures`}
+          class="px-8 py-3 bg-white text-slate-900 font-semibold rounded-full hover:bg-white/90 transition-colors shadow-lg"
+        >
+          View Fixtures
+        </a>
+        <a
+          href={`/${slug}/news`}
+          class="px-8 py-3 bg-white/10 text-white font-semibold rounded-full hover:bg-white/20 transition-colors border border-white/20"
+        >
+          Latest News
+        </a>
+      </div>
+    )}
+  </div>
+</section>

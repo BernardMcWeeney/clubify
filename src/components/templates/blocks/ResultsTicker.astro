@@ -1,0 +1,71 @@
+---
+interface Result {
+  id: string;
+  competition: string;
+  home_team: string;
+  away_team: string;
+  home_score: number;
+  away_score: number;
+  match_date: string;
+}
+
+interface Props {
+  results: Result[];
+  clubName: string;
+  primaryColor: string;
+}
+
+const { results, clubName, primaryColor } = Astro.props;
+
+function formatDate(dateStr: string): string {
+  const date = new Date(dateStr);
+  return date.toLocaleDateString('en-IE', {
+    day: 'numeric',
+    month: 'short',
+  });
+}
+
+function getResultColor(result: Result, clubName: string): string {
+  const isHome = result.home_team.toLowerCase().includes(clubName.toLowerCase());
+  const clubScore = isHome ? result.home_score : result.away_score;
+  const opponentScore = isHome ? result.away_score : result.home_score;
+
+  if (clubScore > opponentScore) return '#22c55e';
+  if (clubScore < opponentScore) return '#ef4444';
+  return '#f59e0b';
+}
+---
+
+{results.length > 0 ? (
+  <section class="py-4 overflow-hidden" style={`background-color: ${primaryColor}`}>
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center gap-4 overflow-x-auto scrollbar-hide py-2">
+        <span class="text-white/80 text-sm font-medium whitespace-nowrap">Recent Results:</span>
+        <div class="flex items-center gap-6">
+          {results.slice(0, 5).map((result) => (
+            <div class="flex items-center gap-3 whitespace-nowrap">
+              <span class="text-white/60 text-xs">{formatDate(result.match_date)}</span>
+              <span class="text-white text-sm font-medium">
+                {result.home_team} {result.home_score} - {result.away_score} {result.away_team}
+              </span>
+              <span
+                class="w-2 h-2 rounded-full"
+                style={`background-color: ${getResultColor(result, clubName)}`}
+              ></span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  </section>
+) : null}
+
+<style>
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+</style>

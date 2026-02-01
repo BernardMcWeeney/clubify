@@ -1,0 +1,109 @@
+---
+interface Props {
+  club: {
+    name: string;
+    crest_url?: string | null;
+    primary_color: string;
+  };
+  slug: string;
+  currentPath?: string;
+}
+
+const { club, slug, currentPath = '' } = Astro.props;
+
+const navLinks = [
+  { href: `/${slug}`, label: 'Home' },
+  { href: `/${slug}/news`, label: 'News' },
+  { href: `/${slug}/fixtures`, label: 'Fixtures' },
+  { href: `/${slug}/about`, label: 'About' },
+  { href: `/${slug}/contact`, label: 'Contact' },
+];
+
+function isActive(href: string): boolean {
+  if (href === `/${slug}`) {
+    return currentPath === `/${slug}` || currentPath === `/${slug}/`;
+  }
+  return currentPath.startsWith(href);
+}
+---
+
+<nav class="fixed top-0 left-0 right-0 z-50 bg-slate-900/80 backdrop-blur-xl border-b border-slate-800">
+  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <div class="flex h-16 items-center justify-between">
+      <a href={`/${slug}`} class="flex items-center gap-3">
+        {club.crest_url ? (
+          <img src={club.crest_url} alt={club.name} class="w-10 h-10 object-contain" />
+        ) : (
+          <div
+            class="w-10 h-10 rounded-lg flex items-center justify-center text-white font-bold text-lg"
+            style={`background-color: ${club.primary_color}`}
+          >
+            {club.name.charAt(0)}
+          </div>
+        )}
+        <span class="text-lg font-bold text-white">{club.name}</span>
+      </a>
+
+      <!-- Desktop Navigation -->
+      <div class="hidden md:flex items-center gap-6">
+        {navLinks.map((link) => (
+          <a
+            href={link.href}
+            class={`font-medium transition-colors ${
+              isActive(link.href)
+                ? 'text-white'
+                : 'text-slate-300 hover:text-white'
+            }`}
+          >
+            {link.label}
+          </a>
+        ))}
+      </div>
+
+      <!-- Mobile menu button -->
+      <button
+        type="button"
+        class="md:hidden inline-flex items-center justify-center p-2 rounded-md text-slate-400 hover:text-white hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
+        aria-controls="mobile-menu"
+        aria-expanded="false"
+        id="mobile-menu-button"
+      >
+        <span class="sr-only">Open main menu</span>
+        <svg class="block h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Mobile menu -->
+  <div class="hidden md:hidden" id="mobile-menu">
+    <div class="space-y-1 px-4 pb-4">
+      {navLinks.map((link) => (
+        <a
+          href={link.href}
+          class={`block py-2 font-medium transition-colors ${
+            isActive(link.href)
+              ? 'text-white'
+              : 'text-slate-300 hover:text-white'
+          }`}
+        >
+          {link.label}
+        </a>
+      ))}
+    </div>
+  </div>
+</nav>
+
+<script>
+  const button = document.getElementById('mobile-menu-button');
+  const menu = document.getElementById('mobile-menu');
+
+  if (button && menu) {
+    button.addEventListener('click', () => {
+      const expanded = button.getAttribute('aria-expanded') === 'true';
+      button.setAttribute('aria-expanded', (!expanded).toString());
+      menu.classList.toggle('hidden');
+    });
+  }
+</script>

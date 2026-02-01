@@ -63,6 +63,52 @@ export interface MagicLink {
   created_at: string;
 }
 
+export interface Post {
+  id: string;
+  club_id: string;
+  title: string;
+  slug: string;
+  summary: string | null;
+  content: string | null;
+  featured_image: string | null;
+  category: string;
+  status: string;
+  published_at: string | null;
+  author_id: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Fixture {
+  id: string;
+  club_id: string;
+  competition: string;
+  home_team: string;
+  away_team: string;
+  venue: string | null;
+  match_date: string;
+  match_time: string | null;
+  status: string;
+  home_score: number | null;
+  away_score: number | null;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Page {
+  id: string;
+  club_id: string;
+  title: string;
+  slug: string;
+  content: string | null;
+  meta_description: string | null;
+  is_published: number;
+  author_id: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export class DatabaseService {
   constructor(private db: D1Database) {}
 
@@ -392,5 +438,232 @@ export class DatabaseService {
       data.details || null,
       data.ipAddress || null
     ).run();
+  }
+
+  // Post operations
+  async getPublishedPosts(clubId: string, limit: number = 10): Promise<Post[]> {
+    const results = await this.db.prepare(`
+      SELECT * FROM posts
+      WHERE club_id = ? AND status = 'published'
+      ORDER BY published_at DESC
+      LIMIT ?
+    `).bind(clubId, limit).all<Post>();
+
+    return results.results || [];
+  }
+
+  async getPostBySlug(clubId: string, slug: string): Promise<Post | null> {
+    return this.db.prepare(
+      `SELECT * FROM posts WHERE club_id = ? AND slug = ?`
+    ).bind(clubId, slug).first<Post>();
+  }
+
+  async createPost(data: {
+    clubId: string;
+    title: string;
+    slug: string;
+    summary?: string;
+    content?: string;
+    featuredImage?: string;
+    category?: string;
+    status?: string;
+    authorId?: string;
+  }): Promise<Post> {
+    const id = generateId();
+    const publishedAt = data.status === 'published' ? new Date().toISOString() : null;
+
+    await this.db.prepare(`
+      INSERT INTO posts (id, club_id, title, slug, summary, content, featured_image, category, status, published_at, author_id)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).bind(
+      id,
+      data.clubId,
+      data.title,
+      data.slug,
+      data.summary || null,
+      data.content || null,
+      data.featuredImage || null,
+      data.category || 'news',
+      data.status || 'draft',
+      publishedAt,
+      data.authorId || null
+    ).run();
+
+    return this.db.prepare(`SELECT * FROM posts WHERE id = ?`).bind(id).first<Post>() as Promise<Post>;
+  }
+
+  async updatePost(id: string, data: Partial<Post>): Promise<void> {
+    const fields = Object.keys(data).filter(k => k !== 'id');
+    if (fields.length === 0) return;
+
+    const values = fields.map(k => (data as any)[k]);
+    const setClause = fields.map(f => `${f} = ?`).join(', ');
+
+    await this.db.prepare(
+      `UPDATE posts SET ${setClause}, updated_at = datetime('now') WHERE id = ?`
+    ).bind(...values, id).run();
+  }
+
+  async deletePost(id: string): Promise<void> {
+    await this.db.prepare(`DELETE FROM posts WHERE id = ?`).bind(id).run();
+  }
+
+  // Fixture operations
+  async getUpcomingFixtures(clubId: string, limit: number = 5): Promise<Fixture[]> {
+    const results = await this.db.prepare(`
+      SELECT * FROM fixtures
+      WHERE club_id = ? AND status = 'upcoming' AND match_date >= date('now')
+      ORDER BY match_date ASC, match_time ASC
+      LIMIT ?
+    `).bind(clubId, limit).all<Fixture>();
+
+    return results.results || [];
+  }
+
+  async getPlayedFixtures(clubId: string, limit: number = 5): Promise<Fixture[]> {
+    const results = await this.db.prepare(`
+      SELECT * FROM fixtures
+      WHERE club_id = ? AND status = 'played'
+      ORDER BY match_date DESC
+      LIMIT ?
+    `).bind(clubId, limit).all<Fixture>();
+
+    return results.results || [];
+  }
+
+  async getAllFixtures(clubId: string): Promise<Fixture[]> {
+    const results = await this.db.prepare(`
+      SELECT * FROM fixtures
+      WHERE club_id = ?
+      ORDER BY match_date DESC, match_time DESC
+    `).bind(clubId).all<Fixture>();
+
+    return results.results || [];
+  }
+
+  async getFixtureById(id: string): Promise<Fixture | null> {
+    return this.db.prepare(
+      `SELECT * FROM fixtures WHERE id = ?`
+    ).bind(id).first<Fixture>();
+  }
+
+  async createFixture(data: {
+    clubId: string;
+    competition: string;
+    homeTeam: string;
+    awayTeam: string;
+    venue?: string;
+    matchDate: string;
+    matchTime?: string;
+    status?: string;
+  }): Promise<Fixture> {
+    const id = generateId();
+
+    await this.db.prepare(`
+      INSERT INTO fixtures (id, club_id, competition, home_team, away_team, venue, match_date, match_time, status)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).bind(
+      id,
+      data.clubId,
+      data.competition,
+      data.homeTeam,
+      data.awayTeam,
+      data.venue || null,
+      data.matchDate,
+      data.matchTime || null,
+      data.status || 'upcoming'
+    ).run();
+
+    return this.db.prepare(`SELECT * FROM fixtures WHERE id = ?`).bind(id).first<Fixture>() as Promise<Fixture>;
+  }
+
+  async updateFixture(id: string, data: Partial<Fixture>): Promise<void> {
+    const fields = Object.keys(data).filter(k => k !== 'id');
+    if (fields.length === 0) return;
+
+    const values = fields.map(k => (data as any)[k]);
+    const setClause = fields.map(f => `${f} = ?`).join(', ');
+
+    await this.db.prepare(
+      `UPDATE fixtures SET ${setClause}, updated_at = datetime('now') WHERE id = ?`
+    ).bind(...values, id).run();
+  }
+
+  async recordResult(id: string, homeScore: number, awayScore: number): Promise<void> {
+    await this.db.prepare(`
+      UPDATE fixtures SET home_score = ?, away_score = ?, status = 'played', updated_at = datetime('now')
+      WHERE id = ?
+    `).bind(homeScore, awayScore, id).run();
+  }
+
+  async deleteFixture(id: string): Promise<void> {
+    await this.db.prepare(`DELETE FROM fixtures WHERE id = ?`).bind(id).run();
+  }
+
+  // Page operations
+  async getPages(clubId: string): Promise<Page[]> {
+    const results = await this.db.prepare(`
+      SELECT * FROM pages WHERE club_id = ? ORDER BY title ASC
+    `).bind(clubId).all<Page>();
+
+    return results.results || [];
+  }
+
+  async getPublishedPages(clubId: string): Promise<Page[]> {
+    const results = await this.db.prepare(`
+      SELECT * FROM pages WHERE club_id = ? AND is_published = 1 ORDER BY title ASC
+    `).bind(clubId).all<Page>();
+
+    return results.results || [];
+  }
+
+  async getPageBySlug(clubId: string, slug: string): Promise<Page | null> {
+    return this.db.prepare(
+      `SELECT * FROM pages WHERE club_id = ? AND slug = ?`
+    ).bind(clubId, slug).first<Page>();
+  }
+
+  async createPage(data: {
+    clubId: string;
+    title: string;
+    slug: string;
+    content?: string;
+    metaDescription?: string;
+    isPublished?: boolean;
+    authorId?: string;
+  }): Promise<Page> {
+    const id = generateId();
+
+    await this.db.prepare(`
+      INSERT INTO pages (id, club_id, title, slug, content, meta_description, is_published, author_id)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `).bind(
+      id,
+      data.clubId,
+      data.title,
+      data.slug,
+      data.content || null,
+      data.metaDescription || null,
+      data.isPublished ? 1 : 0,
+      data.authorId || null
+    ).run();
+
+    return this.db.prepare(`SELECT * FROM pages WHERE id = ?`).bind(id).first<Page>() as Promise<Page>;
+  }
+
+  async updatePage(id: string, data: Partial<Page>): Promise<void> {
+    const fields = Object.keys(data).filter(k => k !== 'id');
+    if (fields.length === 0) return;
+
+    const values = fields.map(k => (data as any)[k]);
+    const setClause = fields.map(f => `${f} = ?`).join(', ');
+
+    await this.db.prepare(
+      `UPDATE pages SET ${setClause}, updated_at = datetime('now') WHERE id = ?`
+    ).bind(...values, id).run();
+  }
+
+  async deletePage(id: string): Promise<void> {
+    await this.db.prepare(`DELETE FROM pages WHERE id = ?`).bind(id).run();
   }
 }

@@ -1,0 +1,57 @@
+---
+interface Notice {
+  id: string;
+  title: string;
+  summary?: string | null;
+  published_at?: string | null;
+}
+
+interface Props {
+  notices: Notice[];
+  primaryColor: string;
+  maxItems?: number;
+}
+
+const { notices, primaryColor, maxItems = 6 } = Astro.props;
+const displayNotices = notices.slice(0, maxItems);
+
+function formatDate(dateStr: string): string {
+  const date = new Date(dateStr);
+  return date.toLocaleDateString('en-IE', {
+    day: 'numeric',
+    month: 'short',
+  });
+}
+---
+
+<section class="py-16 bg-slate-900">
+  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <h2 class="text-2xl font-bold text-white mb-8 text-center">Club Notices</h2>
+
+    {displayNotices.length > 0 ? (
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {displayNotices.map((notice) => (
+          <div class="bg-slate-800/50 rounded-xl p-5 border border-slate-700/50 hover:border-slate-600 transition-colors">
+            <div class="flex items-start justify-between gap-4">
+              <div class="flex-1">
+                <h3 class="text-lg font-semibold text-white mb-1">{notice.title}</h3>
+                {notice.summary && (
+                  <p class="text-sm text-slate-400 line-clamp-2">{notice.summary}</p>
+                )}
+              </div>
+              {notice.published_at && (
+                <span class="text-xs text-slate-500 whitespace-nowrap">
+                  {formatDate(notice.published_at)}
+                </span>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    ) : (
+      <div class="bg-slate-800/50 rounded-xl p-8 border border-slate-700/50 text-center">
+        <p class="text-slate-400">No current notices</p>
+      </div>
+    )}
+  </div>
+</section>

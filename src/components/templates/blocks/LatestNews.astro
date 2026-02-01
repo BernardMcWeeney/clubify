@@ -1,0 +1,111 @@
+---
+interface Post {
+  id: string;
+  title: string;
+  slug: string;
+  summary?: string | null;
+  featured_image?: string | null;
+  category: string;
+  published_at?: string | null;
+}
+
+interface Props {
+  posts: Post[];
+  slug: string;
+  primaryColor: string;
+  maxItems?: number;
+}
+
+const { posts, slug, primaryColor, maxItems = 3 } = Astro.props;
+const displayPosts = posts.slice(0, maxItems);
+
+function formatDate(dateStr: string): string {
+  const date = new Date(dateStr);
+  return date.toLocaleDateString('en-IE', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  });
+}
+
+function getCategoryColor(category: string): string {
+  const colors: Record<string, string> = {
+    news: '#3b82f6',
+    'match-report': '#22c55e',
+    fundraiser: '#f59e0b',
+    notice: '#8b5cf6',
+  };
+  return colors[category] || primaryColor;
+}
+---
+
+<section class="py-16 bg-slate-950">
+  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <div class="flex items-center justify-between mb-8">
+      <h2 class="text-2xl font-bold text-white">Latest News</h2>
+      <a
+        href={`/${slug}/news`}
+        class="text-sm font-medium hover:underline"
+        style={`color: ${primaryColor}`}
+      >
+        View all
+      </a>
+    </div>
+
+    {displayPosts.length > 0 ? (
+      <div class="grid md:grid-cols-3 gap-6">
+        {displayPosts.map((post) => (
+          <a
+            href={`/${slug}/news/${post.slug}`}
+            class="group bg-slate-800/50 rounded-xl overflow-hidden border border-slate-700/50 hover:border-slate-600 transition-colors"
+          >
+            {post.featured_image ? (
+              <div class="aspect-video overflow-hidden">
+                <img
+                  src={post.featured_image}
+                  alt={post.title}
+                  class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                />
+              </div>
+            ) : (
+              <div
+                class="aspect-video flex items-center justify-center"
+                style={`background-color: ${primaryColor}20`}
+              >
+                <svg class="w-12 h-12 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/>
+                </svg>
+              </div>
+            )}
+
+            <div class="p-5">
+              <div class="flex items-center gap-2 mb-3">
+                <span
+                  class="text-xs font-medium px-2 py-0.5 rounded-full text-white"
+                  style={`background-color: ${getCategoryColor(post.category)}`}
+                >
+                  {post.category.replace('-', ' ')}
+                </span>
+                {post.published_at && (
+                  <span class="text-xs text-slate-500">{formatDate(post.published_at)}</span>
+                )}
+              </div>
+
+              <h3 class="text-lg font-semibold text-white mb-2 group-hover:text-slate-200 transition-colors line-clamp-2">
+                {post.title}
+              </h3>
+
+              {post.summary && (
+                <p class="text-sm text-slate-400 line-clamp-2">{post.summary}</p>
+              )}
+            </div>
+          </a>
+        ))}
+      </div>
+    ) : (
+      <div class="bg-slate-800/50 rounded-xl p-6 border border-slate-700/50">
+        <p class="text-slate-400 text-center py-8">No news posts yet</p>
+      </div>
+    )}
+  </div>
+</section>

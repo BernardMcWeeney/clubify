@@ -1,0 +1,190 @@
+---
+import Hero from './blocks/Hero.astro';
+import NextFixture from './blocks/NextFixture.astro';
+import LatestNews from './blocks/LatestNews.astro';
+import LatestResult from './blocks/LatestResult.astro';
+import Sponsors from './blocks/Sponsors.astro';
+import ResultsTicker from './blocks/ResultsTicker.astro';
+import Notices from './blocks/Notices.astro';
+import HighlightCards from './blocks/HighlightCards.astro';
+import VolunteerSpotlight from './blocks/VolunteerSpotlight.astro';
+import Contact from './blocks/Contact.astro';
+import { getDefaultConfig, type BlockConfig } from '../../lib/templates';
+
+interface Club {
+  id: string;
+  name: string;
+  slug: string;
+  county: string;
+  crest_url?: string | null;
+  primary_color: string;
+  secondary_color: string;
+  accent_color: string;
+  template: string;
+  tagline?: string | null;
+  description?: string | null;
+  contact_email?: string | null;
+  contact_phone?: string | null;
+  address?: string | null;
+  facebook_url?: string | null;
+  twitter_url?: string | null;
+  instagram_url?: string | null;
+}
+
+interface Fixture {
+  id: string;
+  competition: string;
+  home_team: string;
+  away_team: string;
+  venue?: string | null;
+  match_date: string;
+  match_time?: string | null;
+  status: string;
+  home_score?: number | null;
+  away_score?: number | null;
+}
+
+interface Post {
+  id: string;
+  title: string;
+  slug: string;
+  summary?: string | null;
+  featured_image?: string | null;
+  category: string;
+  published_at?: string | null;
+}
+
+interface Props {
+  club: Club;
+  slug: string;
+  nextFixture?: Fixture | null;
+  latestResult?: Fixture | null;
+  recentResults?: Fixture[];
+  posts?: Post[];
+  notices?: Post[];
+  sponsors?: Array<{ id: string; name: string; logo_url?: string | null; website_url?: string | null }>;
+  homepageConfig?: { blocks: BlockConfig[] } | null;
+}
+
+const {
+  club,
+  slug,
+  nextFixture = null,
+  latestResult = null,
+  recentResults = [],
+  posts = [],
+  notices = [],
+  sponsors = [],
+  homepageConfig = null,
+} = Astro.props;
+
+// Get the block configuration - either custom or default for the template
+const templateId = club.template as 'classic' | 'matchday' | 'community';
+const blocks = homepageConfig?.blocks || getDefaultConfig(templateId);
+
+// Sort blocks by order and filter out hidden ones
+const visibleBlocks = blocks
+  .filter((block) => block.visible)
+  .sort((a, b) => a.order - b.order);
+
+// Helper to get block settings
+function getBlockSettings(blockId: string): Record<string, unknown> {
+  const block = blocks.find((b) => b.id === blockId);
+  return block?.settings || {};
+}
+---
+
+{visibleBlocks.map((block) => {
+  switch (block.type) {
+    case 'hero':
+      return (
+        <Hero
+          club={club}
+          slug={slug}
+          settings={getBlockSettings('hero')}
+        />
+      );
+
+    case 'results-ticker':
+      return (
+        <ResultsTicker
+          results={recentResults.filter((r) => r.status === 'played')}
+          clubName={club.name}
+          primaryColor={club.primary_color}
+        />
+      );
+
+    case 'next-fixture':
+      return (
+        <NextFixture
+          fixture={nextFixture}
+          clubName={club.name}
+          primaryColor={club.primary_color}
+        />
+      );
+
+    case 'latest-result':
+      return (
+        <LatestResult
+          fixture={latestResult}
+          clubName={club.name}
+          primaryColor={club.primary_color}
+        />
+      );
+
+    case 'latest-news':
+      const newsSettings = getBlockSettings('latest-news') as { maxItems?: number };
+      return (
+        <LatestNews
+          posts={posts.filter((p) => p.category !== 'notice')}
+          slug={slug}
+          primaryColor={club.primary_color}
+          maxItems={newsSettings.maxItems || 3}
+        />
+      );
+
+    case 'notices':
+      const noticeSettings = getBlockSettings('notices') as { maxItems?: number };
+      return (
+        <Notices
+          notices={notices}
+          primaryColor={club.primary_color}
+          maxItems={noticeSettings.maxItems || 6}
+        />
+      );
+
+    case 'highlight-cards':
+      return (
+        <HighlightCards
+          primaryColor={club.primary_color}
+          slug={slug}
+        />
+      );
+
+    case 'volunteer-spotlight':
+      return (
+        <VolunteerSpotlight
+          primaryColor={club.primary_color}
+          slug={slug}
+        />
+      );
+
+    case 'sponsors':
+      return (
+        <Sponsors
+          sponsors={sponsors}
+          primaryColor={club.primary_color}
+        />
+      );
+
+    case 'contact':
+      return (
+        <Contact
+          club={club}
+        />
+      );
+
+    default:
+      return null;
+  }
+})}

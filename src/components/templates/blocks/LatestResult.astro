@@ -1,0 +1,96 @@
+---
+interface Fixture {
+  id: string;
+  competition: string;
+  home_team: string;
+  away_team: string;
+  venue?: string | null;
+  match_date: string;
+  home_score: number;
+  away_score: number;
+  status: string;
+}
+
+interface Props {
+  fixture?: Fixture | null;
+  clubName: string;
+  primaryColor: string;
+}
+
+const { fixture, clubName, primaryColor } = Astro.props;
+
+function formatDate(dateStr: string): string {
+  const date = new Date(dateStr);
+  return date.toLocaleDateString('en-IE', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  });
+}
+
+function getResultLabel(fixture: Fixture, clubName: string): { text: string; color: string } {
+  const isHome = fixture.home_team.toLowerCase().includes(clubName.toLowerCase());
+  const clubScore = isHome ? fixture.home_score : fixture.away_score;
+  const opponentScore = isHome ? fixture.away_score : fixture.home_score;
+
+  if (clubScore > opponentScore) {
+    return { text: 'WIN', color: '#22c55e' };
+  } else if (clubScore < opponentScore) {
+    return { text: 'LOSS', color: '#ef4444' };
+  }
+  return { text: 'DRAW', color: '#f59e0b' };
+}
+---
+
+<section class="py-16 bg-slate-800/30">
+  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <h2 class="text-2xl font-bold text-white mb-8 text-center">Latest Result</h2>
+
+    {fixture ? (
+      <div class="max-w-2xl mx-auto bg-slate-800/50 rounded-2xl p-8 border border-slate-700/50">
+        <div class="text-center mb-4">
+          <span
+            class="inline-block px-3 py-1 text-xs font-medium rounded-full text-white"
+            style={`background-color: ${primaryColor}`}
+          >
+            {fixture.competition}
+          </span>
+          <span class="ml-2 text-xs text-slate-500">{formatDate(fixture.match_date)}</span>
+        </div>
+
+        <div class="flex items-center justify-center gap-6 mb-4">
+          <div class="text-center flex-1">
+            <p class="text-lg font-bold text-white">{fixture.home_team}</p>
+          </div>
+          <div class="text-center">
+            <div class="text-3xl font-bold text-white">
+              {fixture.home_score} - {fixture.away_score}
+            </div>
+          </div>
+          <div class="text-center flex-1">
+            <p class="text-lg font-bold text-white">{fixture.away_team}</p>
+          </div>
+        </div>
+
+        <div class="text-center">
+          {(() => {
+            const result = getResultLabel(fixture, clubName);
+            return (
+              <span
+                class="inline-block px-4 py-1 text-sm font-bold rounded-full"
+                style={`background-color: ${result.color}20; color: ${result.color}`}
+              >
+                {result.text}
+              </span>
+            );
+          })()}
+        </div>
+      </div>
+    ) : (
+      <div class="max-w-2xl mx-auto bg-slate-800/50 rounded-2xl p-8 border border-slate-700/50 text-center">
+        <p class="text-slate-400 mb-2">No recent results</p>
+        <p class="text-slate-500 text-sm">Check back after our next match</p>
+      </div>
+    )}
+  </div>
+</section>
