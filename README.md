@@ -159,7 +159,7 @@ src/
 - `/sports` - Sports hub and overview
 
 ### Sport-Specific Pages
-- `/sports/gaa` - GAA club features
+- `/sports/GAA` - GAA club features
 - `/sports/football` - Football club features
 - `/sports/rugby` - Rugby club features
 - `/sports/athletics` - Athletics club features
@@ -204,7 +204,7 @@ Clubify uses a consistent design system across all components:
 Simple, transparent pricing with no hidden fees:
 
 - **Monthly**: €50/month
-- **Annual**: €500/year (save €100)
+- **Annual**: €499/year (save €101)
 - 7-day free trial
 - No credit card required to start
 

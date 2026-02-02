@@ -33,10 +33,10 @@ const allSports = getAllSports();
         >
           {/* Sport Icon */}
           <div
-            class="w-14 h-14 rounded-xl flex items-center justify-center text-white text-xl font-bold shadow-lg group-hover:scale-110 transition-transform duration-300"
+            class="w-14 h-14 rounded-xl flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform duration-300"
             style={`background: linear-gradient(135deg, ${sport.primaryColor}, ${sport.primaryColor}dd)`}
           >
-            {sport.name.charAt(0)}
+            <div class="sport-showcase-icon text-white" aria-hidden="true" set:html={sport.icon}></div>
           </div>
 
           {/* Sport Name */}
@@ -67,3 +67,16 @@ const allSports = getAllSports();
     </div>
   </div>
 </section>
+
+<style>
+  .sport-showcase-icon {
+    width: 1.75rem;
+    height: 1.75rem;
+  }
+
+  .sport-showcase-icon svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+</style>

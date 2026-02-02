@@ -94,13 +94,18 @@ export const PATCH: APIRoute = async ({ params, request, locals, cookies }) => {
       'primary_color', 'secondary_color', 'accent_color',
       'template', 'contact_email', 'contact_phone', 'address',
       'website_url', 'facebook_url', 'twitter_url', 'instagram_url',
-      'is_live', 'setup_completed', 'setup_step'
+      'is_live', 'setup_completed', 'setup_step',
+      'sport_settings'
     ];
 
     const filteredUpdates: Record<string, any> = {};
     for (const field of allowedFields) {
       if (updates[field] !== undefined) {
-        filteredUpdates[field] = updates[field];
+        if (field === 'sport_settings') {
+          filteredUpdates[field] = JSON.stringify(updates[field]);
+        } else {
+          filteredUpdates[field] = updates[field];
+        }
       }
     }
 

@@ -46,20 +46,20 @@ export const SPORTS: Record<SportType, SportConfig> = {
     namePlural: 'GAA Clubs',
     slug: 'gaa',
     status: 'ready',
-    description: 'All-in-one website and app platform for GAA clubs.',
-    tagline: 'Built for the way GAA clubs actually work',
-    longDescription: 'From fixtures and results to news and community updates, Clubify gives your GAA club everything it needs to stay connected with members and supporters.',
+    description: 'All-in-one website and app platform built for GAA clubs.',
+    tagline: 'Built for championship weekends and community nights',
+    longDescription: 'Fixtures, results, and club news that speak GAA. From goals and points to multi-code teams, Clubify keeps players, parents, and supporters in the loop.',
     primaryColor: '#006838',
     secondaryColor: '#FFB300',
     icon: `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M12 2C12 2 8 6 8 12s4 10 4 10" stroke="currentColor" stroke-width="2"/><path d="M12 2c0 0 4 4 4 10s-4 10-4 10" stroke="currentColor" stroke-width="2"/><line x1="2" y1="12" x2="22" y2="12" stroke="currentColor" stroke-width="2"/></svg>`,
     heroImage: '/images/sports/gaa-hero.jpg',
     features: [
-      { title: 'Fixtures & Results', description: 'Track matches with GAA-specific scoring (goals and points)', icon: 'calendar' },
-      { title: 'News & Updates', description: 'Keep members informed with club news and announcements', icon: 'newspaper' },
-      { title: 'Team Management', description: 'Organize teams across all age groups and codes', icon: 'users' },
-      { title: 'Social Publishing', description: 'Share updates to Facebook, Twitter, and Instagram automatically', icon: 'share' },
-      { title: 'Sponsor Showcase', description: 'Highlight your sponsors with dedicated profiles and placements', icon: 'star' },
-      { title: 'Mobile App', description: 'Everything your website can do, available in a native mobile app', icon: 'smartphone' },
+      { title: 'Goals & Points Scoring', description: 'Record scores in the 2-14 format with automatic points totals', icon: 'trophy' },
+      { title: 'Multi-Code Teams', description: 'Manage football, hurling, camogie, and ladies teams under one club', icon: 'users' },
+      { title: 'Championship Fixtures', description: 'Structured fixtures, results, and tables for league and championship', icon: 'calendar' },
+      { title: 'Matchday Reports', description: 'Publish lineups, scorers, and post-match write-ups fast', icon: 'newspaper' },
+      { title: 'Sponsor & Parish Partners', description: 'Dedicated sponsor placements and community acknowledgements', icon: 'star' },
+      { title: 'Member App & Alerts', description: 'Push updates for fixtures, training, and late changes', icon: 'smartphone' },
     ],
     terminology: {
       fixture: 'Match',
@@ -69,7 +69,7 @@ export const SPORTS: Record<SportType, SportConfig> = {
       competition: 'Championship',
       member: 'Member',
     },
-    templateIds: ['gaa-classic', 'gaa-matchday', 'gaa-community'],
+    templateIds: ['GAA-classic', 'GAA-matchday', 'GAA-community'],
   },
 
   football: {
@@ -78,20 +78,20 @@ export const SPORTS: Record<SportType, SportConfig> = {
     namePlural: 'Football Clubs',
     slug: 'football',
     status: 'coming_soon',
-    description: 'Professional websites for football clubs of all sizes.',
-    tagline: 'From grassroots to glory',
-    longDescription: 'Whether you\'re a Sunday league team or a semi-professional club, Clubify provides the tools to manage fixtures, share news, and engage your supporters.',
+    description: 'Matchday-ready websites and apps for football clubs.',
+    tagline: 'Run matchdays, grow supporters, keep squads aligned',
+    longDescription: 'From league tables and fixtures to match reports and player stats, Clubify gives football clubs a modern digital home that keeps fans and players connected.',
     primaryColor: '#1e40af',
     secondaryColor: '#fbbf24',
     icon: `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M12 2l2.5 4.5 5 .5-3.5 3.5 1 5-5-2.5-5 2.5 1-5L4.5 7l5-.5L12 2z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>`,
     heroImage: '/images/sports/football-hero.jpg',
     features: [
-      { title: 'League Tables', description: 'Automatic league standings and statistics tracking', icon: 'table' },
-      { title: 'Fixtures & Results', description: 'Match scheduling with standard football scoring', icon: 'calendar' },
-      { title: 'Squad Management', description: 'Manage players, stats, and team sheets', icon: 'users' },
-      { title: 'News & Media', description: 'Share match reports, photos, and club updates', icon: 'newspaper' },
-      { title: 'Sponsor Integration', description: 'Showcase kit sponsors, stadium partners, and more', icon: 'star' },
-      { title: 'Mobile App', description: 'Native app with push notifications for match days', icon: 'smartphone' },
+      { title: 'League Tables & Form', description: 'Automatic standings with points, GD, and recent form', icon: 'table' },
+      { title: 'Matchday Centre', description: 'Lineups, scorers, cards, and reports in one place', icon: 'calendar' },
+      { title: 'Player Profiles', description: 'Appearances, goals, assists, and season stats', icon: 'users' },
+      { title: 'News & Highlights', description: 'Publish reports, photos, and video highlights fast', icon: 'newspaper' },
+      { title: 'Sponsor Placement', description: 'Showcase kit sponsors, partners, and stadium signage', icon: 'star' },
+      { title: 'Match Alerts App', description: 'Push updates for kick-off, results, and team news', icon: 'smartphone' },
     ],
     terminology: {
       fixture: 'Match',
@@ -110,20 +110,20 @@ export const SPORTS: Record<SportType, SportConfig> = {
     namePlural: 'Rugby Clubs',
     slug: 'rugby',
     status: 'coming_soon',
-    description: 'Powerful websites for rugby clubs and unions.',
-    tagline: 'Unite your rugby community',
-    longDescription: 'From minis to seniors, manage your entire rugby club with fixtures, results, team news, and community engagement tools built for the sport.',
+    description: 'Club websites built for rugby, from minis to seniors.',
+    tagline: 'Keep squads, parents, and supporters in sync',
+    longDescription: 'Share fixtures, team sheets, and match reports while keeping training updates, results, and club news in one clear place.',
     primaryColor: '#166534',
     secondaryColor: '#f59e0b',
     icon: `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><ellipse cx="12" cy="12" rx="8" ry="5" stroke="currentColor" stroke-width="2" transform="rotate(45 12 12)"/><line x1="8" y1="8" x2="16" y2="16" stroke="currentColor" stroke-width="2"/><line x1="10" y1="6" x2="18" y2="14" stroke="currentColor" stroke-width="1.5"/><line x1="6" y1="10" x2="14" y2="18" stroke="currentColor" stroke-width="1.5"/></svg>`,
     heroImage: '/images/sports/rugby-hero.jpg',
     features: [
-      { title: 'Fixtures & Results', description: 'Track tries, conversions, and penalties', icon: 'calendar' },
-      { title: 'Age Grade Teams', description: 'Manage minis, youth, colts, and senior teams', icon: 'users' },
-      { title: 'Club News', description: 'Match reports, training updates, and announcements', icon: 'newspaper' },
-      { title: 'Social Media', description: 'Automatic posting to your club social channels', icon: 'share' },
-      { title: 'Sponsors', description: 'Showcase shirt sponsors and club partners', icon: 'star' },
-      { title: 'Mobile App', description: 'Keep supporters connected on match days', icon: 'smartphone' },
+      { title: 'Rugby Scoring', description: 'Track tries, conversions, penalties, and drop goals', icon: 'calendar' },
+      { title: 'Age-Grade Pathways', description: 'Organize minis, youth, colts, J1s, and seniors', icon: 'users' },
+      { title: 'Team Sheets', description: 'Publish lineups, positions, and availability updates', icon: 'table' },
+      { title: 'Training & Announcements', description: 'Keep squads and parents updated midweek', icon: 'newspaper' },
+      { title: 'Sponsors & Partners', description: 'Dedicated placements for shirt and club partners', icon: 'star' },
+      { title: 'Matchday App', description: 'Instant updates for kick-off and full-time', icon: 'smartphone' },
     ],
     terminology: {
       fixture: 'Match',
@@ -174,20 +174,20 @@ export const SPORTS: Record<SportType, SportConfig> = {
     namePlural: 'Golf Clubs',
     slug: 'golf',
     status: 'coming_soon',
-    description: 'Elegant websites for golf clubs and societies.',
-    tagline: 'Elevate your club experience',
-    longDescription: 'From competition results to handicap tracking, create a digital home for your golf club that members will love.',
+    description: 'Premium websites for golf clubs and societies.',
+    tagline: 'Your digital clubhouse for competitions and handicaps',
+    longDescription: 'Publish competitions, leaderboards, and handicap information alongside course guides and member updates in one elegant site.',
     primaryColor: '#15803d',
     secondaryColor: '#a3e635',
     icon: `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="18" cy="18" r="3" stroke="currentColor" stroke-width="2"/><line x1="6" y1="4" x2="6" y2="16" stroke="currentColor" stroke-width="2"/><path d="M6 4l8 4-8 4" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>`,
     heroImage: '/images/sports/golf-hero.jpg',
     features: [
-      { title: 'Competitions', description: 'Schedule and manage club competitions', icon: 'trophy' },
-      { title: 'Leaderboards', description: 'Live scoring and results tables', icon: 'chart' },
-      { title: 'Handicap Display', description: 'Member handicap information', icon: 'user' },
-      { title: 'Course Info', description: 'Hole-by-hole course details', icon: 'map' },
-      { title: 'Club News', description: 'Competition results and announcements', icon: 'newspaper' },
-      { title: 'Mobile App', description: 'Competition info on the course', icon: 'smartphone' },
+      { title: 'Competition Calendar', description: 'Fixtures for weekly comps, opens, and society days', icon: 'trophy' },
+      { title: 'Live Leaderboards', description: 'Stableford, stroke play, and matchplay scoring', icon: 'chart' },
+      { title: 'Handicap Index', description: 'Display member handicaps and updates clearly', icon: 'user' },
+      { title: 'Course Guide', description: 'Hole-by-hole details, tees, and local rules', icon: 'map' },
+      { title: 'Member News', description: 'Publish results, winner spotlights, and notices', icon: 'newspaper' },
+      { title: 'On-Course App', description: 'Competition info and updates while playing', icon: 'smartphone' },
     ],
     terminology: {
       fixture: 'Competition',
@@ -267,12 +267,13 @@ export const SPORTS: Record<SportType, SportConfig> = {
 
 // Helper functions
 
-export function getSport(id: SportType): SportConfig {
-  return SPORTS[id];
+export function getSport(id: SportType | string): SportConfig {
+  return SPORTS[normalizeSportId(id)];
 }
 
 export function getSportBySlug(slug: string): SportConfig | null {
-  return Object.values(SPORTS).find((s) => s.slug === slug) || null;
+  const normalized = slug.toLowerCase();
+  return Object.values(SPORTS).find((s) => s.slug.toLowerCase() === normalized) || null;
 }
 
 export function getAllSports(): SportConfig[] {
@@ -287,13 +288,19 @@ export function getComingSoonSports(): SportConfig[] {
   return Object.values(SPORTS).filter((s) => s.status === 'coming_soon');
 }
 
-export function isReady(sportId: SportType): boolean {
-  return SPORTS[sportId]?.status === 'ready';
+export function isReady(sportId: SportType | string): boolean {
+  return SPORTS[normalizeSportId(sportId)]?.status === 'ready';
 }
 
-export function getSportTerminology(sportId: SportType): SportTerminology {
-  return SPORTS[sportId]?.terminology || SPORTS.gaa.terminology;
+export function getSportTerminology(sportId: SportType | string): SportTerminology {
+  return SPORTS[normalizeSportId(sportId)]?.terminology || SPORTS.gaa.terminology;
 }
 
 // Array of sport types for iteration
 export const SPORT_TYPES: SportType[] = ['gaa', 'football', 'rugby', 'athletics', 'golf', 'tennis', 'cycling'];
+
+export function normalizeSportId(id: unknown): SportType {
+  if (typeof id !== 'string') return 'gaa';
+  const normalized = id.toLowerCase();
+  return (SPORT_TYPES as string[]).includes(normalized) ? (normalized as SportType) : 'gaa';
+}

@@ -445,19 +445,19 @@ const sports = getAllSports();
   const TEMPLATES_BY_SPORT: Record<string, Array<{id: string; name: string; description: string; highlights: string[]}>> = {
     gaa: [
       {
-        id: 'gaa-classic',
+        id: 'GAA-classic',
         name: 'Classic Club',
         description: 'A balanced, professional layout with hero, fixtures, news, and sponsors.',
         highlights: ['Hero + fixtures', 'Latest news', 'Sponsors strip']
       },
       {
-        id: 'gaa-matchday',
+        id: 'GAA-matchday',
         name: 'Matchday Focus',
         description: 'A match-first layout for clubs that want results front and centre.',
         highlights: ['Match centre', 'Results ticker', 'News highlights']
       },
       {
-        id: 'gaa-community',
+        id: 'GAA-community',
         name: 'Community First',
         description: 'Showcase volunteers, events, and club life alongside fixtures.',
         highlights: ['Volunteer spotlights', 'Events grid', 'Club notices']
@@ -477,7 +477,7 @@ const sports = getAllSports();
   let userData = { name: '', email: '' };
   let clubData = { name: '', county: '', slug: '', id: '' };
   let brandingData = { primaryColor: '#006838', secondaryColor: '#FFFFFF', crestUrl: '' };
-  let selectedTemplate = 'gaa-classic'; // Default to GAA classic
+  let selectedTemplate = 'GAA-classic'; // Default to GAA classic
 
   // Initialize
   document.addEventListener('DOMContentLoaded', () => {
@@ -500,7 +500,7 @@ const sports = getAllSports();
   }
 
   function getTemplatePreview(id: string) {
-    // Extract template type from sport-prefixed ID (e.g., 'gaa-matchday' -> 'matchday')
+    // Extract template type from sport-prefixed ID (e.g., 'GAA-matchday' -> 'matchday')
     const templateType = id.includes('-') ? id.split('-').slice(1).join('-') : id;
 
     switch (templateType) {
@@ -554,7 +554,7 @@ const sports = getAllSports();
 
     // Ensure selected template is valid for this sport
     if (!templates.find(t => t.id === selectedTemplate)) {
-      selectedTemplate = templates[0]?.id || 'gaa-classic';
+      selectedTemplate = templates[0]?.id || 'GAA-classic';
     }
 
     grid.innerHTML = templates.map(t => `
@@ -609,7 +609,8 @@ const sports = getAllSports();
         card.setAttribute('data-selected', 'true');
 
         // Store selected sport
-        selectedSport = (card as HTMLElement).dataset.sport || null;
+        const rawSport = (card as HTMLElement).dataset.sport || null;
+        selectedSport = rawSport ? rawSport.toLowerCase() : null;
 
         // Enable submit button
         submitBtn.disabled = false;
@@ -844,8 +845,9 @@ const sports = getAllSports();
         // If they've already selected a sport (stored in URL or session), skip to step 2
         const urlParams = new URLSearchParams(window.location.search);
         const sportParam = urlParams.get('sport');
-        if (sportParam && SPORTS[sportParam as keyof typeof SPORTS]) {
-          selectedSport = sportParam;
+        const normalizedSportParam = sportParam ? sportParam.toLowerCase() : null;
+        if (normalizedSportParam && SPORTS[normalizedSportParam as keyof typeof SPORTS]) {
+          selectedSport = normalizedSportParam;
           showStep(2); // Skip to club info since they're logged in
         } else {
           showStep(0); // Start at sport selection

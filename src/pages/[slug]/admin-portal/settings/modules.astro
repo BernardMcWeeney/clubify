@@ -36,39 +36,42 @@ const modules = [
   {
     id: 'posts',
     name: 'News & Posts',
-    description: 'Create and publish news articles, match reports, and announcements',
-    icon: '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/></svg>',
+    description: 'Publish news, match reports, and announcements',
   },
   {
     id: 'fixtures',
     name: 'Fixtures & Results',
-    description: 'Manage match fixtures, record results, and display GAA scores',
-    icon: '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>',
+    description: 'Manage fixtures, results, and matchday updates',
   },
   {
     id: 'sponsors',
     name: 'Sponsors',
-    description: 'Manage club sponsors with logos, tiers, and placements',
-    icon: '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>',
+    description: 'Manage sponsor profiles and placements',
   },
   {
     id: 'forms',
-    name: 'Custom Forms',
-    description: 'Build custom forms for registrations, enquiries, and data collection',
-    icon: '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>',
+    name: 'Forms',
+    description: 'Create custom forms for registrations and enquiries',
   },
   {
     id: 'inbox',
     name: 'Inbox',
-    description: 'Receive and manage contact form submissions and form responses',
-    icon: '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>',
+    description: 'View contact submissions and form responses',
   },
   {
     id: 'media',
     name: 'Media Library',
-    description: 'Upload and manage images, photos, and media assets',
-    icon: '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>',
+    description: 'Upload and organize photos and assets',
   },
+];
+
+const comingSoon = [
+  { name: 'Membership', description: 'Subscriptions, renewals, and member profiles' },
+  { name: 'Fundraising', description: 'Campaigns, donations, and sponsorship drives' },
+  { name: 'Payments', description: 'Track payments across modules' },
+  { name: 'Policy & GDPR', description: 'Document hub and compliance workflows' },
+  { name: 'Ticketing', description: 'Matchday and event ticket sales' },
+  { name: 'Merch', description: 'Online shop for club merchandise' },
 ];
 ---
 
@@ -79,88 +82,74 @@ const modules = [
   member={member}
   currentPage="settings"
 >
-  <div class="max-w-4xl">
-    <div class="flex items-center gap-4 mb-6">
-      <a href={`/${slug}/admin-portal/settings`} class="p-2 text-slate-400 hover:text-slate-600 transition-colors">
+  <div class="max-w-4xl space-y-6">
+    <header class="flex items-start gap-3">
+      <a href={`/${slug}/admin-portal/settings`} class="p-2 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
         </svg>
       </a>
       <div>
-        <h2 class="text-xl font-bold text-slate-900">Module Settings</h2>
-        <p class="text-slate-500 text-sm">Enable or disable features for your club</p>
+        <p class="text-sm text-slate-500">Modules</p>
+        <h1 class="text-3xl font-semibold text-slate-900 admin-display">Enable the features you need</h1>
+        <p class="text-slate-600 mt-2">Hide unused modules to keep the hub focused for your team.</p>
       </div>
-    </div>
+    </header>
 
     {!canEdit && (
-      <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6">
-        <p class="text-amber-700 text-sm">You don't have permission to edit module settings.</p>
+      <div class="admin-panel-soft p-4 text-sm text-amber-700">
+        You don't have permission to edit module settings.
       </div>
     )}
 
-    <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
-      <div class="flex gap-3">
-        <svg class="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-        </svg>
-        <div>
-          <p class="text-blue-900 text-sm font-medium">About Module Settings</p>
-          <p class="text-blue-700 text-sm mt-1">Disabled modules will be hidden from your admin navigation and inaccessible to all users. This helps keep your dashboard clean and focused on the features you actually use.</p>
-        </div>
-      </div>
+    <div class="admin-panel-soft p-4 text-sm text-slate-600">
+      Disabled modules are hidden from the sidebar and inaccessible to all users.
     </div>
 
     <form id="modules-form" class="space-y-4">
       {modules.map((module) => (
-        <div class="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
-          <div class="flex items-start gap-4">
-            <div class="flex-shrink-0">
-              <div class="w-12 h-12 rounded-lg bg-slate-100 flex items-center justify-center text-slate-600">
-                <Fragment set:html={module.icon} />
-              </div>
-            </div>
-            <div class="flex-1 min-w-0">
-              <h3 class="text-lg font-semibold text-slate-900 mb-1">{module.name}</h3>
-              <p class="text-slate-500 text-sm">{module.description}</p>
-            </div>
-            <div class="flex-shrink-0">
-              <label class="relative inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  name={module.id}
-                  checked={moduleConfig[module.id] !== false}
-                  disabled={!canEdit}
-                  class="sr-only peer"
-                />
-                <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-green-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500 peer-disabled:opacity-50 peer-disabled:cursor-not-allowed"></div>
-              </label>
-            </div>
+        <div class="admin-panel p-5 flex items-start justify-between gap-4">
+          <div>
+            <h3 class="text-lg font-semibold text-slate-900">{module.name}</h3>
+            <p class="text-sm text-slate-600 mt-1">{module.description}</p>
           </div>
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input
+              type="checkbox"
+              name={module.id}
+              checked={moduleConfig[module.id] !== false}
+              disabled={!canEdit}
+              class="sr-only peer"
+            />
+            <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-emerald-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500 peer-disabled:opacity-50 peer-disabled:cursor-not-allowed"></div>
+          </label>
         </div>
       ))}
     </form>
 
+    <section class="admin-panel-soft p-5">
+      <h2 class="text-lg font-semibold text-slate-900 admin-display">Coming soon modules</h2>
+      <div class="grid gap-3 mt-4 sm:grid-cols-2">
+        {comingSoon.map((module) => (
+          <div class="rounded-xl border border-slate-200 bg-white/70 p-4">
+            <p class="text-sm font-semibold text-slate-900">{module.name}</p>
+            <p class="text-xs text-slate-500 mt-1">{module.description}</p>
+            <span class="admin-nav-badge mt-3 inline-flex">Soon</span>
+          </div>
+        ))}
+      </div>
+    </section>
+
     {canEdit && (
-      <div class="flex items-center gap-4 mt-6">
-        <button
-          type="button"
-          id="save-button"
-          class="px-6 py-3 bg-green-500 hover:bg-green-600 text-white font-medium rounded-lg transition-colors shadow-lg shadow-green-500/25"
-        >
-          Save Changes
-        </button>
-        <a
-          href={`/${slug}/admin-portal/settings`}
-          class="px-6 py-3 text-slate-600 hover:text-slate-900 transition-colors font-medium"
-        >
-          Cancel
-        </a>
+      <div class="flex items-center gap-4">
+        <button type="button" id="save-button" class="admin-btn-primary">Save changes</button>
+        <a href={`/${slug}/admin-portal/settings`} class="text-sm font-semibold text-slate-500 hover:text-slate-900">Cancel</a>
       </div>
     )}
 
     <div id="loading" class="hidden fixed inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center z-50">
-      <div class="bg-white rounded-xl p-6 text-center shadow-xl border border-slate-200">
-        <div class="w-8 h-8 border-2 border-green-500 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+      <div class="admin-panel p-6 text-center">
+        <div class="w-8 h-8 border-2 border-slate-300 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
         <p class="text-slate-700">Saving...</p>
       </div>
     </div>
@@ -175,7 +164,6 @@ const modules = [
   saveButton?.addEventListener('click', async () => {
     const formData = new FormData(form);
 
-    // Build config object - unchecked checkboxes won't be in formData
     const config = {
       posts: formData.has('posts'),
       fixtures: formData.has('fixtures'),
@@ -200,7 +188,6 @@ const modules = [
         throw new Error(result.error || 'Failed to save');
       }
 
-      // Reload to update navigation
       window.location.reload();
     } catch (error) {
       alert(error.message || 'Failed to save changes');

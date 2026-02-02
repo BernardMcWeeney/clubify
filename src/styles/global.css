@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap");
 
 /* ========================================
    Clubify Design System - Modern SaaS
@@ -331,6 +332,204 @@ body {
    Admin UI Component Classes
    ======================================== */
 
+/* Admin shell + layout */
+.admin-shell {
+  --admin-accent: #0d9488;
+  --admin-accent-hover: #0b766b;
+  --admin-accent-soft: rgba(13, 148, 136, 0.12);
+  --admin-accent-strong: rgba(13, 148, 136, 0.2);
+  --admin-accent-border: rgba(13, 148, 136, 0.28);
+  --admin-ring: rgba(13, 148, 136, 0.25);
+  --admin-brand-primary: #0d9488;
+  --admin-brand-secondary: #ffffff;
+  --admin-brand-accent: #f59e0b;
+  --admin-font-sans: "Manrope", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --admin-font-display: "Space Grotesk", "Manrope", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --admin-surface: #ffffff;
+  --admin-panel: #ffffff;
+  --admin-panel-alt: #f8fafc;
+  --admin-border: #e2e8f0;
+  --admin-text: #0f172a;
+  --admin-text-muted: #64748b;
+  min-height: 100vh;
+  color: var(--admin-text);
+  font-family: var(--admin-font-sans);
+  background:
+    radial-gradient(900px circle at 5% 0%, rgba(13, 148, 136, 0.08), transparent 55%),
+    radial-gradient(800px circle at 95% 10%, rgba(99, 102, 241, 0.08), transparent 60%),
+    #f6f7fb;
+  position: relative;
+  isolation: isolate;
+}
+
+.admin-shell::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(148, 163, 184, 0.15) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(148, 163, 184, 0.12) 1px, transparent 1px);
+  background-size: 36px 36px;
+  opacity: 0.25;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.admin-shell::after {
+  content: "";
+  position: absolute;
+  top: -20%;
+  right: -10%;
+  width: 520px;
+  height: 520px;
+  background: radial-gradient(circle, var(--admin-accent-soft), transparent 65%);
+  opacity: 0.7;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.admin-display {
+  font-family: var(--admin-font-display);
+  letter-spacing: -0.02em;
+}
+
+.admin-sidebar {
+  background: var(--admin-surface);
+  border-right: 1px solid var(--admin-border);
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.08);
+}
+
+.admin-topbar {
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(18px);
+  border-bottom: 1px solid var(--admin-border);
+}
+
+.admin-panel {
+  background: var(--admin-panel);
+  border: 1px solid var(--admin-border);
+  border-radius: 1.25rem;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+}
+
+.admin-panel-soft {
+  background: var(--admin-panel-alt);
+  border: 1px solid var(--admin-border);
+  border-radius: 1.25rem;
+}
+
+.admin-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 0.9rem;
+  border-radius: 0.95rem;
+  color: var(--admin-text-muted);
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+.admin-nav-item:hover {
+  background: rgba(15, 23, 42, 0.04);
+  color: var(--admin-text);
+}
+
+.admin-nav-item.is-active {
+  background: var(--admin-accent-soft);
+  color: var(--admin-accent);
+  box-shadow: inset 0 0 0 1px var(--admin-accent-border);
+}
+
+.admin-nav-item.is-disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.admin-nav-badge {
+  margin-left: auto;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.2rem 0.5rem;
+  border-radius: 9999px;
+  background: rgba(148, 163, 184, 0.15);
+  color: #64748b;
+}
+
+.admin-accent-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--admin-accent);
+  background: var(--admin-accent-soft);
+  border: 1px solid var(--admin-accent-border);
+}
+
+.admin-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: var(--spacing-button-y) var(--spacing-button-x);
+  background-color: var(--admin-accent);
+  color: white;
+  font-weight: var(--font-weight-semibold);
+  border-radius: var(--radius-button);
+  box-shadow: 0 12px 24px -14px var(--admin-accent);
+  transition: background-color var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.admin-btn-primary:hover {
+  background-color: var(--admin-accent-hover);
+  box-shadow: 0 16px 32px -16px var(--admin-accent);
+}
+
+.admin-btn-primary:active {
+  transform: scale(0.98);
+}
+
+.admin-btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: var(--spacing-button-y) var(--spacing-button-x);
+  background-color: rgba(148, 163, 184, 0.12);
+  color: var(--admin-text);
+  font-weight: var(--font-weight-semibold);
+  border-radius: var(--radius-button);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  transition: background-color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.admin-btn-secondary:hover {
+  background-color: rgba(148, 163, 184, 0.2);
+  border-color: rgba(148, 163, 184, 0.3);
+}
+
+.admin-input:focus {
+  outline: none;
+  background-color: var(--input-bg-focus);
+  border-color: var(--admin-accent);
+  box-shadow: 0 0 0 3px var(--admin-ring);
+}
+
+.admin-select:focus {
+  outline: none;
+  background-color: var(--input-bg-focus);
+  border-color: var(--admin-accent);
+  box-shadow: 0 0 0 3px var(--admin-ring);
+}
+
 /* Card - Consistent admin card styling */
 .admin-card {
   background: white;
@@ -361,16 +560,17 @@ body {
   justify-content: center;
   gap: 0.5rem;
   padding: var(--spacing-button-y) var(--spacing-button-x);
-  background-color: #14b8a6;
+  background-color: var(--admin-accent);
   color: white;
-  font-weight: var(--font-weight-medium);
+  font-weight: var(--font-weight-semibold);
   border-radius: var(--radius-button);
-  box-shadow: var(--shadow-button);
-  transition: background-color var(--transition-fast), transform var(--transition-fast);
+  box-shadow: 0 12px 24px -14px var(--admin-accent);
+  transition: background-color var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 .admin-btn-primary:hover {
-  background-color: #0d9488;
+  background-color: var(--admin-accent-hover);
+  box-shadow: 0 16px 32px -16px var(--admin-accent);
 }
 
 .admin-btn-primary:active {
@@ -384,17 +584,17 @@ body {
   justify-content: center;
   gap: 0.5rem;
   padding: var(--spacing-button-y) var(--spacing-button-x);
-  background-color: #f1f5f9;
-  color: #475569;
-  font-weight: var(--font-weight-medium);
+  background-color: rgba(148, 163, 184, 0.12);
+  color: var(--admin-text);
+  font-weight: var(--font-weight-semibold);
   border-radius: var(--radius-button);
-  border: var(--border-width) solid var(--border-color);
+  border: 1px solid rgba(148, 163, 184, 0.2);
   transition: background-color var(--transition-fast), border-color var(--transition-fast);
 }
 
 .admin-btn-secondary:hover {
-  background-color: #e2e8f0;
-  border-color: #cbd5e1;
+  background-color: rgba(148, 163, 184, 0.2);
+  border-color: rgba(148, 163, 184, 0.3);
 }
 
 /* Button - Danger action */
@@ -433,8 +633,8 @@ body {
 .admin-input:focus {
   outline: none;
   background-color: var(--input-bg-focus);
-  border-color: var(--border-color-focus);
-  box-shadow: 0 0 0 3px rgb(20 184 166 / 0.1);
+  border-color: var(--admin-accent);
+  box-shadow: 0 0 0 3px var(--admin-ring);
 }
 
 .admin-input:disabled {
@@ -463,8 +663,8 @@ body {
 .admin-select:focus {
   outline: none;
   background-color: var(--input-bg-focus);
-  border-color: var(--border-color-focus);
-  box-shadow: 0 0 0 3px rgb(20 184 166 / 0.1);
+  border-color: var(--admin-accent);
+  box-shadow: 0 0 0 3px var(--admin-ring);
 }
 
 /* Label - Form labels */

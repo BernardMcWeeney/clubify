@@ -1,5 +1,5 @@
 // Template System - Core Types and Definitions
-import type { SportType } from '../sports';
+import { normalizeSportId, type SportType } from '../sports';
 
 export type BlockType =
   | 'hero'
@@ -32,9 +32,9 @@ export interface BlockConfig {
 
 export type TemplateId =
   // GAA templates
-  | 'gaa-classic'
-  | 'gaa-matchday'
-  | 'gaa-community'
+  | 'GAA-classic'
+  | 'GAA-matchday'
+  | 'GAA-community'
   // Football templates
   | 'football-classic'
   | 'football-matchday'
@@ -611,8 +611,8 @@ function getRoutesBlocks(): BlockConfig[] {
 // Template metadata - 21 templates (3 per sport)
 export const TEMPLATES: Record<TemplateId, TemplateDefinition> = {
   // === GAA Templates (Active) ===
-  'gaa-classic': {
-    id: 'gaa-classic',
+  'GAA-classic': {
+    id: 'GAA-classic',
     name: 'Classic Club',
     description: 'The perfect all-rounder with hero, fixtures, news, and sponsors.',
     sport: 'gaa',
@@ -620,8 +620,8 @@ export const TEMPLATES: Record<TemplateId, TemplateDefinition> = {
     blocks: getClassicBlocks(),
     constraints: DEFAULT_CONSTRAINTS,
   },
-  'gaa-matchday': {
-    id: 'gaa-matchday',
+  'GAA-matchday': {
+    id: 'GAA-matchday',
     name: 'Matchday Focus',
     description: 'Put the game at the centre with match highlights and results.',
     sport: 'gaa',
@@ -629,8 +629,8 @@ export const TEMPLATES: Record<TemplateId, TemplateDefinition> = {
     blocks: getMatchdayBlocks(),
     constraints: DEFAULT_CONSTRAINTS,
   },
-  'gaa-community': {
-    id: 'gaa-community',
+  'GAA-community': {
+    id: 'GAA-community',
     name: 'Community First',
     description: 'Celebrate your community with events and volunteer highlights.',
     sport: 'gaa',
@@ -825,8 +825,9 @@ export function getAllTemplates(): TemplateDefinition[] {
 }
 
 // Get templates for a specific sport
-export function getTemplatesForSport(sport: SportType): TemplateDefinition[] {
-  return Object.values(TEMPLATES).filter(t => t.sport === sport);
+export function getTemplatesForSport(sport: SportType | string): TemplateDefinition[] {
+  const normalizedSport = normalizeSportId(sport);
+  return Object.values(TEMPLATES).filter(t => t.sport === normalizedSport);
 }
 
 // Get active templates (excludes preview)
@@ -835,15 +836,16 @@ export function getActiveTemplates(): TemplateDefinition[] {
 }
 
 // Get active templates for a specific sport
-export function getActiveTemplatesForSport(sport: SportType): TemplateDefinition[] {
-  return Object.values(TEMPLATES).filter(t => t.sport === sport && t.status === 'active');
+export function getActiveTemplatesForSport(sport: SportType | string): TemplateDefinition[] {
+  const normalizedSport = normalizeSportId(sport);
+  return Object.values(TEMPLATES).filter(t => t.sport === normalizedSport && t.status === 'active');
 }
 
 // Legacy support: map old template IDs to new ones
 const LEGACY_TEMPLATE_MAP: Record<string, TemplateId> = {
-  'classic': 'gaa-classic',
-  'matchday': 'gaa-matchday',
-  'community': 'gaa-community',
+  'classic': 'GAA-classic',
+  'matchday': 'GAA-matchday',
+  'community': 'GAA-community',
 };
 
 export function resolveTemplateId(templateId: string): TemplateId {

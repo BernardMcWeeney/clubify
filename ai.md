@@ -30,7 +30,7 @@ A modern, professional, responsive website showcasing what Clubify can do, with 
 	•	clubify.ie/templates
 	•	clubify.ie/security (trust + governance messaging)
 	•	clubify.ie/contact
-	•	clubify.ie/sports/gaa (ready now)
+	•	clubify.ie/sports/GAA (ready now)
 	•	clubify.ie/sports/football (coming soon)
 	•	clubify.ie/sports/rugby (coming soon)
 	•	clubify.ie/sports/athletics (coming soon)
@@ -322,7 +322,7 @@ Required dashboard widgets:
 	•	Inbox summary (new submissions)
 	•	Social publishing status (success/fail, last run)
 	•	Content suggestions (simple prompts)
-	•	Optional external feed widget (e.g., sport news like gaa.ie) if and only if:
+	•	Optional external feed widget (e.g., sport news like GAA.ie) if and only if:
 	•	clearly labelled “External”
 	•	can be toggled off
 	•	does not distract from publishing flow
@@ -430,7 +430,7 @@ You explicitly stated: adding club type selection means DB migrations and logic 
 
 Add:
 	•	club_type (enum-like) to the club record:
-	•	gaa, football, rugby, athletics, golf, tennis, cycling
+	•	GAA, football, rugby, athletics, golf, tennis, cycling
 
 13.2 Feature gating by club type
 

@@ -1,7 +1,7 @@
 // Feature Gating System
 // Controls which features are available per sport type
 
-import type { SportType } from './index';
+import { normalizeSportId, type SportType } from './index';
 
 export interface FeatureGates {
   // Core content features
@@ -252,36 +252,36 @@ export const SPORT_MODULE_DEFAULTS: Record<SportType, ModuleDefaults> = {
 
 // Helper functions
 
-export function getSportFeatures(sportId: SportType): FeatureGates {
-  return SPORT_FEATURES[sportId] || SPORT_FEATURES.gaa;
+export function getSportFeatures(sportId: SportType | string): FeatureGates {
+  return SPORT_FEATURES[normalizeSportId(sportId)] || SPORT_FEATURES.gaa;
 }
 
-export function hasFeature(sportId: SportType, feature: keyof FeatureGates): boolean {
+export function hasFeature(sportId: SportType | string, feature: keyof FeatureGates): boolean {
   const features = getSportFeatures(sportId);
   return features[feature] ?? false;
 }
 
-export function getScoringType(sportId: SportType): 'gaa' | 'standard' | 'sets' | 'time' | 'stroke' {
+export function getScoringType(sportId: SportType | string): 'GAA' | 'standard' | 'sets' | 'time' | 'stroke' {
   const features = getSportFeatures(sportId);
 
-  if (features.gaaScoring) return 'gaa';
+  if (features.gaaScoring) return 'GAA';
   if (features.setScoring) return 'sets';
   if (features.timeScoring) return 'time';
   if (features.strokeScoring) return 'stroke';
   return 'standard';
 }
 
-export function getModuleDefaults(sportId: SportType): ModuleDefaults {
-  return SPORT_MODULE_DEFAULTS[sportId] || SPORT_MODULE_DEFAULTS.gaa;
+export function getModuleDefaults(sportId: SportType | string): ModuleDefaults {
+  return SPORT_MODULE_DEFAULTS[normalizeSportId(sportId)] || SPORT_MODULE_DEFAULTS.gaa;
 }
 
 // Check if a club can use a specific feature
-export function canAccessFeature(clubType: SportType, feature: keyof FeatureGates): boolean {
+export function canAccessFeature(clubType: SportType | string, feature: keyof FeatureGates): boolean {
   return hasFeature(clubType, feature);
 }
 
 // Get list of enabled features for a sport (useful for display)
-export function getEnabledFeatures(sportId: SportType): (keyof FeatureGates)[] {
+export function getEnabledFeatures(sportId: SportType | string): (keyof FeatureGates)[] {
   const features = getSportFeatures(sportId);
   return (Object.keys(features) as (keyof FeatureGates)[]).filter((key) => features[key]);
 }

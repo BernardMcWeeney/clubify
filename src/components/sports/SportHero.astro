@@ -8,103 +8,113 @@ interface Props {
 
 const { sport } = Astro.props;
 const isReady = sport.status === 'ready';
+const sportNameLower = sport.name === 'GAA' ? 'GAA' : sport.name.toLowerCase();
+const primarySoft = `${sport.primaryColor}1a`;
+const primarySoft2 = `${sport.primaryColor}0d`;
+const secondarySoft = `${sport.secondaryColor}24`;
+const gridColor = `${sport.primaryColor}0a`;
 ---
 
 <section
-  class="relative pt-32 pb-20 lg:pb-32 overflow-hidden"
+  class="relative min-h-screen flex items-center overflow-hidden bg-white"
   style={`--sport-primary: ${sport.primaryColor}; --sport-secondary: ${sport.secondaryColor}`}
 >
-  <!-- Background with gradient -->
-  <div class="absolute inset-0 bg-gradient-to-br from-[var(--sport-primary)] via-[var(--sport-primary)] to-slate-900"></div>
-
-  <!-- Decorative elements -->
-  <div class="absolute inset-0 overflow-hidden">
-    <div class="absolute -top-24 -right-24 w-[600px] h-[600px] bg-white/5 rounded-full blur-3xl"></div>
-    <div class="absolute -bottom-24 -left-24 w-[600px] h-[600px] bg-[var(--sport-secondary)]/10 rounded-full blur-3xl"></div>
-
-    <!-- Grid pattern -->
-    <div class="absolute inset-0 opacity-5">
-      <svg class="w-full h-full" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <pattern id="sport-grid" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
-            <path d="M40 0H0v40" fill="none" stroke="white" stroke-width="1"/>
-          </pattern>
-        </defs>
-        <rect width="100%" height="100%" fill="url(#sport-grid)"/>
-      </svg>
-    </div>
-  </div>
+  <!-- Background with sport-tinted mesh gradient -->
+  <div
+    class="absolute inset-0"
+    style={`background-color: #fafafa; background-image:
+      radial-gradient(at 0% 0%, ${primarySoft} 0px, transparent 50%),
+      radial-gradient(at 100% 0%, ${secondarySoft} 0px, transparent 50%),
+      radial-gradient(at 50% 50%, ${primarySoft2} 0px, transparent 60%),
+      radial-gradient(at 0% 100%, ${secondarySoft} 0px, transparent 55%),
+      radial-gradient(at 100% 100%, ${primarySoft} 0px, transparent 50%);`}
+  ></div>
+  <div
+    class="absolute inset-0"
+    style={`background-image:
+      linear-gradient(${gridColor} 1px, transparent 1px),
+      linear-gradient(90deg, ${gridColor} 1px, transparent 1px);
+      background-size: 60px 60px;`}
+  ></div>
 
   <!-- Content -->
-  <div class="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+  <div class="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-32 pb-20 lg:pt-40 lg:pb-32">
     <div class="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
       <!-- Text content -->
-      <div>
+      <div class="text-center lg:text-left">
         <!-- Status badge -->
-        <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white text-sm font-medium mb-6">
+        <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 border border-slate-200 text-slate-700 text-sm font-medium mb-6 shadow-sm">
           {isReady ? (
             <>
-              <span class="w-2 h-2 rounded-full bg-green-400"></span>
-              Available Now
+              <span class="w-2 h-2 rounded-full" style={`background-color: ${sport.primaryColor}`}></span>
+              Available now
             </>
           ) : (
             <>
               <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
-              Coming Soon
+              Coming soon
             </>
           )}
         </div>
 
         <!-- Main headline -->
-        <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight">
-          All-in-one platform for<br />
-          <span class="text-[var(--sport-secondary)]">{sport.namePlural}</span>
+        <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold text-slate-900 mb-6 leading-tight">
+          The all-in-one platform for
+          <br />
+          <span class="bg-gradient-to-r from-[var(--sport-primary)] to-[var(--sport-secondary)] bg-clip-text text-transparent">
+            {sport.namePlural}
+          </span>
         </h1>
 
         <!-- Tagline -->
-        <p class="text-xl text-white/90 font-medium mb-4">
+        <p class="text-xl text-slate-700 font-medium mb-4">
           {sport.tagline}
         </p>
 
         <!-- Description -->
-        <p class="text-lg text-white/70 max-w-xl mb-8">
+        <p class="text-lg text-slate-600 max-w-xl mx-auto lg:mx-0 mb-8">
           {sport.longDescription}
         </p>
 
         <!-- CTAs -->
-        <div class="flex flex-col sm:flex-row items-start gap-4 mb-10">
+        <div class="flex flex-col sm:flex-row items-center lg:items-start justify-center lg:justify-start gap-4 mb-10">
           <Button
             href="/admin/signup"
             variant="dark"
             size="lg"
-            class="bg-white text-slate-900 hover:bg-white/90"
+            class="bg-[var(--sport-primary)] hover:bg-[var(--sport-primary)] text-white shadow-lg hover:brightness-95 focus-visible:ring-[color:var(--sport-primary)]"
           >
-            {isReady ? `Create your ${sport.name.toLowerCase()} club` : "Get early access"}
+            {isReady ? `Create your ${sportNameLower} club` : "Get early access"}
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
             </svg>
           </Button>
-          <Button href="#features" variant="ghost" size="lg" class="text-white border-white/30 hover:bg-white/10">
+          <Button
+            href="#features"
+            variant="secondary"
+            size="lg"
+            class="border border-[color:var(--sport-primary)] text-[color:var(--sport-primary)] hover:bg-slate-50"
+          >
             View features
           </Button>
         </div>
 
         <!-- Trust indicators -->
-        <div class="flex flex-wrap items-center gap-6 text-sm text-white/60">
+        <div class="flex flex-wrap items-center justify-center lg:justify-start gap-6 text-sm text-slate-500">
           <div class="flex items-center gap-2">
-            <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-5 h-5" style={`color: ${sport.primaryColor}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
             </svg>
             <span>7-day free trial</span>
           </div>
           <div class="flex items-center gap-2">
-            <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-5 h-5" style={`color: ${sport.primaryColor}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
             </svg>
             <span>No credit card required</span>
           </div>
           <div class="flex items-center gap-2">
-            <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-5 h-5" style={`color: ${sport.primaryColor}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
             </svg>
             <span>Setup in 15 minutes</span>
@@ -116,15 +126,15 @@ const isReady = sport.status === 'ready';
       <div class="relative hidden lg:block">
         <div class="relative">
           <!-- Browser mockup -->
-          <div class="bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 shadow-2xl overflow-hidden">
-            <div class="h-10 bg-white/10 flex items-center px-4 gap-2 border-b border-white/10">
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-2xl overflow-hidden">
+            <div class="h-10 bg-slate-50 flex items-center px-4 gap-2 border-b border-slate-200">
               <div class="flex gap-1.5">
-                <div class="w-3 h-3 rounded-full bg-white/20"></div>
-                <div class="w-3 h-3 rounded-full bg-white/20"></div>
-                <div class="w-3 h-3 rounded-full bg-white/20"></div>
+                <div class="w-3 h-3 rounded-full bg-slate-200"></div>
+                <div class="w-3 h-3 rounded-full bg-slate-200"></div>
+                <div class="w-3 h-3 rounded-full bg-slate-200"></div>
               </div>
               <div class="flex-1 flex justify-center">
-                <div class="px-4 py-1 bg-white/10 rounded-lg text-white/40 text-xs">
+                <div class="px-4 py-1 bg-white rounded-lg text-slate-500 text-xs border border-slate-200">
                   your{sport.slug}club.clubify.ie
                 </div>
               </div>
@@ -133,21 +143,21 @@ const isReady = sport.status === 'ready';
               <!-- Mock content -->
               <div class="space-y-4">
                 <div class="flex gap-4">
-                  <div class="w-16 h-16 rounded-xl bg-white/20"></div>
+                  <div class="w-16 h-16 rounded-xl bg-slate-100"></div>
                   <div class="flex-1 space-y-2">
-                    <div class="h-4 bg-white/30 rounded w-3/4"></div>
-                    <div class="h-3 bg-white/20 rounded w-1/2"></div>
+                    <div class="h-4 bg-slate-200 rounded w-3/4"></div>
+                    <div class="h-3 bg-slate-100 rounded w-1/2"></div>
                   </div>
                 </div>
                 <div class="grid grid-cols-3 gap-3">
-                  <div class="h-20 bg-white/15 rounded-lg"></div>
-                  <div class="h-20 bg-white/15 rounded-lg"></div>
-                  <div class="h-20 bg-white/15 rounded-lg"></div>
+                  <div class="h-20 bg-slate-100 rounded-lg"></div>
+                  <div class="h-20 bg-slate-100 rounded-lg"></div>
+                  <div class="h-20 bg-slate-100 rounded-lg"></div>
                 </div>
                 <div class="space-y-2">
-                  <div class="h-3 bg-white/20 rounded w-full"></div>
-                  <div class="h-3 bg-white/20 rounded w-5/6"></div>
-                  <div class="h-3 bg-white/15 rounded w-4/6"></div>
+                  <div class="h-3 bg-slate-100 rounded w-full"></div>
+                  <div class="h-3 bg-slate-100 rounded w-5/6"></div>
+                  <div class="h-3 bg-slate-100 rounded w-4/6"></div>
                 </div>
               </div>
             </div>
@@ -155,19 +165,19 @@ const isReady = sport.status === 'ready';
 
           <!-- Mobile mockup overlay -->
           <div class="absolute -bottom-8 -right-8 w-36">
-            <div class="bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 shadow-2xl overflow-hidden">
-              <div class="h-4 bg-white/10 flex items-center justify-center">
-                <div class="w-8 h-1 bg-white/30 rounded-full"></div>
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-2xl overflow-hidden">
+              <div class="h-4 bg-slate-50 flex items-center justify-center border-b border-slate-200">
+                <div class="w-8 h-1 bg-slate-200 rounded-full"></div>
               </div>
               <div class="p-2">
                 <div class="space-y-2">
-                  <div class="h-8 bg-white/20 rounded-lg"></div>
+                  <div class="h-8 bg-slate-100 rounded-lg"></div>
                   <div class="grid grid-cols-2 gap-1">
-                    <div class="h-10 bg-white/15 rounded"></div>
-                    <div class="h-10 bg-white/15 rounded"></div>
+                    <div class="h-10 bg-slate-100 rounded"></div>
+                    <div class="h-10 bg-slate-100 rounded"></div>
                   </div>
-                  <div class="h-2 bg-white/20 rounded w-3/4"></div>
-                  <div class="h-2 bg-white/15 rounded w-1/2"></div>
+                  <div class="h-2 bg-slate-100 rounded w-3/4"></div>
+                  <div class="h-2 bg-slate-100 rounded w-1/2"></div>
                 </div>
               </div>
             </div>
@@ -184,7 +194,7 @@ const isReady = sport.status === 'ready';
 
   <!-- Scroll indicator -->
   <div class="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce hidden md:block">
-    <svg class="w-6 h-6 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <svg class="w-6 h-6 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
     </svg>
   </div>

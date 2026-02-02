@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
 import { DatabaseService } from '../../lib/db';
-import { isReady, type SportType, SPORT_TYPES } from '../../lib/sports';
+import { getSport, isReady, type SportType, SPORT_TYPES } from '../../lib/sports';
 
 export const POST: APIRoute = async ({ request, locals }) => {
   try {
@@ -15,19 +15,24 @@ export const POST: APIRoute = async ({ request, locals }) => {
       );
     }
 
+    const normalizedSport = typeof sport === 'string' ? sport.toLowerCase() : '';
+
     // Validate sport
-    if (!sport || !SPORT_TYPES.includes(sport as SportType)) {
+    if (!normalizedSport || !SPORT_TYPES.includes(normalizedSport as SportType)) {
       return new Response(
         JSON.stringify({ error: 'Valid sport is required' }),
         { status: 400, headers: { 'Content-Type': 'application/json' } }
       );
     }
 
+    const sportConfig = getSport(normalizedSport);
+    const sportLabel = sportConfig.name;
+
     // Check if sport is "coming_soon" - only allow waitlist for those
-    if (isReady(sport as SportType)) {
+    if (isReady(normalizedSport as SportType)) {
       return new Response(
         JSON.stringify({
-          error: `${sport.toUpperCase()} is already available. Create your club now!`,
+          error: `${sportLabel} is already available. Create your club now!`,
           redirect: '/admin/signup',
         }),
         { status: 400, headers: { 'Content-Type': 'application/json' } }
@@ -39,14 +44,14 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const waitlistEntry = await db.addToWaitlist({
       email: email.trim().toLowerCase(),
       clubName: clubName?.trim() || undefined,
-      sport,
+      sport: normalizedSport,
       source: 'website',
     });
 
     return new Response(
       JSON.stringify({
         success: true,
-        message: `You've been added to the ${sport} waitlist!`,
+        message: `You've been added to the ${sportLabel} waitlist!`,
         id: waitlistEntry.id,
       }),
       { status: 200, headers: { 'Content-Type': 'application/json' } }
@@ -63,8 +68,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
 // GET endpoint to check waitlist count (for marketing purposes)
 export const GET: APIRoute = async ({ url, locals }) => {
   const sport = url.searchParams.get('sport');
+  const normalizedSport = sport ? sport.toLowerCase() : '';
 
-  if (!sport || !SPORT_TYPES.includes(sport as SportType)) {
+  if (!normalizedSport || !SPORT_TYPES.includes(normalizedSport as SportType)) {
     return new Response(
       JSON.stringify({ error: 'Valid sport parameter is required' }),
       { status: 400, headers: { 'Content-Type': 'application/json' } }
@@ -72,10 +78,10 @@ export const GET: APIRoute = async ({ url, locals }) => {
   }
 
   const db = new DatabaseService(locals.runtime.env.DB);
-  const count = await db.getWaitlistCount(sport);
+  const count = await db.getWaitlistCount(normalizedSport);
 
   return new Response(
-    JSON.stringify({ sport, count }),
+    JSON.stringify({ sport: normalizedSport, count }),
     { status: 200, headers: { 'Content-Type': 'application/json' } }
   );
 };

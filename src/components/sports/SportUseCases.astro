@@ -11,66 +11,66 @@ const { sport } = Astro.props;
 // Sport-specific use cases with rich content
 const sportUseCases: Record<string, { title: string; description: string; highlights: { title: string; description: string }[] }> = {
   gaa: {
-    title: 'Everything your GAA club needs',
-    description: 'From tracking championship fixtures to celebrating club achievements, Clubify gives your GAA club the digital home it deserves.',
+    title: 'Everything a GAA club needs, from fixtures to finals',
+    description: 'Clubify speaks GAA. Goals and points scoring, multi-code teams, and matchday comms that keep the parish connected.',
     highlights: [
-      { title: 'GAA Scoring System', description: 'Native support for goals and points (2-14 format) across all codes' },
-      { title: 'Multi-Code Support', description: 'Manage hurling, football, camogie, and ladies football in one place' },
-      { title: 'County Integration', description: 'Designed with Irish county structures and competitions in mind' },
+      { title: 'Goals + points scoring', description: 'Record scores in the 2-14 format with automatic points totals.' },
+      { title: 'Multi-code club setup', description: 'Run football, hurling, camogie, and ladies teams from one site.' },
+      { title: 'Championship-ready fixtures', description: 'Fixtures, results, and previews built for league and championship formats.' },
     ]
   },
   football: {
-    title: 'Built for football clubs',
-    description: 'Whether you\'re managing a Sunday league team or a semi-professional outfit, Clubify handles all your digital needs.',
+    title: 'Built for football clubs and academies',
+    description: 'Manage tables, fixtures, and matchday content with a site built for football clubs at every level.',
     highlights: [
-      { title: 'League Tables', description: 'Automatic standings with points, goal difference, and form guides' },
-      { title: 'Squad Profiles', description: 'Player stats, appearances, and goals tracked automatically' },
-      { title: 'Match Reports', description: 'Rich match day content with lineups, scorers, and highlights' },
+      { title: 'Automatic league tables', description: 'Standings with points, goal difference, and recent form.' },
+      { title: 'Matchday lineups', description: 'Lineups, scorers, cards, and match reports in one hub.' },
+      { title: 'Player stats', description: 'Profiles with appearances, goals, assists, and milestones.' },
     ]
   },
   rugby: {
-    title: 'Perfect for rugby clubs',
-    description: 'From minis to seniors, manage your entire rugby club with tools built for the unique needs of the sport.',
+    title: 'Perfect for rugby clubs of every age grade',
+    description: 'From minis to seniors, keep squads, parents, and supporters in sync with fixtures, team sheets, and updates.',
     highlights: [
-      { title: 'Age Grade Teams', description: 'Organize minis, youth, colts, J1s, and senior squads seamlessly' },
-      { title: 'Try Tracking', description: 'Record tries, conversions, penalties, and drop goals' },
-      { title: 'Social Integration', description: 'Build club culture with social events and post-match gatherings' },
+      { title: 'Try and conversion scoring', description: 'Capture tries, conversions, penalties, and drop goals.' },
+      { title: 'Age-grade pathways', description: 'Organize minis, youth, colts, and senior squads clearly.' },
+      { title: 'Training and availability', description: 'Share training times and keep availability up to date.' },
     ]
   },
   athletics: {
     title: 'Designed for athletics clubs',
-    description: 'Track performances, celebrate PBs, and keep your running community connected year-round.',
+    description: 'Celebrate performances, track PBs, and keep your running community engaged across the season.',
     highlights: [
-      { title: 'Personal Bests', description: 'Track times and distances across all events and age groups' },
-      { title: 'Event Calendar', description: 'Cross country, track meets, road races, and training sessions' },
-      { title: 'Club Records', description: 'Showcase historic performances and leaderboards' },
+      { title: 'PB tracking by event', description: 'Record times and distances with personal bests by discipline.' },
+      { title: 'Race and meet calendar', description: 'Track meets, cross country, road races, and club events.' },
+      { title: 'Club records and rankings', description: 'Showcase club records and age-group leaderboards.' },
     ]
   },
   golf: {
-    title: 'Elegant for golf clubs',
-    description: 'Give your members a modern digital experience that matches your club\'s prestige.',
+    title: 'Elegant for golf clubs and societies',
+    description: 'Give members a digital clubhouse with competitions, handicaps, and course information.',
     highlights: [
-      { title: 'Competition Results', description: 'Stableford, stroke play, and matchplay formats supported' },
-      { title: 'Leaderboards', description: 'Live scoring during competitions and order of merit' },
-      { title: 'Course Information', description: 'Hole-by-hole details, local rules, and tee times' },
+      { title: 'Handicap index display', description: 'Show member handicaps with clear, accessible profiles.' },
+      { title: 'Competition leaderboards', description: 'Stableford, stroke play, and matchplay formats supported.' },
+      { title: 'Course guide and local rules', description: 'Hole-by-hole details, tees, and club rules in one place.' },
     ]
   },
   tennis: {
     title: 'Smart for tennis clubs',
-    description: 'Manage leagues, ladders, and tournaments while keeping members engaged with club news.',
+    description: 'Keep leagues, ladders, and coaching organized with a site that players actually use.',
     highlights: [
-      { title: 'Club Leagues', description: 'Internal leagues, ladders, and box leagues made easy' },
-      { title: 'Tournament Draws', description: 'Singles and doubles tournament management' },
-      { title: 'Player Rankings', description: 'Track performance and rankings over time' },
+      { title: 'Ladders and box leagues', description: 'Internal leagues and ladders with automatic standings.' },
+      { title: 'Set scoring and results', description: 'Track matches with sets and games scoring.' },
+      { title: 'Court booking info', description: 'Surface details, opening times, and court availability.' },
     ]
   },
   cycling: {
     title: 'Dynamic for cycling clubs',
-    description: 'From club spins to racing, build a community hub that keeps your riders connected.',
+    description: 'From club spins to races, build a hub for routes, ride updates, and results.',
     highlights: [
-      { title: 'Group Rides', description: 'Schedule spins by pace, distance, and ability level' },
-      { title: 'Route Sharing', description: 'Share club routes with maps and elevation profiles' },
-      { title: 'Race Results', description: 'Track racing achievements and club performances' },
+      { title: 'Route library with maps', description: 'Share club routes with distance and elevation.' },
+      { title: 'Group ride scheduling', description: 'Organize spins by pace group, time, and distance.' },
+      { title: 'Race results and rankings', description: 'Track results, achievements, and club standings.' },
     ]
   },
 };

@@ -6,12 +6,17 @@ interface Props {
 }
 
 const { sport } = Astro.props;
+const lineStart = `${sport.primaryColor}66`;
+const lineEnd = `${sport.primaryColor}10`;
+const badgeBg = `${sport.primaryColor}12`;
+const badgeBorder = `${sport.primaryColor}30`;
+const sportNameLower = sport.name === 'GAA' ? 'GAA' : sport.name.toLowerCase();
 
 const steps = [
   {
     number: '01',
     title: 'Create your club',
-    description: `Sign up and set up your ${sport.name.toLowerCase()} club in minutes. Choose a template that matches your club's style.`,
+    description: `Sign up and set up your ${sportNameLower} club in minutes. Choose a template that matches your club's style.`,
     icon: `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>`
   },
   {
@@ -29,17 +34,20 @@ const steps = [
 ];
 ---
 
-<section class="py-20 md:py-28 bg-slate-50">
+<section class="py-20 md:py-28 bg-slate-50" style={`--sport-primary: ${sport.primaryColor}; --sport-secondary: ${sport.secondaryColor};`}>
   <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
     <div class="text-center mb-16">
-      <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white text-slate-700 text-sm font-semibold border border-slate-200 mb-6">
+      <div
+        class="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold border mb-6"
+        style={`background-color: ${badgeBg}; color: ${sport.primaryColor}; border-color: ${badgeBorder}`}
+      >
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
         </svg>
         How it works
       </div>
       <h2 class="text-3xl sm:text-4xl md:text-5xl font-bold text-slate-900 mb-4">
-        Get your {sport.name.toLowerCase()} club online
+        Get your {sportNameLower} club online
       </h2>
       <p class="text-lg text-slate-600 max-w-2xl mx-auto">
         From signup to launch in three simple steps. No technical skills required.
@@ -51,10 +59,13 @@ const steps = [
         <div class="relative">
           <!-- Connector line (hidden on mobile and last item) -->
           {index < steps.length - 1 && (
-            <div class="hidden md:block absolute top-14 left-[calc(50%+2rem)] w-[calc(100%-4rem)] h-px bg-gradient-to-r from-primary-300 to-primary-100"></div>
+            <div
+              class="hidden md:block absolute top-14 left-[calc(50%+2rem)] w-[calc(100%-4rem)] h-px"
+              style={`background: linear-gradient(90deg, ${lineStart}, ${lineEnd})`}
+            ></div>
           )}
 
-          <div class="relative bg-white rounded-2xl p-8 border border-slate-200 hover:border-primary-200 hover:shadow-xl transition-all duration-300">
+          <div class="relative bg-white rounded-2xl p-8 border border-slate-200 hover:border-slate-300 hover:shadow-xl transition-all duration-300">
             <!-- Step number badge -->
             <div
               class="absolute -top-4 left-8 px-3 py-1 text-white text-sm font-bold rounded-full shadow-lg"

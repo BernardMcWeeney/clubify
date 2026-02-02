@@ -29,7 +29,7 @@ const sport = getSport('gaa');
   <Section size="md" class="bg-slate-50">
     <div class="grid lg:grid-cols-2 gap-12 items-center">
       <div>
-        <span class="section-badge">Built for GAA</span>
+        <span class="section-badge" style={`color: ${sport.primaryColor}`}>Built for GAA</span>
         <h2 class="text-3xl sm:text-4xl font-bold text-slate-900 mb-6">
           GAA-specific scoring and terminology
         </h2>
@@ -38,25 +38,25 @@ const sport = getSport('gaa');
         </p>
         <ul class="space-y-3">
           <li class="flex items-start gap-3">
-            <svg class="w-6 h-6 text-primary-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-6 h-6 flex-shrink-0 mt-0.5" style={`color: ${sport.primaryColor}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
             </svg>
             <span class="text-slate-700">Goals and points scoring (not just goals)</span>
           </li>
           <li class="flex items-start gap-3">
-            <svg class="w-6 h-6 text-primary-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-6 h-6 flex-shrink-0 mt-0.5" style={`color: ${sport.primaryColor}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
             </svg>
             <span class="text-slate-700">Support for all codes: Football, Hurling, Camogie, Ladies</span>
           </li>
           <li class="flex items-start gap-3">
-            <svg class="w-6 h-6 text-primary-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-6 h-6 flex-shrink-0 mt-0.5" style={`color: ${sport.primaryColor}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
             </svg>
             <span class="text-slate-700">Age group management from U6 to Senior</span>
           </li>
           <li class="flex items-start gap-3">
-            <svg class="w-6 h-6 text-primary-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-6 h-6 flex-shrink-0 mt-0.5" style={`color: ${sport.primaryColor}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
             </svg>
             <span class="text-slate-700">County selection and local context</span>
@@ -64,7 +64,7 @@ const sport = getSport('gaa');
         </ul>
       </div>
       <div class="relative">
-        <div class="bg-gradient-to-br from-primary-500 to-primary-700 rounded-2xl p-8 text-white">
+        <div class="rounded-2xl p-8 text-white" style={`background: linear-gradient(135deg, ${sport.primaryColor}, ${sport.primaryColor}cc)`}>
           <div class="text-center mb-6">
             <p class="text-white/60 text-sm mb-1">Senior Football Championship</p>
             <p class="text-lg font-semibold">Semi-Final Result</p>

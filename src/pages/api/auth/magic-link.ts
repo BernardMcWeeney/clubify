@@ -38,7 +38,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     }
 
     const db = new DatabaseService(locals.runtime.env.DB);
-    const baseUrl = locals.runtime.env.SITE_URL || 'https://clubify.ie';
+    const baseUrl = locals.runtime.env.SITE_URL || new URL(request.url).origin;
 
     // Check if user exists
     let user = await db.getUserByEmail(email);

@@ -32,10 +32,10 @@
         <!-- Price -->
         <div class="text-center mb-8">
           <div class="flex items-baseline justify-center gap-1">
-            <span class="text-5xl font-bold text-slate-900" id="price">€500</span>
-            <span class="text-xl text-slate-400" id="period">/year</span>
+            <span class="text-5xl font-bold text-slate-900" id="price">€499</span>
+            <span class="text-xl text-slate-500" id="period">/year</span>
           </div>
-          <p class="text-slate-500 mt-2" id="note">That's just €41.67/month</p>
+          <p class="text-slate-500 mt-2" id="note">That's just €41.58/month</p>
         </div>
 
         <!-- Features -->
@@ -108,10 +108,10 @@
       monthlyBtn?.classList.remove('text-slate-900');
       monthlyBtn?.classList.add('text-slate-400');
       annualBtn?.classList.add('text-slate-900');
-      annualBtn?.classList.remove('text-slate-400');
-      if (price) price.textContent = '€500';
+      annualBtn?.classList.remove('text-slate-500');
+      if (price) price.textContent = '€499';
       if (period) period.textContent = '/year';
-      if (note) note.textContent = "That's just €41.67/month";
+      if (note) note.textContent = "That's just €41.58/month";
     } else {
       dot?.classList.add('left-1');
       dot?.classList.remove('right-1');

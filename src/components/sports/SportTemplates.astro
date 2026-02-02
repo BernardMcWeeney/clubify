@@ -8,25 +8,29 @@ interface Props {
 
 const { sport } = Astro.props;
 const isReady = sport.status === 'ready';
+const badgeBg = `${sport.primaryColor}12`;
+const badgeBorder = `${sport.primaryColor}30`;
+const sportNameLower = sport.name === 'GAA' ? 'GAA' : sport.name.toLowerCase();
+const sportNamePluralLower = sport.name === 'GAA' ? 'GAA clubs' : sport.namePlural.toLowerCase();
 
 // Template definitions per sport type
 const templateVariants: Record<string, Array<{id: string; name: string; description: string; highlights: string[]; popular?: boolean}>> = {
   gaa: [
     {
-      id: 'gaa-classic',
+      id: 'GAA-classic',
       name: 'Classic Club',
       description: 'The perfect all-rounder with hero, fixtures, news, and sponsors.',
       highlights: ['Hero section', 'Next fixture countdown', 'Latest news grid', 'Sponsor showcase'],
       popular: true,
     },
     {
-      id: 'gaa-matchday',
+      id: 'GAA-matchday',
       name: 'Matchday Focus',
       description: 'Put the game at the centre with match highlights and results.',
       highlights: ['Results ticker', 'Prominent fixtures', 'Match reports', 'Live updates'],
     },
     {
-      id: 'gaa-community',
+      id: 'GAA-community',
       name: 'Community First',
       description: 'Celebrate your community with events and volunteer highlights.',
       highlights: ['Highlight cards', 'Volunteer spotlight', 'Community events', 'Club news'],
@@ -163,20 +167,23 @@ const templateVariants: Record<string, Array<{id: string; name: string; descript
 const templates = templateVariants[sport.id] || templateVariants.gaa;
 ---
 
-<section class="py-20 md:py-28 bg-white">
+<section class="py-20 md:py-28 bg-white" style={`--sport-primary: ${sport.primaryColor}; --sport-secondary: ${sport.secondaryColor};`}>
   <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
     <div class="text-center max-w-3xl mx-auto mb-16">
-      <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-slate-100 text-slate-700 text-sm font-semibold mb-6">
+      <div
+        class="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold mb-6 border"
+        style={`background-color: ${badgeBg}; color: ${sport.primaryColor}; border-color: ${badgeBorder}`}
+      >
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/>
         </svg>
         {sport.name} Templates
       </div>
       <h2 class="text-3xl sm:text-4xl md:text-5xl font-bold text-slate-900 mb-4">
-        Choose your {sport.name.toLowerCase()} template
+        Choose your {sportNameLower} template
       </h2>
       <p class="text-lg text-slate-600">
-        {templates.length} professionally designed templates built for {sport.namePlural.toLowerCase()}.
+        {templates.length} professionally designed templates built for {sportNamePluralLower}.
         {!isReady && ' Available when we launch.'}
       </p>
     </div>
@@ -245,7 +252,12 @@ const templates = templateVariants[sport.id] || templateVariants.gaa;
             </div>
 
             {isReady ? (
-              <Button href="/admin/signup" variant="secondary" size="sm" class="w-full justify-center">
+              <Button
+                href="/admin/signup"
+                variant="secondary"
+                size="sm"
+                class="w-full justify-center bg-white border border-[color:var(--sport-primary)] text-[color:var(--sport-primary)] hover:bg-slate-50"
+              >
                 Use this template
               </Button>
             ) : (
@@ -262,7 +274,7 @@ const templates = templateVariants[sport.id] || templateVariants.gaa;
       <div class="text-center mt-12">
         <a
           href="/templates"
-          class="inline-flex items-center gap-2 text-primary-600 font-semibold hover:text-primary-700 transition-colors"
+          class="inline-flex items-center gap-2 text-[color:var(--sport-primary)] font-semibold hover:opacity-80 transition-colors"
         >
           View all templates
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -11,9 +11,10 @@ interface Props {
 }
 
 const { sport } = Astro.props;
+const sportNameLower = sport.name === 'GAA' ? 'GAA' : sport.name.toLowerCase();
 ---
 
-<div class="bg-slate-50 border-t border-slate-200">
+<div class="bg-slate-50 border-t border-slate-200" style={`--sport-primary: ${sport.primaryColor};`}>
   <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
       <div>
@@ -21,7 +22,7 @@ const { sport } = Astro.props;
           Get notified when {sport.name} launches
         </p>
         <p class="text-sm text-slate-500 mt-1">
-          Be the first to know when we're ready for {sport.name.toLowerCase()} clubs.
+          Be the first to know when we're ready for {sportNameLower} clubs.
         </p>
       </div>
 
@@ -35,7 +36,7 @@ const { sport } = Astro.props;
           name="email"
           placeholder="your@email.com"
           required
-          class="px-4 py-2.5 rounded-lg border border-slate-300 bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent w-full sm:w-64"
+          class="px-4 py-2.5 rounded-lg border border-slate-300 bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[color:var(--sport-primary)] focus:border-transparent w-full sm:w-64"
         />
         <button
           type="submit"

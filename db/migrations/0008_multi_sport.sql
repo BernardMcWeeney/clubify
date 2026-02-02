@@ -5,7 +5,7 @@
 -- - Creates sport_defaults table for per-sport configuration
 
 -- Add club_type column to clubs table
--- Default to 'gaa' for all existing clubs
+-- Default to 'GAA' for all existing clubs
 ALTER TABLE clubs ADD COLUMN club_type TEXT DEFAULT 'gaa';
 
 -- Create index for efficient club_type queries
@@ -39,7 +39,7 @@ CREATE TABLE IF NOT EXISTS sport_defaults (
 
 -- Insert default configurations for all supported sports
 INSERT OR IGNORE INTO sport_defaults (sport, status, default_modules, default_template, terminology) VALUES
-('gaa', 'ready', '{"inbox":true,"forms":true,"sponsors":true,"fixtures":true,"posts":true,"media":true}', 'gaa-classic', '{"fixture":"Match","result":"Result","team":"Team","venue":"Pitch","competition":"Championship","member":"Member"}'),
+('GAA', 'ready', '{"inbox":true,"forms":true,"sponsors":true,"fixtures":true,"posts":true,"media":true}', 'GAA-classic', '{"fixture":"Match","result":"Result","team":"Team","venue":"Pitch","competition":"Championship","member":"Member"}'),
 ('football', 'coming_soon', '{"inbox":true,"forms":true,"sponsors":true,"fixtures":true,"posts":true,"media":true}', 'football-classic', '{"fixture":"Match","result":"Score","team":"Team","venue":"Ground","competition":"League","member":"Player"}'),
 ('rugby', 'coming_soon', '{"inbox":true,"forms":true,"sponsors":true,"fixtures":true,"posts":true,"media":true}', 'rugby-classic', '{"fixture":"Match","result":"Score","team":"Squad","venue":"Ground","competition":"League","member":"Player"}'),
 ('athletics', 'coming_soon', '{"inbox":true,"forms":true,"sponsors":true,"fixtures":true,"posts":true,"media":true}', 'athletics-classic', '{"fixture":"Event","result":"Time/Distance","team":"Club","venue":"Track","competition":"Championship","member":"Athlete"}'),

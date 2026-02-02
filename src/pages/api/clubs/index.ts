@@ -3,6 +3,7 @@ import { DatabaseService } from '../../../lib/db';
 import { getAuthContext } from '../../../lib/auth';
 import { slugify, isValidSlug } from '../../../lib/utils';
 import { getDefaultPages } from '../../../lib/default-pages';
+import { normalizeSportId } from '../../../lib/sports';
 
 // Create a new club
 export const POST: APIRoute = async ({ request, locals, cookies }) => {
@@ -26,9 +27,8 @@ export const POST: APIRoute = async ({ request, locals, cookies }) => {
       });
     }
 
-    // Validate club_type if provided
-    const validClubTypes = ['gaa', 'football', 'rugby', 'athletics', 'golf', 'tennis', 'cycling'];
-    const clubType = club_type && validClubTypes.includes(club_type) ? club_type : 'gaa';
+    // Normalize club_type if provided
+    const clubType = normalizeSportId(club_type);
 
     // Generate or validate slug (format: clubname-county)
     const countySlug = slugify(county);

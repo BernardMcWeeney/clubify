@@ -33,6 +33,7 @@ export interface Club {
   twitter_url: string | null;
   instagram_url: string | null;
   modules_config: string | null;
+  sport_settings: string | null;
   is_live: number;
   setup_completed: number;
   setup_step: number;
@@ -56,6 +57,7 @@ export interface SportDefaults {
   default_modules: string;
   default_template: string;
   terminology: string;
+  feature_flags: string;
   created_at: string;
   updated_at: string;
 }
@@ -452,10 +454,12 @@ export class DatabaseService {
   }): Promise<Club> {
     const id = generateId();
     const clubType = data.clubType || 'gaa';
+    const sportDefaults = await this.getSportDefaults(clubType);
+    const modulesConfig = sportDefaults?.default_modules || null;
 
     await this.db.prepare(`
-      INSERT INTO clubs (id, name, slug, county, club_type) VALUES (?, ?, ?, ?, ?)
-    `).bind(id, data.name, data.slug, data.county, clubType).run();
+      INSERT INTO clubs (id, name, slug, county, club_type, modules_config) VALUES (?, ?, ?, ?, ?, ?)
+    `).bind(id, data.name, data.slug, data.county, clubType, modulesConfig).run();
 
     // Add owner as admin
     const memberId = generateId();
@@ -497,18 +501,23 @@ export class DatabaseService {
 
   async getModuleConfig(clubId: string): Promise<Record<string, boolean>> {
     const club = await this.getClubById(clubId);
-    if (!club || !club.modules_config) {
-      // Return default config if not set
-      return {
-        inbox: true,
-        forms: true,
-        sponsors: true,
-        fixtures: true,
-        posts: true,
-        media: true,
-      };
+    if (club?.modules_config) {
+      return JSON.parse(club.modules_config);
     }
-    return JSON.parse(club.modules_config);
+
+    const sportDefaults = await this.getSportDefaults(club?.club_type || 'gaa');
+    if (sportDefaults?.default_modules) {
+      return JSON.parse(sportDefaults.default_modules);
+    }
+
+    return {
+      inbox: true,
+      forms: true,
+      sponsors: true,
+      fixtures: true,
+      posts: true,
+      media: true,
+    };
   }
 
   async updateModuleConfig(clubId: string, config: Record<string, boolean>): Promise<void> {
@@ -1691,9 +1700,27 @@ export class DatabaseService {
 
   // Sport defaults operations
   async getSportDefaults(sport: string): Promise<SportDefaults | null> {
+    const normalized = sport.toLowerCase();
     return this.db.prepare(`
       SELECT * FROM sport_defaults WHERE sport = ?
-    `).bind(sport).first<SportDefaults>();
+    `).bind(normalized).first<SportDefaults>();
+  }
+
+  async getSportFeatureFlags(sport: string): Promise<{ core: string[]; sport_specific: string[] }> {
+    const defaults = await this.getSportDefaults(sport);
+    if (!defaults?.feature_flags) {
+      return { core: [], sport_specific: [] };
+    }
+
+    try {
+      const parsed = JSON.parse(defaults.feature_flags);
+      return {
+        core: parsed.core || [],
+        sport_specific: parsed.sport_specific || [],
+      };
+    } catch {
+      return { core: [], sport_specific: [] };
+    }
   }
 
   async getAllSportDefaults(): Promise<SportDefaults[]> {
@@ -1705,8 +1732,9 @@ export class DatabaseService {
   }
 
   async updateSportStatus(sport: string, status: string): Promise<void> {
+    const normalized = sport.toLowerCase();
     await this.db.prepare(`
       UPDATE sport_defaults SET status = ?, updated_at = datetime('now') WHERE sport = ?
-    `).bind(status, sport).run();
+    `).bind(status, normalized).run();
   }
 }

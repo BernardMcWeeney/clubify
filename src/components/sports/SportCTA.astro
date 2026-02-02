@@ -8,6 +8,7 @@ interface Props {
 
 const { sport } = Astro.props;
 const isReady = sport.status === 'ready';
+const sportNameLower = sport.name === 'GAA' ? 'GAA' : sport.name.toLowerCase();
 ---
 
 <section class="py-20 bg-white">
@@ -34,7 +35,7 @@ const isReady = sport.status === 'ready';
 
       <div class="relative">
         <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-4">
-          Ready to transform your {sport.name.toLowerCase()} club?
+          Ready to transform your {sportNameLower} club?
         </h2>
 
         <p class="text-lg text-white/80 max-w-xl mx-auto mb-8">
@@ -48,13 +49,18 @@ const isReady = sport.status === 'ready';
             size="lg"
             class="bg-white text-slate-900 hover:bg-white/90"
           >
-            {isReady ? `Create your ${sport.name.toLowerCase()} club` : "Get early access"}
+            {isReady ? `Create your ${sportNameLower} club` : "Get early access"}
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
             </svg>
           </Button>
           {isReady && (
-            <Button href="/pricing" variant="ghost" size="lg" class="text-white border-white/30 hover:bg-white/10">
+            <Button
+              href="/pricing"
+              variant="ghost"
+              size="lg"
+              class="text-white hover:text-white border-white/60 bg-black/20 hover:bg-black/30"
+            >
               View pricing
             </Button>
           )}
