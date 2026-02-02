@@ -1,0 +1,239 @@
+---
+import Button from '../Button.astro';
+import type { SportConfig } from '../../lib/sports';
+
+interface Props {
+  sport: SportConfig;
+}
+
+const { sport } = Astro.props;
+const isReady = sport.status === 'ready';
+
+// Template definitions per sport type
+const templateVariants: Record<string, Array<{id: string; name: string; description: string; highlights: string[]}>> = {
+  gaa: [
+    {
+      id: 'gaa-classic',
+      name: 'Classic Club',
+      description: 'The perfect all-rounder with hero, fixtures, news, and sponsors.',
+      highlights: ['Hero section', 'Next fixture countdown', 'Latest news grid', 'Sponsor showcase'],
+    },
+    {
+      id: 'gaa-matchday',
+      name: 'Matchday Focus',
+      description: 'Put the game at the centre with match highlights and results.',
+      highlights: ['Results ticker', 'Prominent fixtures', 'Match reports', 'Live updates'],
+    },
+    {
+      id: 'gaa-community',
+      name: 'Community First',
+      description: 'Celebrate your community with events and volunteer highlights.',
+      highlights: ['Highlight cards', 'Volunteer spotlight', 'Community events', 'Club news'],
+    },
+  ],
+  football: [
+    {
+      id: 'football-classic',
+      name: 'Classic Club',
+      description: 'Professional layout for football clubs of all levels.',
+      highlights: ['League table widget', 'Match schedule', 'Squad profiles', 'News feed'],
+    },
+    {
+      id: 'football-matchday',
+      name: 'Matchday Focus',
+      description: 'Centered on fixtures, results, and match day content.',
+      highlights: ['Live scores', 'Fixture list', 'Results archive', 'Match reports'],
+    },
+    {
+      id: 'football-community',
+      name: 'Community First',
+      description: 'Showcase your club culture and grassroots involvement.',
+      highlights: ['Youth teams', 'Club events', 'Community news', 'Volunteer hub'],
+    },
+  ],
+  rugby: [
+    {
+      id: 'rugby-classic',
+      name: 'Classic Club',
+      description: 'Traditional rugby club layout with all the essentials.',
+      highlights: ['Match fixtures', 'Results & tables', 'Team profiles', 'Club news'],
+    },
+    {
+      id: 'rugby-matchday',
+      name: 'Matchday Focus',
+      description: 'Match-centric design for game day engagement.',
+      highlights: ['Live scoring', 'Team lineups', 'Match reports', 'Statistics'],
+    },
+    {
+      id: 'rugby-community',
+      name: 'Community First',
+      description: 'Highlight your minis, youth, and social rugby.',
+      highlights: ['Age groups', 'Training info', 'Social events', 'Club history'],
+    },
+  ],
+  athletics: [
+    {
+      id: 'athletics-classic',
+      name: 'Classic Club',
+      description: 'Clean design for athletics and running clubs.',
+      highlights: ['Events calendar', 'Results feed', 'Club records', 'News updates'],
+    },
+    {
+      id: 'athletics-events',
+      name: 'Events Focus',
+      description: 'Highlight races, meets, and training sessions.',
+      highlights: ['Upcoming events', 'Race results', 'PB tracker', 'Leaderboards'],
+    },
+    {
+      id: 'athletics-community',
+      name: 'Community First',
+      description: 'Celebrate your athletes and club achievements.',
+      highlights: ['Athlete profiles', 'Training groups', 'Club news', 'Social runs'],
+    },
+  ],
+  golf: [
+    {
+      id: 'golf-classic',
+      name: 'Classic Club',
+      description: 'Elegant design befitting golf clubs.',
+      highlights: ['Competition calendar', 'Leaderboards', 'Course info', 'Club news'],
+    },
+    {
+      id: 'golf-competition',
+      name: 'Competition Focus',
+      description: 'Centered on competitions and results.',
+      highlights: ['Live scoring', 'Handicap tables', 'Results archive', 'Prize info'],
+    },
+    {
+      id: 'golf-social',
+      name: 'Social First',
+      description: 'Highlight the social side of your golf club.',
+      highlights: ['Social events', 'Member news', 'Club calendar', 'Dining info'],
+    },
+  ],
+  tennis: [
+    {
+      id: 'tennis-classic',
+      name: 'Classic Club',
+      description: 'Smart design for tennis clubs.',
+      highlights: ['Match schedule', 'League tables', 'Club news', 'Court info'],
+    },
+    {
+      id: 'tennis-tournament',
+      name: 'Tournament Focus',
+      description: 'Highlight tournaments and competitive play.',
+      highlights: ['Draw sheets', 'Live scores', 'Rankings', 'Results archive'],
+    },
+    {
+      id: 'tennis-social',
+      name: 'Social First',
+      description: 'Showcase coaching and social tennis.',
+      highlights: ['Coaching sessions', 'Social events', 'Club calendar', 'Junior tennis'],
+    },
+  ],
+  cycling: [
+    {
+      id: 'cycling-classic',
+      name: 'Classic Club',
+      description: 'Dynamic design for cycling clubs.',
+      highlights: ['Club spins', 'Event calendar', 'Club news', 'Route info'],
+    },
+    {
+      id: 'cycling-routes',
+      name: 'Routes Focus',
+      description: 'Showcase your club routes and rides.',
+      highlights: ['Route maps', 'Elevation profiles', 'Difficulty ratings', 'Group rides'],
+    },
+    {
+      id: 'cycling-community',
+      name: 'Community First',
+      description: 'Highlight your cycling community.',
+      highlights: ['Ride groups', 'Training plans', 'Social spins', 'Club events'],
+    },
+  ],
+};
+
+const templates = templateVariants[sport.id] || templateVariants.gaa;
+---
+
+<section class="py-20 md:py-28 bg-slate-50">
+  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <div class="text-center max-w-3xl mx-auto mb-16">
+      <h2 class="text-3xl sm:text-4xl md:text-5xl font-bold text-slate-900 mb-4">
+        {sport.name} Templates
+      </h2>
+      <p class="text-lg md:text-xl text-slate-600">
+        Choose from {templates.length} professionally designed templates built for {sport.namePlural.toLowerCase()}.
+        {!isReady && ' Available when we launch.'}
+      </p>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-8">
+      {templates.map((template, index) => (
+        <div
+          class="group relative bg-white rounded-2xl border border-slate-200 overflow-hidden hover:shadow-xl hover:border-slate-300 transition-all duration-300"
+        >
+          <!-- Preview Header -->
+          <div
+            class="h-48 relative overflow-hidden"
+            style={`background: linear-gradient(135deg, ${sport.primaryColor}, ${sport.primaryColor}dd)`}
+          >
+            <div class="absolute inset-0 flex items-center justify-center">
+              <div class="text-white/20 text-9xl font-bold">{index + 1}</div>
+            </div>
+            {index === 0 && (
+              <div class="absolute top-4 right-4">
+                <span class="px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full text-xs font-semibold text-white">
+                  Most Popular
+                </span>
+              </div>
+            )}
+            {!isReady && (
+              <div class="absolute inset-0 bg-slate-900/50 flex items-center justify-center">
+                <span class="px-4 py-2 bg-amber-500 rounded-full text-sm font-semibold text-white">
+                  Preview Only
+                </span>
+              </div>
+            )}
+          </div>
+
+          <!-- Content -->
+          <div class="p-6">
+            <h3 class="text-xl font-bold text-slate-900 mb-2">{template.name}</h3>
+            <p class="text-slate-600 mb-4">{template.description}</p>
+
+            <!-- Highlights -->
+            <ul class="space-y-2 mb-6">
+              {template.highlights.map((highlight) => (
+                <li class="flex items-center gap-2 text-sm text-slate-600">
+                  <svg class="w-4 h-4 text-primary-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                  </svg>
+                  {highlight}
+                </li>
+              ))}
+            </ul>
+
+            {isReady ? (
+              <Button href="/admin/signup" variant="secondary" size="sm" class="w-full">
+                Use this template
+              </Button>
+            ) : (
+              <button disabled class="w-full py-2 px-4 rounded-lg bg-slate-100 text-slate-400 text-sm font-medium cursor-not-allowed">
+                Coming soon
+              </button>
+            )}
+          </div>
+        </div>
+      ))}
+    </div>
+
+    {isReady && (
+      <div class="text-center mt-12">
+        <Button href="/templates" variant="primary" size="lg">
+          View all templates
+        </Button>
+      </div>
+    )}
+  </div>
+</section>

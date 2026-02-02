@@ -17,7 +17,7 @@ export const POST: APIRoute = async ({ request, locals, cookies }) => {
       });
     }
 
-    const { name, county, slug: requestedSlug } = await request.json();
+    const { name, county, slug: requestedSlug, club_type } = await request.json();
 
     if (!name || !county) {
       return new Response(JSON.stringify({ error: 'Name and county are required' }), {
@@ -25,6 +25,10 @@ export const POST: APIRoute = async ({ request, locals, cookies }) => {
         headers: { 'Content-Type': 'application/json' }
       });
     }
+
+    // Validate club_type if provided
+    const validClubTypes = ['gaa', 'football', 'rugby', 'athletics', 'golf', 'tennis', 'cycling'];
+    const clubType = club_type && validClubTypes.includes(club_type) ? club_type : 'gaa';
 
     // Generate or validate slug (format: clubname-county)
     const countySlug = slugify(county);
@@ -55,7 +59,8 @@ export const POST: APIRoute = async ({ request, locals, cookies }) => {
       name,
       slug,
       county,
-      ownerId: user.id
+      ownerId: user.id,
+      clubType
     });
 
     // Create default pages
@@ -78,7 +83,7 @@ export const POST: APIRoute = async ({ request, locals, cookies }) => {
       action: 'club_created',
       entityType: 'club',
       entityId: club.id,
-      details: JSON.stringify({ name, slug, county })
+      details: JSON.stringify({ name, slug, county, clubType })
     });
 
     return new Response(JSON.stringify({

@@ -1,0 +1,374 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Navigation from '../components/Navigation.astro';
+import PageHeader from '../components/PageHeader.astro';
+import Footer from '../components/Footer.astro';
+import Button from '../components/Button.astro';
+import { getAllSports, SPORT_TYPES, type SportType } from '../lib/sports';
+
+const sports = getAllSports();
+
+// Template definitions for all sports
+const allTemplates: Array<{
+  id: string;
+  sport: SportType;
+  name: string;
+  description: string;
+  highlights: string[];
+  popular?: boolean;
+}> = [
+  // GAA Templates
+  {
+    id: 'gaa-classic',
+    sport: 'gaa',
+    name: 'Classic Club',
+    description: 'The perfect all-rounder with hero, fixtures, news, and sponsors.',
+    highlights: ['Hero section', 'Next fixture countdown', 'Latest news grid', 'Sponsor showcase'],
+    popular: true,
+  },
+  {
+    id: 'gaa-matchday',
+    sport: 'gaa',
+    name: 'Matchday Focus',
+    description: 'Put the game at the centre with match highlights and results.',
+    highlights: ['Results ticker', 'Prominent fixtures', 'Match reports', 'Live updates'],
+  },
+  {
+    id: 'gaa-community',
+    sport: 'gaa',
+    name: 'Community First',
+    description: 'Celebrate your community with events and volunteer highlights.',
+    highlights: ['Highlight cards', 'Volunteer spotlight', 'Community events', 'Club news'],
+  },
+  // Football Templates
+  {
+    id: 'football-classic',
+    sport: 'football',
+    name: 'Classic Club',
+    description: 'Professional layout for football clubs of all levels.',
+    highlights: ['League table widget', 'Match schedule', 'Squad profiles', 'News feed'],
+    popular: true,
+  },
+  {
+    id: 'football-matchday',
+    sport: 'football',
+    name: 'Matchday Focus',
+    description: 'Centered on fixtures, results, and match day content.',
+    highlights: ['Live scores', 'Fixture list', 'Results archive', 'Match reports'],
+  },
+  {
+    id: 'football-community',
+    sport: 'football',
+    name: 'Community First',
+    description: 'Showcase your club culture and grassroots involvement.',
+    highlights: ['Youth teams', 'Club events', 'Community news', 'Volunteer hub'],
+  },
+  // Rugby Templates
+  {
+    id: 'rugby-classic',
+    sport: 'rugby',
+    name: 'Classic Club',
+    description: 'Traditional rugby club layout with all the essentials.',
+    highlights: ['Match fixtures', 'Results & tables', 'Team profiles', 'Club news'],
+    popular: true,
+  },
+  {
+    id: 'rugby-matchday',
+    sport: 'rugby',
+    name: 'Matchday Focus',
+    description: 'Match-centric design for game day engagement.',
+    highlights: ['Live scoring', 'Team lineups', 'Match reports', 'Statistics'],
+  },
+  {
+    id: 'rugby-community',
+    sport: 'rugby',
+    name: 'Community First',
+    description: 'Highlight your minis, youth, and social rugby.',
+    highlights: ['Age groups', 'Training info', 'Social events', 'Club history'],
+  },
+  // Athletics Templates
+  {
+    id: 'athletics-classic',
+    sport: 'athletics',
+    name: 'Classic Club',
+    description: 'Clean design for athletics and running clubs.',
+    highlights: ['Events calendar', 'Results feed', 'Club records', 'News updates'],
+    popular: true,
+  },
+  {
+    id: 'athletics-events',
+    sport: 'athletics',
+    name: 'Events Focus',
+    description: 'Highlight races, meets, and training sessions.',
+    highlights: ['Upcoming events', 'Race results', 'PB tracker', 'Leaderboards'],
+  },
+  {
+    id: 'athletics-community',
+    sport: 'athletics',
+    name: 'Community First',
+    description: 'Celebrate your athletes and club achievements.',
+    highlights: ['Athlete profiles', 'Training groups', 'Club news', 'Social runs'],
+  },
+  // Golf Templates
+  {
+    id: 'golf-classic',
+    sport: 'golf',
+    name: 'Classic Club',
+    description: 'Elegant design befitting golf clubs.',
+    highlights: ['Competition calendar', 'Leaderboards', 'Course info', 'Club news'],
+    popular: true,
+  },
+  {
+    id: 'golf-competition',
+    sport: 'golf',
+    name: 'Competition Focus',
+    description: 'Centered on competitions and results.',
+    highlights: ['Live scoring', 'Handicap tables', 'Results archive', 'Prize info'],
+  },
+  {
+    id: 'golf-social',
+    sport: 'golf',
+    name: 'Social First',
+    description: 'Highlight the social side of your golf club.',
+    highlights: ['Social events', 'Member news', 'Club calendar', 'Dining info'],
+  },
+  // Tennis Templates
+  {
+    id: 'tennis-classic',
+    sport: 'tennis',
+    name: 'Classic Club',
+    description: 'Smart design for tennis clubs.',
+    highlights: ['Match schedule', 'League tables', 'Club news', 'Court info'],
+    popular: true,
+  },
+  {
+    id: 'tennis-tournament',
+    sport: 'tennis',
+    name: 'Tournament Focus',
+    description: 'Highlight tournaments and competitive play.',
+    highlights: ['Draw sheets', 'Live scores', 'Rankings', 'Results archive'],
+  },
+  {
+    id: 'tennis-social',
+    sport: 'tennis',
+    name: 'Social First',
+    description: 'Showcase coaching and social tennis.',
+    highlights: ['Coaching sessions', 'Social events', 'Club calendar', 'Junior tennis'],
+  },
+  // Cycling Templates
+  {
+    id: 'cycling-classic',
+    sport: 'cycling',
+    name: 'Classic Club',
+    description: 'Dynamic design for cycling clubs.',
+    highlights: ['Club spins', 'Event calendar', 'Club news', 'Route info'],
+    popular: true,
+  },
+  {
+    id: 'cycling-routes',
+    sport: 'cycling',
+    name: 'Routes Focus',
+    description: 'Showcase your club routes and rides.',
+    highlights: ['Route maps', 'Elevation profiles', 'Difficulty ratings', 'Group rides'],
+  },
+  {
+    id: 'cycling-community',
+    sport: 'cycling',
+    name: 'Community First',
+    description: 'Highlight your cycling community.',
+    highlights: ['Ride groups', 'Training plans', 'Social spins', 'Club events'],
+  },
+];
+---
+
+<Layout title="Templates - Clubify | Beautiful Website Templates for Sports Clubs">
+  <Navigation />
+
+  <PageHeader
+    title="Templates for Every Sport"
+    description="Choose from our library of professionally designed templates, each crafted for specific sports and club needs."
+    badge="21 Templates"
+  />
+
+  <!-- Filter Section -->
+  <section class="py-8 bg-white border-b border-slate-200 sticky top-20 z-40">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div class="flex flex-wrap items-center justify-center gap-2" id="sport-filters">
+        <button
+          data-sport="all"
+          class="filter-btn px-4 py-2 rounded-full text-sm font-medium transition-all bg-primary-600 text-white"
+        >
+          All Sports
+        </button>
+        {sports.map((sport) => (
+          <button
+            data-sport={sport.id}
+            class="filter-btn px-4 py-2 rounded-full text-sm font-medium transition-all bg-slate-100 text-slate-600 hover:bg-slate-200"
+          >
+            {sport.name}
+            {sport.status === 'coming_soon' && (
+              <span class="ml-1 text-xs text-amber-600">(Soon)</span>
+            )}
+          </button>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- Templates Grid -->
+  <section class="py-16 md:py-24 bg-slate-50">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8" id="templates-grid">
+        {allTemplates.map((template) => {
+          const sport = sports.find((s) => s.id === template.sport)!;
+          const isReady = sport.status === 'ready';
+
+          return (
+            <div
+              class="template-card group relative bg-white rounded-2xl border border-slate-200 overflow-hidden hover:shadow-xl hover:border-slate-300 transition-all duration-300"
+              data-sport={template.sport}
+            >
+              {/* Preview Header */}
+              <div
+                class="h-48 relative overflow-hidden"
+                style={`background: linear-gradient(135deg, ${sport.primaryColor}, ${sport.primaryColor}dd)`}
+              >
+                <div class="absolute inset-0 flex items-center justify-center">
+                  <span class="text-white/20 text-8xl font-bold">
+                    {template.name.charAt(0)}
+                  </span>
+                </div>
+
+                {/* Badges */}
+                <div class="absolute top-4 left-4 flex gap-2">
+                  <span
+                    class="px-2 py-1 rounded-full text-xs font-semibold text-white"
+                    style={`background-color: ${sport.primaryColor}`}
+                  >
+                    {sport.name}
+                  </span>
+                </div>
+
+                {template.popular && (
+                  <div class="absolute top-4 right-4">
+                    <span class="px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full text-xs font-semibold text-white">
+                      Popular
+                    </span>
+                  </div>
+                )}
+
+                {!isReady && (
+                  <div class="absolute bottom-4 right-4">
+                    <span class="px-2 py-1 bg-amber-500 rounded-full text-xs font-semibold text-white">
+                      Coming Soon
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {/* Content */}
+              <div class="p-6">
+                <h3 class="text-xl font-bold text-slate-900 mb-2">{template.name}</h3>
+                <p class="text-slate-600 mb-4">{template.description}</p>
+
+                {/* Highlights */}
+                <ul class="space-y-2 mb-6">
+                  {template.highlights.map((highlight) => (
+                    <li class="flex items-center gap-2 text-sm text-slate-600">
+                      <svg
+                        class="w-4 h-4 flex-shrink-0"
+                        style={`color: ${sport.primaryColor}`}
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M5 13l4 4L19 7"
+                        />
+                      </svg>
+                      {highlight}
+                    </li>
+                  ))}
+                </ul>
+
+                {isReady ? (
+                  <Button href="/admin/signup" variant="secondary" size="sm" class="w-full">
+                    Use this template
+                  </Button>
+                ) : (
+                  <Button href={`/sports/${sport.slug}`} variant="secondary" size="sm" class="w-full">
+                    Join waitlist
+                  </Button>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* No results message */}
+      <div id="no-results" class="hidden text-center py-12">
+        <p class="text-slate-500 text-lg">No templates found for this sport.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="py-16 md:py-24 bg-gradient-to-br from-primary-600 to-primary-800">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
+      <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">
+        Ready to get started?
+      </h2>
+      <p class="text-lg text-white/80 max-w-2xl mx-auto mb-8">
+        Choose your sport and create a beautiful club website in minutes.
+      </p>
+      <Button href="/admin/signup" variant="secondary" size="lg" class="bg-white text-primary-700 hover:bg-white/90">
+        Create your club
+      </Button>
+    </div>
+  </section>
+
+  <Footer />
+</Layout>
+
+<script>
+  const filterBtns = document.querySelectorAll('.filter-btn');
+  const templateCards = document.querySelectorAll('.template-card');
+  const noResults = document.getElementById('no-results');
+
+  filterBtns.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const sport = btn.getAttribute('data-sport');
+
+      // Update active state
+      filterBtns.forEach((b) => {
+        b.classList.remove('bg-primary-600', 'text-white');
+        b.classList.add('bg-slate-100', 'text-slate-600');
+      });
+      btn.classList.remove('bg-slate-100', 'text-slate-600');
+      btn.classList.add('bg-primary-600', 'text-white');
+
+      // Filter templates
+      let visibleCount = 0;
+      templateCards.forEach((card) => {
+        const cardSport = card.getAttribute('data-sport');
+        if (sport === 'all' || cardSport === sport) {
+          card.classList.remove('hidden');
+          visibleCount++;
+        } else {
+          card.classList.add('hidden');
+        }
+      });
+
+      // Show/hide no results message
+      if (visibleCount === 0) {
+        noResults?.classList.remove('hidden');
+      } else {
+        noResults?.classList.add('hidden');
+      }
+    });
+  });
+</script>

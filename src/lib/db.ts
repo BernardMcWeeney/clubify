@@ -17,6 +17,7 @@ export interface Club {
   name: string;
   slug: string;
   county: string;
+  club_type: string; // 'gaa' | 'football' | 'rugby' | 'athletics' | 'golf' | 'tennis' | 'cycling'
   crest_url: string | null;
   primary_color: string;
   secondary_color: string;
@@ -35,6 +36,26 @@ export interface Club {
   is_live: number;
   setup_completed: number;
   setup_step: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SportWaitlist {
+  id: string;
+  email: string;
+  club_name: string | null;
+  sport: string;
+  source: string;
+  notified: number;
+  created_at: string;
+}
+
+export interface SportDefaults {
+  sport: string;
+  status: string;
+  default_modules: string;
+  default_template: string;
+  terminology: string;
   created_at: string;
   updated_at: string;
 }
@@ -418,12 +439,14 @@ export class DatabaseService {
     slug: string;
     county: string;
     ownerId: string;
+    clubType?: string;
   }): Promise<Club> {
     const id = generateId();
+    const clubType = data.clubType || 'gaa';
 
     await this.db.prepare(`
-      INSERT INTO clubs (id, name, slug, county) VALUES (?, ?, ?, ?)
-    `).bind(id, data.name, data.slug, data.county).run();
+      INSERT INTO clubs (id, name, slug, county, club_type) VALUES (?, ?, ?, ?, ?)
+    `).bind(id, data.name, data.slug, data.county, clubType).run();
 
     // Add owner as admin
     const memberId = generateId();
@@ -541,8 +564,9 @@ export class DatabaseService {
         ) as last_content_at,
         CASE WHEN c.crest_url IS NOT NULL AND c.crest_url != '' THEN 1 ELSE 0 END as has_crest,
         CASE WHEN (c.contact_email IS NOT NULL AND c.contact_email != '') OR (c.contact_phone IS NOT NULL AND c.contact_phone != '') THEN 1 ELSE 0 END as has_contact,
-        CASE WHEN c.navigation_items IS NOT NULL AND c.navigation_items != '[]' AND c.navigation_items != '' THEN 1 ELSE 0 END as has_nav
+        CASE WHEN ss.nav_items IS NOT NULL AND ss.nav_items != '[]' AND ss.nav_items != '' THEN 1 ELSE 0 END as has_nav
       FROM clubs c
+      LEFT JOIN site_settings ss ON ss.club_id = c.id
       ORDER BY c.created_at DESC
     `).all<any>();
 
@@ -1601,5 +1625,79 @@ export class DatabaseService {
       SELECT * FROM form_submissions WHERE form_id = ? ORDER BY created_at DESC
     `).bind(formId).all<FormSubmission>();
     return results.results || [];
+  }
+
+  // Sport waitlist operations
+  async addToWaitlist(data: {
+    email: string;
+    clubName?: string;
+    sport: string;
+    source?: string;
+  }): Promise<SportWaitlist> {
+    const id = generateId();
+
+    await this.db.prepare(`
+      INSERT OR IGNORE INTO sport_waitlist (id, email, club_name, sport, source)
+      VALUES (?, ?, ?, ?, ?)
+    `).bind(
+      id,
+      data.email.toLowerCase(),
+      data.clubName || null,
+      data.sport,
+      data.source || 'website'
+    ).run();
+
+    // Return the waitlist entry (either new or existing)
+    const result = await this.db.prepare(`
+      SELECT * FROM sport_waitlist WHERE email = ? AND sport = ?
+    `).bind(data.email.toLowerCase(), data.sport).first<SportWaitlist>();
+
+    return result as SportWaitlist;
+  }
+
+  async getWaitlistBySport(sport: string): Promise<SportWaitlist[]> {
+    const results = await this.db.prepare(`
+      SELECT * FROM sport_waitlist WHERE sport = ? ORDER BY created_at DESC
+    `).bind(sport).all<SportWaitlist>();
+
+    return results.results || [];
+  }
+
+  async getWaitlistCount(sport: string): Promise<number> {
+    const result = await this.db.prepare(`
+      SELECT COUNT(*) as count FROM sport_waitlist WHERE sport = ?
+    `).bind(sport).first<{ count: number }>();
+
+    return result?.count || 0;
+  }
+
+  async markWaitlistNotified(ids: string[]): Promise<void> {
+    if (ids.length === 0) return;
+
+    const placeholders = ids.map(() => '?').join(',');
+    await this.db.prepare(`
+      UPDATE sport_waitlist SET notified = 1 WHERE id IN (${placeholders})
+    `).bind(...ids).run();
+  }
+
+  // Sport defaults operations
+  async getSportDefaults(sport: string): Promise<SportDefaults | null> {
+    return this.db.prepare(`
+      SELECT * FROM sport_defaults WHERE sport = ?
+    `).bind(sport).first<SportDefaults>();
+  }
+
+  async getAllSportDefaults(): Promise<SportDefaults[]> {
+    const results = await this.db.prepare(`
+      SELECT * FROM sport_defaults ORDER BY sport ASC
+    `).all<SportDefaults>();
+
+    return results.results || [];
+  }
+
+  async updateSportStatus(sport: string, status: string): Promise<void> {
+    await this.db.prepare(`
+      UPDATE sport_defaults SET status = ?, updated_at = datetime('now') WHERE sport = ?
+    `).bind(status, sport).run();
   }
 }

@@ -1,5 +1,9 @@
 ---
 import Button from './Button.astro';
+import { getReadySports, getComingSoonSports } from '../lib/sports';
+
+const readySports = getReadySports();
+const comingSoonSports = getComingSoonSports();
 ---
 
 <section class="relative min-h-screen flex items-center justify-center overflow-hidden">
@@ -24,20 +28,36 @@ import Button from './Button.astro';
         <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary-500 opacity-75"></span>
         <span class="relative inline-flex rounded-full h-2 w-2 bg-primary-500"></span>
       </span>
-      Built for GAA clubs
+      7 Sports. One Platform.
     </div>
 
     <!-- Headline -->
     <h1 class="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-6 animate-[slideUp_0.6s_ease-out]" style="animation-delay: 0.1s; opacity: 0; animation-fill-mode: forwards;">
       <span class="text-slate-900">All-in-one website + app</span>
       <br />
-      <span class="bg-gradient-to-r from-primary-600 via-primary-500 to-accent-500 bg-clip-text text-transparent">for GAA clubs</span>
+      <span class="bg-gradient-to-r from-primary-600 via-primary-500 to-accent-500 bg-clip-text text-transparent">for sports clubs</span>
     </h1>
 
     <!-- Subheadline -->
-    <p class="mx-auto max-w-2xl text-lg sm:text-xl text-slate-600 mb-10 animate-[slideUp_0.6s_ease-out]" style="animation-delay: 0.2s; opacity: 0; animation-fill-mode: forwards;">
+    <p class="mx-auto max-w-2xl text-lg sm:text-xl text-slate-600 mb-8 animate-[slideUp_0.6s_ease-out]" style="animation-delay: 0.2s; opacity: 0; animation-fill-mode: forwards;">
       Launch your club's website in minutes. Publish once, reach everywhere &mdash; web, app, and social media. No technical skills required.
     </p>
+
+    <!-- Sports pills -->
+    <div class="flex flex-wrap items-center justify-center gap-2 mb-10 animate-[slideUp_0.6s_ease-out]" style="animation-delay: 0.25s; opacity: 0; animation-fill-mode: forwards;">
+      {readySports.map((sport) => (
+        <a href={`/sports/${sport.slug}`} class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary-500 text-white text-sm font-medium hover:bg-primary-600 transition-colors">
+          <Fragment set:html={sport.icon} />
+          <span>{sport.name}</span>
+        </a>
+      ))}
+      {comingSoonSports.map((sport) => (
+        <a href={`/sports/${sport.slug}`} class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100 text-slate-600 text-sm font-medium hover:bg-slate-200 transition-colors border border-slate-200">
+          <Fragment set:html={sport.icon} />
+          <span>{sport.name}</span>
+        </a>
+      ))}
+    </div>
 
     <!-- CTAs -->
     <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16 animate-[slideUp_0.6s_ease-out]" style="animation-delay: 0.3s; opacity: 0; animation-fill-mode: forwards;">
@@ -47,8 +67,8 @@ import Button from './Button.astro';
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
         </svg>
       </Button>
-      <a href="#how-it-works" class="inline-flex items-center justify-center font-semibold rounded-full transition-all duration-200 px-8 py-4 text-lg text-slate-700 hover:text-slate-900 border border-slate-300 hover:border-slate-400 hover:bg-slate-50">
-        See how it works
+      <a href="/sports" class="inline-flex items-center justify-center font-semibold rounded-full transition-all duration-200 px-8 py-4 text-lg text-slate-700 hover:text-slate-900 border border-slate-300 hover:border-slate-400 hover:bg-slate-50">
+        View all sports
       </a>
     </div>
 

@@ -1,0 +1,93 @@
+---
+import Button from '../Button.astro';
+import type { SportConfig } from '../../lib/sports';
+
+interface Props {
+  sport: SportConfig;
+}
+
+const { sport } = Astro.props;
+const isReady = sport.status === 'ready';
+---
+
+<section
+  class="relative min-h-[80vh] flex items-center overflow-hidden"
+  style={`--sport-primary: ${sport.primaryColor}; --sport-secondary: ${sport.secondaryColor}`}
+>
+  <!-- Background -->
+  <div class="absolute inset-0 bg-gradient-to-br from-[var(--sport-primary)] via-[var(--sport-primary)] to-slate-900"></div>
+
+  <!-- Decorative elements -->
+  <div class="absolute inset-0 overflow-hidden">
+    <div class="absolute -top-24 -right-24 w-96 h-96 bg-white/5 rounded-full blur-3xl"></div>
+    <div class="absolute -bottom-24 -left-24 w-96 h-96 bg-[var(--sport-secondary)]/10 rounded-full blur-3xl"></div>
+    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] opacity-5">
+      <Fragment set:html={sport.icon} />
+    </div>
+  </div>
+
+  <!-- Content -->
+  <div class="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-32 text-center">
+    {!isReady && (
+      <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white/90 text-sm font-medium mb-8 animate-pulse">
+        <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+        Coming Soon
+      </div>
+    )}
+
+    {isReady && (
+      <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white/90 text-sm font-medium mb-8">
+        <span class="w-2 h-2 rounded-full bg-green-400"></span>
+        Available Now
+      </div>
+    )}
+
+    <h1 class="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight">
+      {isReady ? (
+        <>
+          All-in-one platform for<br />
+          <span class="text-[var(--sport-secondary)]">{sport.namePlural}</span>
+        </>
+      ) : (
+        <>
+          <span class="text-[var(--sport-secondary)]">{sport.name}</span> is<br />
+          coming to Clubify
+        </>
+      )}
+    </h1>
+
+    <p class="text-xl md:text-2xl text-white/80 max-w-3xl mx-auto mb-10">
+      {sport.longDescription}
+    </p>
+
+    <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+      {isReady ? (
+        <>
+          <Button href="/admin/signup" variant="primary" size="lg" class="bg-white text-[var(--sport-primary)] hover:bg-white/90 shadow-xl">
+            Create your {sport.name.toLowerCase()} club
+          </Button>
+          <Button href="/templates" variant="secondary" size="lg" class="border-white/30 text-white hover:bg-white/10">
+            View templates
+          </Button>
+        </>
+      ) : (
+        <Button href="#waitlist" variant="primary" size="lg" class="bg-white text-[var(--sport-primary)] hover:bg-white/90 shadow-xl">
+          Join the waitlist
+        </Button>
+      )}
+    </div>
+
+    {isReady && (
+      <p class="mt-8 text-white/60 text-sm">
+        Free to get started. No credit card required.
+      </p>
+    )}
+  </div>
+
+  <!-- Scroll indicator -->
+  <div class="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
+    <svg class="w-6 h-6 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
+    </svg>
+  </div>
+</section>

@@ -1,5 +1,9 @@
 ---
 import Button from './Button.astro';
+import { getAllSports, getReadySports, getComingSoonSports } from '../lib/sports';
+
+const readySports = getReadySports();
+const comingSoonSports = getComingSoonSports();
 ---
 
 <nav class="fixed top-0 left-0 right-0 z-50 transition-all duration-300" id="navbar">
@@ -20,12 +24,74 @@ import Button from './Button.astro';
       </a>
 
       <!-- Desktop Navigation -->
-      <div class="hidden md:flex items-center gap-8">
-        <a href="#features" class="text-slate-600 hover:text-slate-900 transition-colors font-medium">Features</a>
-        <a href="#templates" class="text-slate-600 hover:text-slate-900 transition-colors font-medium">Templates</a>
-        <a href="#pricing" class="text-slate-600 hover:text-slate-900 transition-colors font-medium">Pricing</a>
-        <a href="#faq" class="text-slate-600 hover:text-slate-900 transition-colors font-medium">FAQ</a>
-        <a href="#contact" class="text-slate-600 hover:text-slate-900 transition-colors font-medium">Contact</a>
+      <div class="hidden md:flex items-center gap-6">
+        <!-- Sports Dropdown -->
+        <div class="relative group">
+          <button class="flex items-center gap-1 text-slate-600 hover:text-slate-900 transition-colors font-medium py-2">
+            Sports
+            <svg class="w-4 h-4 transition-transform group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <!-- Dropdown Menu -->
+          <div class="absolute left-0 top-full pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+            <div class="w-64 bg-white rounded-xl shadow-xl border border-slate-200 py-2 overflow-hidden">
+              <!-- Ready Sports -->
+              {readySports.map((sport) => (
+                <a
+                  href={`/sports/${sport.slug}`}
+                  class="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 transition-colors"
+                >
+                  <div class="w-8 h-8 rounded-lg flex items-center justify-center text-white" style={`background-color: ${sport.primaryColor}`}>
+                    <span class="text-sm font-bold">{sport.name.charAt(0)}</span>
+                  </div>
+                  <div class="flex-1">
+                    <span class="font-medium text-slate-900">{sport.name}</span>
+                  </div>
+                  <span class="text-xs font-medium text-primary-600 bg-primary-50 px-2 py-0.5 rounded-full">Live</span>
+                </a>
+              ))}
+
+              {comingSoonSports.length > 0 && (
+                <div class="border-t border-slate-100 mt-2 pt-2">
+                  <p class="px-4 py-1 text-xs font-semibold text-slate-400 uppercase tracking-wide">Coming Soon</p>
+                  {comingSoonSports.map((sport) => (
+                    <a
+                      href={`/sports/${sport.slug}`}
+                      class="flex items-center gap-3 px-4 py-2.5 hover:bg-slate-50 transition-colors"
+                    >
+                      <div class="w-8 h-8 rounded-lg flex items-center justify-center text-white opacity-75" style={`background-color: ${sport.primaryColor}`}>
+                        <span class="text-sm font-bold">{sport.name.charAt(0)}</span>
+                      </div>
+                      <div class="flex-1">
+                        <span class="font-medium text-slate-600">{sport.name}</span>
+                      </div>
+                      <span class="text-xs font-medium text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">Soon</span>
+                    </a>
+                  ))}
+                </div>
+              )}
+
+              <!-- View All Sports -->
+              <div class="border-t border-slate-100 mt-2 pt-2">
+                <a
+                  href="/sports"
+                  class="flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-primary-600 hover:text-primary-700 hover:bg-primary-50 transition-colors"
+                >
+                  View all sports
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                  </svg>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <a href="/features" class="text-slate-600 hover:text-slate-900 transition-colors font-medium">Features</a>
+        <a href="/templates" class="text-slate-600 hover:text-slate-900 transition-colors font-medium">Templates</a>
+        <a href="/pricing" class="text-slate-600 hover:text-slate-900 transition-colors font-medium">Pricing</a>
+        <a href="/contact" class="text-slate-600 hover:text-slate-900 transition-colors font-medium">Contact</a>
       </div>
 
       <!-- CTA Buttons -->
@@ -48,15 +114,51 @@ import Button from './Button.astro';
   </div>
 
   <!-- Mobile Menu -->
-  <div class="hidden md:hidden glass-light" id="mobile-menu">
-    <div class="px-4 py-6 space-y-4">
-      <a href="#features" class="block text-slate-600 hover:text-slate-900 transition-colors font-medium py-2">Features</a>
-      <a href="#templates" class="block text-slate-600 hover:text-slate-900 transition-colors font-medium py-2">Templates</a>
-      <a href="#pricing" class="block text-slate-600 hover:text-slate-900 transition-colors font-medium py-2">Pricing</a>
-      <a href="#faq" class="block text-slate-600 hover:text-slate-900 transition-colors font-medium py-2">FAQ</a>
-      <a href="#contact" class="block text-slate-600 hover:text-slate-900 transition-colors font-medium py-2">Contact</a>
+  <div class="hidden md:hidden glass-light bg-white/95 backdrop-blur-lg" id="mobile-menu">
+    <div class="px-4 py-6 space-y-2">
+      <!-- Sports Section -->
+      <div class="pb-2">
+        <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2 px-2">Sports</p>
+        {readySports.map((sport) => (
+          <a
+            href={`/sports/${sport.slug}`}
+            class="flex items-center gap-3 px-2 py-2 rounded-lg text-slate-700 hover:bg-slate-100 transition-colors"
+          >
+            <div class="w-6 h-6 rounded flex items-center justify-center text-white text-xs font-bold" style={`background-color: ${sport.primaryColor}`}>
+              {sport.name.charAt(0)}
+            </div>
+            <span class="font-medium">{sport.name}</span>
+            <span class="text-xs text-primary-600 bg-primary-50 px-1.5 py-0.5 rounded ml-auto">Live</span>
+          </a>
+        ))}
+        {comingSoonSports.slice(0, 3).map((sport) => (
+          <a
+            href={`/sports/${sport.slug}`}
+            class="flex items-center gap-3 px-2 py-2 rounded-lg text-slate-500 hover:bg-slate-100 transition-colors"
+          >
+            <div class="w-6 h-6 rounded flex items-center justify-center text-white text-xs font-bold opacity-75" style={`background-color: ${sport.primaryColor}`}>
+              {sport.name.charAt(0)}
+            </div>
+            <span class="font-medium">{sport.name}</span>
+            <span class="text-xs text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded ml-auto">Soon</span>
+          </a>
+        ))}
+        <a href="/sports" class="block px-2 py-2 text-sm text-primary-600 font-medium">
+          View all sports →
+        </a>
+      </div>
+
       <hr class="border-slate-200" />
-      <a href="/admin/login" class="block text-slate-600 hover:text-slate-900 transition-colors font-medium py-2">Log in</a>
+
+      <!-- Main Links -->
+      <a href="/features" class="block text-slate-700 hover:text-slate-900 transition-colors font-medium py-2 px-2 rounded-lg hover:bg-slate-100">Features</a>
+      <a href="/templates" class="block text-slate-700 hover:text-slate-900 transition-colors font-medium py-2 px-2 rounded-lg hover:bg-slate-100">Templates</a>
+      <a href="/pricing" class="block text-slate-700 hover:text-slate-900 transition-colors font-medium py-2 px-2 rounded-lg hover:bg-slate-100">Pricing</a>
+      <a href="/contact" class="block text-slate-700 hover:text-slate-900 transition-colors font-medium py-2 px-2 rounded-lg hover:bg-slate-100">Contact</a>
+
+      <hr class="border-slate-200" />
+
+      <a href="/admin/login" class="block text-slate-700 hover:text-slate-900 transition-colors font-medium py-2 px-2 rounded-lg hover:bg-slate-100">Log in</a>
       <Button href="/admin/signup" variant="primary" size="md" class="w-full">
         Create your club
       </Button>
