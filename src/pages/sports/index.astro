@@ -1,85 +1,282 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import Navigation from '../../components/Navigation.astro';
-import PageHeader from '../../components/PageHeader.astro';
 import Footer from '../../components/Footer.astro';
-import SportCard from '../../components/sports/SportCard.astro';
 import Button from '../../components/Button.astro';
-import { getReadySports, getComingSoonSports } from '../../lib/sports';
+import { getReadySports, getComingSoonSports, getAllSports } from '../../lib/sports';
 
 const readySports = getReadySports();
 const comingSoonSports = getComingSoonSports();
+const allSports = getAllSports();
 ---
 
-<Layout title="Sports - Clubify | Websites for Sports Clubs">
+<Layout title="Sports - Clubify | Websites for Every Sport">
   <Navigation />
 
-  <PageHeader
-    title="Choose Your Sport"
-    description="Clubify is built for sports clubs. Select your sport to see tailored features, templates, and pricing."
-    badge="All Sports"
-  />
+  <!-- Hero Section -->
+  <section class="pt-32 pb-20 bg-white relative overflow-hidden">
+    <div class="absolute inset-0 mesh-gradient-light opacity-50"></div>
+    <div class="absolute inset-0 grid-pattern"></div>
 
-  <!-- Available Now Section -->
-  <section class="py-16 md:py-24 bg-white">
-    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-      <div class="text-center mb-12">
-        <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-green-100 text-green-700 text-sm font-semibold mb-4">
-          <span class="w-2 h-2 rounded-full bg-green-500"></span>
-          Available Now
+    <div class="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div class="max-w-4xl mx-auto text-center">
+        <div class="section-badge-pill mx-auto mb-6 w-fit">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+          </svg>
+          7 Sports Supported
         </div>
-        <h2 class="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
-          Ready to launch your club
-        </h2>
-        <p class="text-lg text-slate-600 max-w-2xl mx-auto">
-          Get started today with full access to all features, templates, and support.
+
+        <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold text-slate-900 mb-6">
+          Built for the sports<br />
+          <span class="text-primary-600">your club plays</span>
+        </h1>
+        <p class="text-xl text-slate-600 max-w-2xl mx-auto">
+          Clubify understands your sport. From scoring formats to terminology, we've tailored every feature to match how your club actually works.
         </p>
       </div>
 
-      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-4xl mx-auto">
+      <!-- Sport Pills -->
+      <div class="flex flex-wrap justify-center gap-3 mt-12">
+        {allSports.map((sport) => (
+          <a
+            href={`/sports/${sport.slug}`}
+            class="group flex items-center gap-2 px-4 py-2.5 bg-white rounded-full border border-slate-200 hover:border-slate-300 hover:shadow-md transition-all"
+          >
+            <div
+              class="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-bold"
+              style={`background-color: ${sport.primaryColor}`}
+            >
+              {sport.name.charAt(0)}
+            </div>
+            <span class="font-medium text-slate-700 group-hover:text-slate-900">{sport.name}</span>
+            {sport.status === 'ready' ? (
+              <span class="px-2 py-0.5 rounded-full bg-primary-100 text-primary-700 text-xs font-medium">Live</span>
+            ) : (
+              <span class="px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 text-xs font-medium">Soon</span>
+            )}
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- Available Now Section -->
+  <section class="py-20 bg-slate-50">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between mb-12">
+        <div>
+          <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary-100 text-primary-700 text-sm font-semibold mb-3">
+            <span class="w-2 h-2 rounded-full bg-primary-500"></span>
+            Available Now
+          </div>
+          <h2 class="text-3xl font-bold text-slate-900">Ready to launch</h2>
+          <p class="text-slate-600 mt-2">Start your club website today with full access to all features.</p>
+        </div>
+        <Button href="/admin/signup" variant="primary" size="md" class="hidden sm:flex">
+          Get started
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+          </svg>
+        </Button>
+      </div>
+
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
         {readySports.map((sport) => (
-          <SportCard sport={sport} size="lg" />
+          <a
+            href={`/sports/${sport.slug}`}
+            class="group relative bg-white rounded-2xl border border-slate-200 overflow-hidden hover:shadow-xl hover:border-slate-300 transition-all duration-300"
+          >
+            <!-- Header with gradient -->
+            <div
+              class="h-48 relative overflow-hidden"
+              style={`background: linear-gradient(135deg, ${sport.primaryColor}, ${sport.primaryColor}cc)`}
+            >
+              <!-- Large sport icon -->
+              <div class="absolute inset-0 flex items-center justify-center opacity-10">
+                <div class="w-48 h-48 text-white" set:html={sport.icon}></div>
+              </div>
+
+              <!-- Badge -->
+              <div class="absolute top-4 left-4">
+                <span class="px-3 py-1 rounded-full text-xs font-semibold text-white bg-white/20 backdrop-blur-sm">
+                  Available Now
+                </span>
+              </div>
+
+              <!-- Sport initial -->
+              <div class="absolute inset-0 flex items-center justify-center">
+                <div class="w-20 h-20 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center border border-white/30 group-hover:scale-110 transition-transform duration-300">
+                  <span class="text-4xl font-bold text-white">{sport.name.charAt(0)}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Content -->
+            <div class="p-6">
+              <h3 class="text-xl font-bold text-slate-900 mb-2 group-hover:text-primary-600 transition-colors">
+                {sport.name}
+              </h3>
+              <p class="text-slate-600 mb-4">{sport.description}</p>
+
+              <!-- Features preview -->
+              <div class="flex flex-wrap gap-1.5">
+                {sport.features.slice(0, 3).map((feature) => (
+                  <span class="px-2 py-0.5 bg-slate-100 text-slate-600 text-xs rounded-full">
+                    {feature.title}
+                  </span>
+                ))}
+              </div>
+
+              <!-- CTA Arrow -->
+              <div class="mt-4 flex items-center gap-2 text-primary-600 font-medium text-sm group-hover:gap-3 transition-all">
+                View {sport.name} features
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+              </div>
+            </div>
+          </a>
         ))}
       </div>
     </div>
   </section>
 
   <!-- Coming Soon Section -->
-  <section class="py-16 md:py-24 bg-slate-50">
+  <section class="py-20 bg-white">
     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
       <div class="text-center mb-12">
-        <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-100 text-amber-700 text-sm font-semibold mb-4">
+        <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-100 text-amber-700 text-sm font-semibold mb-3">
           <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
           Coming Soon
         </div>
-        <h2 class="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
-          More sports on the way
-        </h2>
-        <p class="text-lg text-slate-600 max-w-2xl mx-auto">
-          We're expanding to support more sports. Join the waitlist to be notified when your sport launches.
+        <h2 class="text-3xl font-bold text-slate-900 mb-3">More sports on the way</h2>
+        <p class="text-slate-600 max-w-xl mx-auto">
+          We're expanding to support more sports. Join the waitlist to get early access when your sport launches.
         </p>
       </div>
 
-      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
         {comingSoonSports.map((sport) => (
-          <SportCard sport={sport} size="md" />
+          <a
+            href={`/sports/${sport.slug}`}
+            class="group relative bg-white rounded-2xl border border-slate-200 p-6 hover:shadow-lg hover:border-slate-300 transition-all duration-300"
+          >
+            <div class="flex items-start gap-4">
+              <div
+                class="w-14 h-14 rounded-xl flex items-center justify-center text-white text-xl font-bold flex-shrink-0"
+                style={`background-color: ${sport.primaryColor}`}
+              >
+                {sport.name.charAt(0)}
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 mb-1">
+                  <h3 class="font-bold text-slate-900 group-hover:text-primary-600 transition-colors">
+                    {sport.name}
+                  </h3>
+                  <span class="px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 text-xs font-medium">
+                    Soon
+                  </span>
+                </div>
+                <p class="text-sm text-slate-600 line-clamp-2">{sport.tagline}</p>
+              </div>
+            </div>
+
+            <div class="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between">
+              <span class="text-sm text-slate-500">Join the waitlist</span>
+              <svg class="w-4 h-4 text-slate-400 group-hover:text-primary-600 group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+              </svg>
+            </div>
+          </a>
         ))}
       </div>
     </div>
   </section>
 
+  <!-- Why Sport-Specific -->
+  <section class="py-20 bg-slate-50">
+    <div class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-16">
+        <h2 class="text-3xl font-bold text-slate-900 mb-4">Why sport-specific matters</h2>
+        <p class="text-lg text-slate-600 max-w-2xl mx-auto">
+          Generic website builders don't understand your sport. Clubify does.
+        </p>
+      </div>
+
+      <div class="grid md:grid-cols-3 gap-8">
+        <div class="bg-white rounded-2xl p-8 border border-slate-200">
+          <div class="w-12 h-12 rounded-xl bg-primary-100 flex items-center justify-center mb-5">
+            <svg class="w-6 h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+            </svg>
+          </div>
+          <h3 class="text-xl font-bold text-slate-900 mb-3">Correct scoring formats</h3>
+          <p class="text-slate-600">
+            GAA goals and points, rugby tries and conversions, tennis sets — we handle scoring the way your sport does it.
+          </p>
+        </div>
+
+        <div class="bg-white rounded-2xl p-8 border border-slate-200">
+          <div class="w-12 h-12 rounded-xl bg-primary-100 flex items-center justify-center mb-5">
+            <svg class="w-6 h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/>
+            </svg>
+          </div>
+          <h3 class="text-xl font-bold text-slate-900 mb-3">Your terminology</h3>
+          <p class="text-slate-600">
+            Matches not games, pitches not fields, fixtures not events. Your website speaks your sport's language.
+          </p>
+        </div>
+
+        <div class="bg-white rounded-2xl p-8 border border-slate-200">
+          <div class="w-12 h-12 rounded-xl bg-primary-100 flex items-center justify-center mb-5">
+            <svg class="w-6 h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/>
+            </svg>
+          </div>
+          <h3 class="text-xl font-bold text-slate-900 mb-3">Sport-specific templates</h3>
+          <p class="text-slate-600">
+            Templates designed for your sport with the right sections, layouts, and features already built in.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- CTA Section -->
-  <section class="py-16 md:py-24 bg-gradient-to-br from-primary-600 to-primary-800">
-    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
-      <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">
-        Don't see your sport?
-      </h2>
-      <p class="text-lg text-white/80 max-w-2xl mx-auto mb-8">
-        We're always looking to support more sports. Let us know what you need and we'll prioritise accordingly.
-      </p>
-      <Button href="/contact" variant="secondary" size="lg" class="bg-white text-primary-700 hover:bg-white/90">
-        Get in touch
-      </Button>
+  <section class="py-20 bg-white">
+    <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+      <div class="bg-gradient-to-br from-slate-900 to-slate-800 rounded-3xl p-8 md:p-12 text-center relative overflow-hidden">
+        <div class="absolute inset-0 opacity-10">
+          <svg class="w-full h-full" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <pattern id="sports-pattern" x="0" y="0" width="32" height="32" patternUnits="userSpaceOnUse">
+                <circle cx="16" cy="16" r="1.5" fill="white"/>
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#sports-pattern)"/>
+          </svg>
+        </div>
+
+        <div class="relative">
+          <h2 class="text-2xl md:text-3xl font-bold text-white mb-4">Don't see your sport?</h2>
+          <p class="text-slate-300 mb-8 max-w-xl mx-auto">
+            We're always expanding. Let us know what sport your club plays and we'll prioritize it.
+          </p>
+          <div class="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button href="/contact" variant="primary" size="lg">
+              Request a sport
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+              </svg>
+            </Button>
+            <Button href="/admin/signup" variant="ghost" size="lg" class="text-white border-white/20 hover:bg-white/10">
+              Start free trial
+            </Button>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 

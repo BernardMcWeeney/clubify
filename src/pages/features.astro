@@ -1,129 +1,267 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import Navigation from '../components/Navigation.astro';
-import PageHeader from '../components/PageHeader.astro';
 import Footer from '../components/Footer.astro';
 import Button from '../components/Button.astro';
 
+const categories = [
+  { id: 'all', name: 'All Features' },
+  { id: 'platform', name: 'Platform' },
+  { id: 'content', name: 'Content' },
+  { id: 'communication', name: 'Communication' },
+  { id: 'management', name: 'Management' }
+];
+
 const features = [
   {
+    id: 'website',
     title: "Website + Mobile App",
-    description: "Your club gets both a beautiful website and a native mobile app. Same content, everywhere your members are.",
+    description: "Your club gets both a professional website and native mobile app. Publish once, reach members everywhere — desktop, phone, or tablet.",
     icon: `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>`,
-    gradient: "from-blue-500 to-cyan-500",
+    color: "#14b8a6",
+    category: "platform",
+    size: "large",
     details: [
-      "Responsive website that looks great on all devices",
-      "Native iOS and Android app for your members",
-      "Content syncs automatically between platforms",
-      "Push notifications for important updates"
+      "Responsive website on all devices",
+      "Native iOS and Android app",
+      "Automatic content sync",
+      "Custom domain support"
     ]
   },
   {
+    id: 'fixtures',
     title: "Fixtures & Results",
-    description: "Keep your supporters updated with upcoming matches and results. Easy to manage, beautiful to view.",
+    description: "Add matches in seconds. League tables update automatically. Supporters see upcoming games and latest scores at a glance.",
     icon: `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>`,
-    gradient: "from-green-500 to-emerald-500",
+    color: "#0d9488",
+    category: "content",
+    size: "medium",
     details: [
-      "GAA-specific scoring (goals, points)",
-      "Multiple team support",
-      "Competition and league tracking",
-      "Match reports and galleries"
+      "Sport-specific scoring",
+      "Auto league tables",
+      "Multiple teams",
+      "Match galleries"
     ]
   },
   {
-    title: "News & Updates",
-    description: "Share match reports, club news, and announcements. Rich editor with images and videos, no coding required.",
+    id: 'news',
+    title: "News Publishing",
+    description: "Share match reports, club news, and announcements with a simple editor. Add images, videos — no technical skills needed.",
     icon: `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/>`,
-    gradient: "from-violet-500 to-purple-500",
+    color: "#8b5cf6",
+    category: "content",
+    size: "medium",
     details: [
-      "Rich text editor with drag-and-drop images",
-      "Scheduled publishing",
-      "Categories and tags for organisation",
-      "SEO-optimised for search engines"
+      "Rich text editor",
+      "Drag-and-drop images",
+      "Scheduled posts",
+      "SEO optimised"
     ]
   },
   {
+    id: 'social',
     title: "Social Auto-Publish",
-    description: "Publish once, share everywhere. Your content automatically posts to Facebook, Twitter, and more.",
+    description: "Post once and it appears on your website, app, Facebook, Twitter, and Instagram automatically. No copy-pasting required.",
     icon: `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>`,
-    gradient: "from-pink-500 to-rose-500",
+    color: "#ec4899",
+    category: "communication",
+    size: "large",
     details: [
-      "Connect Facebook, Twitter/X, Instagram",
-      "Auto-publish posts and results",
-      "Customise message per platform",
-      "Track engagement and reach"
+      "Facebook, Twitter, Instagram",
+      "One-click publishing",
+      "Custom message per platform",
+      "Engagement analytics"
     ]
   },
   {
+    id: 'notifications',
     title: "Push Notifications",
-    description: "Reach members instantly with push notifications. Match day reminders, breaking news, and important updates.",
+    description: "Send instant alerts to members. Match day reminders, breaking news, training updates — they'll never miss a thing.",
     icon: `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>`,
-    gradient: "from-amber-500 to-orange-500",
+    color: "#f59e0b",
+    category: "communication",
+    size: "medium",
     details: [
-      "Instant notifications to all members",
-      "Segment by team or interest",
-      "Match day reminders",
-      "Breaking news alerts"
+      "Instant delivery",
+      "Audience targeting",
+      "Match reminders",
+      "Rich notifications"
     ]
   },
   {
-    title: "Team Roles & Permissions",
-    description: "Admin, PRO, Treasurer, Editor — assign the right permissions to the right people. Full audit trail included.",
+    id: 'teams',
+    title: "Team Management",
+    description: "Invite committee members with the right permissions. Admin, PRO, Editor — everyone has exactly the access they need.",
     icon: `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>`,
-    gradient: "from-teal-500 to-cyan-500",
+    color: "#14b8a6",
+    category: "management",
+    size: "medium",
     details: [
-      "Multiple role types",
-      "Granular permission controls",
-      "Invite via email",
-      "Complete audit log"
+      "Role-based access",
+      "Email invitations",
+      "Granular permissions",
+      "Activity audit log"
+    ]
+  },
+  {
+    id: 'media',
+    title: "Media Library",
+    description: "Store and organise all your club's photos and videos in one place. Drag-and-drop upload, automatic resizing.",
+    icon: `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>`,
+    color: "#6366f1",
+    category: "content",
+    size: "small",
+    details: [
+      "5GB storage",
+      "Auto-resize images",
+      "Photo galleries",
+      "Video support"
+    ]
+  },
+  {
+    id: 'forms',
+    title: "Contact Forms",
+    description: "Capture enquiries from your website with customisable forms. All responses go to your centralised inbox.",
+    icon: `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>`,
+    color: "#10b981",
+    category: "communication",
+    size: "small",
+    details: [
+      "Custom form builder",
+      "Email notifications",
+      "Spam protection",
+      "Response management"
+    ]
+  },
+  {
+    id: 'sponsors',
+    title: "Sponsor Showcase",
+    description: "Display your sponsors proudly with tiered visibility options. Track impressions and provide value to your partners.",
+    icon: `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>`,
+    color: "#f59e0b",
+    category: "management",
+    size: "small",
+    details: [
+      "Tiered display",
+      "Logo & link showcase",
+      "Impression tracking",
+      "Sponsor page"
+    ]
+  },
+  {
+    id: 'analytics',
+    title: "Analytics Dashboard",
+    description: "Understand your audience with built-in analytics. Page views, popular content, member engagement — all in one place.",
+    icon: `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>`,
+    color: "#3b82f6",
+    category: "management",
+    size: "small",
+    details: [
+      "Real-time stats",
+      "Popular content",
+      "Member insights",
+      "Exportable data"
     ]
   }
 ];
 
-const additionalFeatures = [
-  { title: "Media Library", description: "Centralised storage for all your images and videos" },
-  { title: "Sponsor Showcase", description: "Display sponsors with links and tiered visibility" },
-  { title: "Custom Forms", description: "Build registration forms, surveys, and more" },
-  { title: "Contact Inbox", description: "Receive and manage enquiries from your website" },
-  { title: "Custom Pages", description: "Create about, history, or any custom page" },
-  { title: "GDPR Compliant", description: "Built-in privacy controls and data export" }
+const comparison = [
+  { feature: "Professional website", clubify: true, diy: "Hire developer or struggle with templates" },
+  { feature: "Mobile app (iOS + Android)", clubify: true, diy: "Expensive to build, complex to maintain" },
+  { feature: "Social media auto-publishing", clubify: true, diy: "Manual copy-paste to each platform" },
+  { feature: "Push notifications", clubify: true, diy: "Requires separate service + setup" },
+  { feature: "Fixtures & league tables", clubify: true, diy: "Spreadsheets or manual updates" },
+  { feature: "Team permissions", clubify: true, diy: "Share passwords or use expensive tools" },
+  { feature: "Setup time", clubify: "15 minutes", diy: "Weeks or months" },
+  { feature: "Ongoing maintenance", clubify: "Zero - we handle it", diy: "Updates, security, hosting..." }
 ];
 ---
 
-<Layout title="Features - Clubify">
+<Layout title="Features - Clubify | All-in-one club management platform">
   <Navigation />
-  <PageHeader
-    title="Features"
-    description="Everything your GAA club needs to connect with members, manage fixtures, and share your story."
-    badge="Platform"
-  />
 
-  <section class="py-16 bg-white">
+  <!-- Hero Section -->
+  <section class="pt-32 pb-20 bg-white relative overflow-hidden">
+    <div class="absolute inset-0 mesh-gradient-light opacity-50"></div>
+    <div class="absolute inset-0 grid-pattern"></div>
+
+    <div class="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div class="max-w-4xl mx-auto text-center mb-16">
+        <div class="section-badge-pill mx-auto mb-6 w-fit">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/>
+          </svg>
+          Platform Features
+        </div>
+
+        <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold text-slate-900 mb-6">
+          Everything your club needs,<br />
+          <span class="text-primary-600">nothing you don't</span>
+        </h1>
+        <p class="text-xl text-slate-600 max-w-2xl mx-auto">
+          Website, app, fixtures, news, social media, notifications — all managed from one simple dashboard. No coding, no complexity.
+        </p>
+      </div>
+
+      <!-- Category Filter -->
+      <div class="flex flex-wrap justify-center gap-2 mb-12" id="category-filter">
+        {categories.map((cat, index) => (
+          <button
+            class={`px-4 py-2 rounded-full text-sm font-medium transition-all category-btn ${index === 0 ? 'bg-primary-500 text-white shadow-lg shadow-primary-500/25' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+            data-category={cat.id}
+          >
+            {cat.name}
+          </button>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Bento Grid -->
+  <section class="py-16 bg-slate-50">
     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-      <!-- Main features -->
-      <div class="space-y-16">
-        {features.map((feature, index) => (
-          <div class={`flex flex-col lg:flex-row gap-8 lg:gap-16 items-center ${index % 2 === 1 ? 'lg:flex-row-reverse' : ''}`}>
-            <!-- Visual -->
-            <div class="w-full lg:w-1/2">
-              <div class={`bg-gradient-to-br ${feature.gradient} rounded-2xl p-8 aspect-video flex items-center justify-center`}>
-                <div class="w-24 h-24 bg-white/20 rounded-2xl flex items-center justify-center">
-                  <svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" set:html={feature.icon} />
-                </div>
-              </div>
-            </div>
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6" id="features-grid">
+        {features.map((feature) => (
+          <div
+            class={`feature-card group relative bg-white rounded-2xl border border-slate-200 overflow-hidden hover:shadow-xl hover:border-slate-300 transition-all duration-300 ${feature.size === 'large' ? 'lg:col-span-2' : ''}`}
+            data-category={feature.category}
+            id={feature.id}
+          >
+            <!-- Gradient accent on hover -->
+            <div
+              class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+              style={`background: linear-gradient(135deg, ${feature.color}08, transparent)`}
+            ></div>
 
-            <!-- Content -->
-            <div class="w-full lg:w-1/2">
-              <h2 class="text-2xl font-bold text-slate-900 mb-4">{feature.title}</h2>
-              <p class="text-slate-600 mb-6">{feature.description}</p>
-              <ul class="space-y-3">
+            <div class="relative p-6 lg:p-8">
+              <!-- Header -->
+              <div class="flex items-start justify-between mb-4">
+                <div
+                  class="w-12 h-12 rounded-xl flex items-center justify-center shadow-lg"
+                  style={`background: linear-gradient(135deg, ${feature.color}, ${feature.color}dd)`}
+                >
+                  <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" set:html={feature.icon} />
+                </div>
+                <span
+                  class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold capitalize"
+                  style={`background-color: ${feature.color}15; color: ${feature.color}`}
+                >
+                  {feature.category}
+                </span>
+              </div>
+
+              <!-- Content -->
+              <h3 class="text-xl font-bold text-slate-900 mb-2">{feature.title}</h3>
+              <p class="text-slate-600 mb-5">{feature.description}</p>
+
+              <!-- Details -->
+              <ul class="space-y-2">
                 {feature.details.map((detail) => (
-                  <li class="flex items-center gap-3">
-                    <svg class="w-5 h-5 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <li class="flex items-center gap-2 text-sm text-slate-600">
+                    <svg class="w-4 h-4 text-primary-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                       <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
                     </svg>
-                    <span class="text-slate-700">{detail}</span>
+                    {detail}
                   </li>
                 ))}
               </ul>
@@ -131,33 +269,109 @@ const additionalFeatures = [
           </div>
         ))}
       </div>
+    </div>
+  </section>
 
-      <!-- Additional features grid -->
-      <div class="mt-24">
-        <h2 class="text-2xl font-bold text-slate-900 text-center mb-12">And much more...</h2>
-        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {additionalFeatures.map((feature) => (
-            <div class="bg-slate-50 rounded-xl p-6 border border-slate-200">
-              <h3 class="font-semibold text-slate-900 mb-2">{feature.title}</h3>
-              <p class="text-slate-600 text-sm">{feature.description}</p>
-            </div>
-          ))}
-        </div>
+  <!-- Comparison Section -->
+  <section class="py-20 bg-white">
+    <div class="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-12">
+        <span class="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold bg-slate-100 text-slate-700 mb-4">
+          Why Clubify?
+        </span>
+        <h2 class="text-3xl sm:text-4xl font-bold text-slate-900 mb-4">
+          Clubify vs. DIY approach
+        </h2>
+        <p class="text-lg text-slate-600 max-w-2xl mx-auto">
+          Stop juggling multiple tools and spending weekends on maintenance. Here's how Clubify compares.
+        </p>
       </div>
 
-      <!-- CTA -->
-      <div class="mt-24 text-center">
-        <h2 class="text-2xl font-bold text-slate-900 mb-4">Ready to get started?</h2>
-        <p class="text-slate-600 mb-8 max-w-lg mx-auto">
-          Join clubs across Ireland already using Clubify to connect with their members.
-        </p>
-        <div class="flex flex-col sm:flex-row gap-4 justify-center">
-          <Button href="/admin/signup" variant="primary" size="lg">
-            Create your club
-          </Button>
-          <Button href="/pricing" variant="secondary" size="lg">
-            View pricing
-          </Button>
+      <div class="bg-slate-50 rounded-2xl border border-slate-200 overflow-hidden">
+        <div class="grid grid-cols-3 bg-slate-100 border-b border-slate-200">
+          <div class="p-4 font-semibold text-slate-600">Feature</div>
+          <div class="p-4 font-semibold text-primary-600 text-center bg-primary-50">Clubify</div>
+          <div class="p-4 font-semibold text-slate-600 text-center">DIY Approach</div>
+        </div>
+        {comparison.map((item, index) => (
+          <div class={`grid grid-cols-3 ${index !== comparison.length - 1 ? 'border-b border-slate-200' : ''}`}>
+            <div class="p-4 text-slate-700">{item.feature}</div>
+            <div class="p-4 text-center bg-primary-50/50">
+              {typeof item.clubify === 'boolean' ? (
+                <svg class="w-5 h-5 text-primary-500 mx-auto" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                </svg>
+              ) : (
+                <span class="text-primary-600 font-medium">{item.clubify}</span>
+              )}
+            </div>
+            <div class="p-4 text-center text-slate-500 text-sm">{item.diy}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- Integration Logos -->
+  <section class="py-16 bg-slate-50 border-y border-slate-100">
+    <div class="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-10">
+        <h3 class="text-lg font-semibold text-slate-900 mb-2">Integrates with the tools you use</h3>
+        <p class="text-slate-600">Connect to social platforms and share content everywhere</p>
+      </div>
+      <div class="flex flex-wrap justify-center items-center gap-8 md:gap-12">
+        <div class="flex items-center gap-2 text-slate-400">
+          <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+          <span class="font-medium">Facebook</span>
+        </div>
+        <div class="flex items-center gap-2 text-slate-400">
+          <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          <span class="font-medium">Twitter/X</span>
+        </div>
+        <div class="flex items-center gap-2 text-slate-400">
+          <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+          <span class="font-medium">Instagram</span>
+        </div>
+        <div class="flex items-center gap-2 text-slate-400">
+          <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-5.2 1.74 2.89 2.89 0 012.31-4.64 2.93 2.93 0 01.88.13V9.4a6.84 6.84 0 00-1-.05A6.33 6.33 0 005 20.1a6.34 6.34 0 0010.86-4.43v-7a8.16 8.16 0 004.77 1.52v-3.4a4.85 4.85 0 01-1-.1z"/></svg>
+          <span class="font-medium">TikTok</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="py-20 bg-white">
+    <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+      <div class="bg-gradient-to-br from-primary-500 to-primary-600 rounded-3xl p-8 md:p-12 text-center relative overflow-hidden">
+        <div class="absolute inset-0 opacity-10">
+          <svg class="w-full h-full" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <pattern id="cta-pattern" x="0" y="0" width="32" height="32" patternUnits="userSpaceOnUse">
+                <circle cx="16" cy="16" r="1.5" fill="white"/>
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#cta-pattern)"/>
+          </svg>
+        </div>
+
+        <div class="relative">
+          <h2 class="text-2xl md:text-3xl font-bold text-white mb-4">Ready to simplify your club management?</h2>
+          <p class="text-white/80 mb-8 max-w-xl mx-auto">
+            Join 500+ clubs already using Clubify to save time every week. Start your free trial today.
+          </p>
+          <div class="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button href="/admin/signup" variant="dark" size="lg">
+              Start free trial
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+              </svg>
+            </Button>
+            <Button href="/pricing" variant="ghost" size="lg" class="text-white border-white/20 hover:bg-white/10">
+              View pricing
+            </Button>
+          </div>
+          <p class="text-white/60 text-sm mt-4">7-day free trial · No credit card required</p>
         </div>
       </div>
     </div>
@@ -165,3 +379,44 @@ const additionalFeatures = [
 
   <Footer />
 </Layout>
+
+<script>
+  // Category filtering
+  const filterBtns = document.querySelectorAll('.category-btn');
+  const featureCards = document.querySelectorAll('.feature-card');
+
+  filterBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const category = btn.getAttribute('data-category');
+
+      // Update button styles
+      filterBtns.forEach(b => {
+        b.classList.remove('bg-primary-500', 'text-white', 'shadow-lg', 'shadow-primary-500/25');
+        b.classList.add('bg-slate-100', 'text-slate-600');
+      });
+      btn.classList.add('bg-primary-500', 'text-white', 'shadow-lg', 'shadow-primary-500/25');
+      btn.classList.remove('bg-slate-100', 'text-slate-600');
+
+      // Filter cards
+      featureCards.forEach(card => {
+        const cardCategory = card.getAttribute('data-category');
+        if (category === 'all' || cardCategory === category) {
+          card.style.display = '';
+          card.style.opacity = '1';
+        } else {
+          card.style.display = 'none';
+          card.style.opacity = '0';
+        }
+      });
+    });
+  });
+
+  // Smooth scroll for anchor links
+  document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', (e) => {
+      e.preventDefault();
+      const target = document.querySelector(anchor.getAttribute('href') || '');
+      target?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  });
+</script>

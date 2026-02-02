@@ -4,8 +4,11 @@ import Navigation from '../../components/Navigation.astro';
 import Footer from '../../components/Footer.astro';
 import SportHero from '../../components/sports/SportHero.astro';
 import SportFeatures from '../../components/sports/SportFeatures.astro';
+import SportHowItWorks from '../../components/sports/SportHowItWorks.astro';
+import SportUseCases from '../../components/sports/SportUseCases.astro';
 import SportTemplates from '../../components/sports/SportTemplates.astro';
-import Button from '../../components/Button.astro';
+import SportCTA from '../../components/sports/SportCTA.astro';
+import Section from '../../components/Section.astro';
 import { getSport } from '../../lib/sports';
 
 const sport = getSport('gaa');
@@ -18,147 +21,85 @@ const sport = getSport('gaa');
 
   <SportFeatures sport={sport} />
 
-  <!-- How it works section -->
-  <section class="py-20 md:py-28 bg-white">
-    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-      <div class="text-center max-w-3xl mx-auto mb-16">
-        <h2 class="text-3xl sm:text-4xl md:text-5xl font-bold text-slate-900 mb-4">
-          Get your club online in minutes
+  <SportHowItWorks sport={sport} />
+
+  <SportUseCases sport={sport} />
+
+  <!-- GAA-specific scoring showcase -->
+  <Section size="md" class="bg-slate-50">
+    <div class="grid lg:grid-cols-2 gap-12 items-center">
+      <div>
+        <span class="section-badge">Built for GAA</span>
+        <h2 class="text-3xl sm:text-4xl font-bold text-slate-900 mb-6">
+          GAA-specific scoring and terminology
         </h2>
-        <p class="text-lg md:text-xl text-slate-600">
-          Three simple steps to a professional club presence.
+        <p class="text-lg text-slate-600 mb-6">
+          Unlike generic sports platforms, Clubify understands GAA. Our fixture and result system supports goals and points (e.g., 2-14 to 1-11), championship vs league formats, and all the terminology your members expect.
         </p>
+        <ul class="space-y-3">
+          <li class="flex items-start gap-3">
+            <svg class="w-6 h-6 text-primary-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+            <span class="text-slate-700">Goals and points scoring (not just goals)</span>
+          </li>
+          <li class="flex items-start gap-3">
+            <svg class="w-6 h-6 text-primary-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+            <span class="text-slate-700">Support for all codes: Football, Hurling, Camogie, Ladies</span>
+          </li>
+          <li class="flex items-start gap-3">
+            <svg class="w-6 h-6 text-primary-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+            <span class="text-slate-700">Age group management from U6 to Senior</span>
+          </li>
+          <li class="flex items-start gap-3">
+            <svg class="w-6 h-6 text-primary-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+            <span class="text-slate-700">County selection and local context</span>
+          </li>
+        </ul>
       </div>
-
-      <div class="grid md:grid-cols-3 gap-8">
-        <div class="text-center">
-          <div class="w-16 h-16 rounded-2xl bg-primary-100 text-primary-600 flex items-center justify-center text-2xl font-bold mx-auto mb-4">
-            1
+      <div class="relative">
+        <div class="bg-gradient-to-br from-primary-500 to-primary-700 rounded-2xl p-8 text-white">
+          <div class="text-center mb-6">
+            <p class="text-white/60 text-sm mb-1">Senior Football Championship</p>
+            <p class="text-lg font-semibold">Semi-Final Result</p>
           </div>
-          <h3 class="text-xl font-bold text-slate-900 mb-2">Create your club</h3>
-          <p class="text-slate-600">Sign up and enter your club details. Pick your county and choose a URL.</p>
-        </div>
-        <div class="text-center">
-          <div class="w-16 h-16 rounded-2xl bg-primary-100 text-primary-600 flex items-center justify-center text-2xl font-bold mx-auto mb-4">
-            2
+          <div class="flex items-center justify-between">
+            <div class="text-center">
+              <div class="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center mb-2 mx-auto">
+                <span class="text-2xl font-bold">C</span>
+              </div>
+              <p class="font-semibold">Castlebar</p>
+            </div>
+            <div class="text-center">
+              <p class="text-4xl font-bold">2-14</p>
+              <p class="text-white/60 text-sm">22 pts</p>
+            </div>
+            <div class="text-sm text-white/60">v</div>
+            <div class="text-center">
+              <p class="text-4xl font-bold">1-11</p>
+              <p class="text-white/60 text-sm">14 pts</p>
+            </div>
+            <div class="text-center">
+              <div class="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center mb-2 mx-auto">
+                <span class="text-2xl font-bold">B</span>
+              </div>
+              <p class="font-semibold">Ballina</p>
+            </div>
           </div>
-          <h3 class="text-xl font-bold text-slate-900 mb-2">Choose a template</h3>
-          <p class="text-slate-600">Pick from three GAA-specific templates. Add your crest and colours.</p>
         </div>
-        <div class="text-center">
-          <div class="w-16 h-16 rounded-2xl bg-primary-100 text-primary-600 flex items-center justify-center text-2xl font-bold mx-auto mb-4">
-            3
-          </div>
-          <h3 class="text-xl font-bold text-slate-900 mb-2">Go live</h3>
-          <p class="text-slate-600">Publish your site and start adding news, fixtures, and results.</p>
-        </div>
-      </div>
-
-      <div class="text-center mt-12">
-        <Button href="/admin/signup" variant="primary" size="lg">
-          Get started free
-        </Button>
       </div>
     </div>
-  </section>
+  </Section>
 
   <SportTemplates sport={sport} />
 
-  <!-- GAA-specific features -->
-  <section class="py-20 md:py-28 bg-white">
-    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-      <div class="grid lg:grid-cols-2 gap-12 items-center">
-        <div>
-          <span class="inline-block px-3 py-1 rounded-full bg-primary-100 text-primary-700 text-sm font-semibold mb-4">
-            Built for GAA
-          </span>
-          <h2 class="text-3xl sm:text-4xl font-bold text-slate-900 mb-6">
-            GAA-specific scoring and terminology
-          </h2>
-          <p class="text-lg text-slate-600 mb-6">
-            Unlike generic sports platforms, Clubify understands GAA. Our fixture and result system supports goals and points (e.g., 2-14 to 1-11), championship vs league formats, and all the terminology your members expect.
-          </p>
-          <ul class="space-y-3">
-            <li class="flex items-start gap-3">
-              <svg class="w-6 h-6 text-primary-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-              </svg>
-              <span class="text-slate-700">Goals and points scoring (not just goals)</span>
-            </li>
-            <li class="flex items-start gap-3">
-              <svg class="w-6 h-6 text-primary-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-              </svg>
-              <span class="text-slate-700">Support for all codes: Football, Hurling, Camogie, Ladies</span>
-            </li>
-            <li class="flex items-start gap-3">
-              <svg class="w-6 h-6 text-primary-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-              </svg>
-              <span class="text-slate-700">Age group management from U6 to Senior</span>
-            </li>
-            <li class="flex items-start gap-3">
-              <svg class="w-6 h-6 text-primary-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-              </svg>
-              <span class="text-slate-700">County selection and local context</span>
-            </li>
-          </ul>
-        </div>
-        <div class="relative">
-          <div class="bg-gradient-to-br from-primary-500 to-primary-700 rounded-2xl p-8 text-white">
-            <div class="text-center mb-6">
-              <p class="text-white/60 text-sm mb-1">Senior Football Championship</p>
-              <p class="text-lg font-semibold">Semi-Final Result</p>
-            </div>
-            <div class="flex items-center justify-between">
-              <div class="text-center">
-                <div class="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center mb-2 mx-auto">
-                  <span class="text-2xl font-bold">C</span>
-                </div>
-                <p class="font-semibold">Castlebar</p>
-              </div>
-              <div class="text-center">
-                <p class="text-4xl font-bold">2-14</p>
-                <p class="text-white/60 text-sm">22 pts</p>
-              </div>
-              <div class="text-sm text-white/60">v</div>
-              <div class="text-center">
-                <p class="text-4xl font-bold">1-11</p>
-                <p class="text-white/60 text-sm">14 pts</p>
-              </div>
-              <div class="text-center">
-                <div class="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center mb-2 mx-auto">
-                  <span class="text-2xl font-bold">B</span>
-                </div>
-                <p class="font-semibold">Ballina</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Final CTA -->
-  <section class="py-20 md:py-28 bg-gradient-to-br from-primary-600 to-primary-800">
-    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
-      <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">
-        Ready to launch your GAA club website?
-      </h2>
-      <p class="text-lg text-white/80 max-w-2xl mx-auto mb-8">
-        Join hundreds of GAA clubs already using Clubify. Get started in minutes.
-      </p>
-      <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
-        <Button href="/admin/signup" variant="secondary" size="lg" class="bg-white text-primary-700 hover:bg-white/90">
-          Create your club free
-        </Button>
-        <Button href="/pricing" variant="secondary" size="lg" class="border-white/30 text-white hover:bg-white/10">
-          View pricing
-        </Button>
-      </div>
-    </div>
-  </section>
+  <SportCTA sport={sport} />
 
   <Footer />
 </Layout>

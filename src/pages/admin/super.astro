@@ -27,14 +27,14 @@ const liveRate = stats.clubs ? Math.round((stats.live_clubs / stats.clubs) * 100
 // Health score helpers
 function getHealthColor(score: number, max: number): string {
   const percentage = (score / max) * 100;
-  if (percentage >= 80) return 'bg-green-100 text-green-700 border-green-200';
-  if (percentage >= 60) return 'bg-amber-100 text-amber-700 border-amber-200';
-  return 'bg-red-100 text-red-700 border-red-200';
+  if (percentage >= 80) return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+  if (percentage >= 60) return 'bg-amber-50 text-amber-700 border-amber-200';
+  return 'bg-red-50 text-red-700 border-red-200';
 }
 
 function getHealthBgColor(score: number, max: number): string {
   const percentage = (score / max) * 100;
-  if (percentage >= 80) return '#22c55e';
+  if (percentage >= 80) return '#10b981';
   if (percentage >= 60) return '#f59e0b';
   return '#ef4444';
 }
@@ -42,89 +42,124 @@ function getHealthBgColor(score: number, max: number): string {
 
 <Layout title="Clubify Super Admin">
   <div class="min-h-screen bg-slate-50">
-    <header class="sticky top-0 z-30 bg-white/80 backdrop-blur border-b border-slate-200">
-      <div class="mx-auto max-w-7xl px-6 py-4 flex items-center justify-between">
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-lg shadow-violet-500/20">
-            <svg class="w-6 h-6 text-white" viewBox="0 0 24 24" fill="none">
-              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" fill="currentColor" opacity="0.3"/>
-              <circle cx="12" cy="12" r="2" fill="currentColor"/>
-            </svg>
+    <!-- Header with glass morphism -->
+    <header class="sticky top-0 z-30 bg-white/80 backdrop-blur-xl border-b border-slate-200/80">
+      <div class="mx-auto max-w-7xl px-6 py-4">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-4">
+            <!-- Logo -->
+            <a href="/" class="flex items-center gap-3 group">
+              <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center shadow-lg shadow-primary-500/25 group-hover:shadow-primary-500/40 transition-shadow">
+                <svg class="w-6 h-6 text-white" viewBox="0 0 24 24" fill="none">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" fill="currentColor" opacity="0.3"/>
+                  <circle cx="12" cy="12" r="2" fill="currentColor"/>
+                </svg>
+              </div>
+              <div>
+                <span class="text-lg font-bold text-slate-900">Clubify</span>
+                <span class="hidden sm:inline-block ml-2 px-2 py-0.5 text-xs font-semibold bg-primary-100 text-primary-700 rounded-full">Super Admin</span>
+              </div>
+            </a>
           </div>
-          <div>
-            <p class="text-sm text-slate-500">Clubify Platform</p>
-            <h1 class="text-lg font-bold text-slate-900">Super Admin</h1>
+
+          <div class="flex items-center gap-3">
+            <div class="hidden sm:flex items-center gap-2 px-3 py-2 bg-slate-100 rounded-xl">
+              <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
+              <span class="text-sm font-medium text-slate-600">{user.email}</span>
+            </div>
+            <button
+              id="logout-btn"
+              class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 border border-slate-200 rounded-xl hover:bg-slate-100 hover:border-slate-300 transition-all"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+              </svg>
+              <span class="hidden sm:inline">Sign out</span>
+            </button>
           </div>
-        </div>
-        <div class="flex items-center gap-3">
-          <span class="inline-flex items-center gap-1.5 text-sm text-slate-600 bg-slate-100 px-3 py-1.5 rounded-full">
-            <span class="w-2 h-2 bg-violet-500 rounded-full"></span>
-            {user.email}
-          </span>
-          <button id="logout-btn" class="px-4 py-2 text-sm font-medium text-slate-600 border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors">
-            Sign out
-          </button>
         </div>
       </div>
     </header>
 
     <main class="mx-auto max-w-7xl px-6 py-8">
-      <!-- Header -->
+      <!-- Page Header -->
       <div class="mb-8">
-        <h2 class="text-2xl font-bold text-slate-900">Platform Overview</h2>
-        <p class="text-slate-600 mt-1">Monitor all clubs, manage live status, and access admin tools.</p>
+        <div class="flex items-center gap-3 mb-2">
+          <div class="section-badge-pill">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+            </svg>
+            Platform Overview
+          </div>
+        </div>
+        <h1 class="text-3xl font-bold text-slate-900 mb-2">Dashboard</h1>
+        <p class="text-slate-600">Monitor all clubs, manage live status, and access admin tools.</p>
       </div>
 
       <!-- Stats Grid -->
       <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
-          <div class="flex items-center gap-3 mb-3">
-            <div class="w-10 h-10 rounded-xl bg-violet-100 flex items-center justify-center">
-              <svg class="w-5 h-5 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <!-- Total Clubs -->
+        <div class="group relative bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-md hover:border-primary-200 transition-all overflow-hidden">
+          <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary-400 to-primary-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+          <div class="flex items-start justify-between mb-4">
+            <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-primary-50 to-primary-100 flex items-center justify-center">
+              <svg class="w-6 h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
               </svg>
             </div>
-            <p class="text-sm font-medium text-slate-500">Total Clubs</p>
+            <span class="flex items-center gap-1 text-xs font-medium text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full">
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/>
+              </svg>
+              {liveRate}% live
+            </span>
           </div>
+          <p class="text-sm font-medium text-slate-500 mb-1">Total Clubs</p>
           <p class="text-3xl font-bold text-slate-900">{stats.clubs}</p>
-          <p class="text-sm text-slate-500 mt-1">{stats.live_clubs} live ({liveRate}%)</p>
+          <p class="text-sm text-slate-500 mt-1">{stats.live_clubs} currently live</p>
         </div>
 
-        <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
-          <div class="flex items-center gap-3 mb-3">
-            <div class="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center">
-              <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <!-- Users -->
+        <div class="group relative bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-md hover:border-blue-200 transition-all overflow-hidden">
+          <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-400 to-blue-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+          <div class="flex items-start justify-between mb-4">
+            <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center">
+              <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m3 5.197V21"/>
               </svg>
             </div>
-            <p class="text-sm font-medium text-slate-500">Users</p>
           </div>
+          <p class="text-sm font-medium text-slate-500 mb-1">Total Users</p>
           <p class="text-3xl font-bold text-slate-900">{stats.users}</p>
-          <p class="text-sm text-slate-500 mt-1">Total accounts</p>
+          <p class="text-sm text-slate-500 mt-1">Registered accounts</p>
         </div>
 
-        <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
-          <div class="flex items-center gap-3 mb-3">
-            <div class="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center">
-              <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <!-- Content -->
+        <div class="group relative bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-md hover:border-emerald-200 transition-all overflow-hidden">
+          <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-400 to-emerald-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+          <div class="flex items-start justify-between mb-4">
+            <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-50 to-emerald-100 flex items-center justify-center">
+              <svg class="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
               </svg>
             </div>
-            <p class="text-sm font-medium text-slate-500">Content</p>
           </div>
+          <p class="text-sm font-medium text-slate-500 mb-1">Total Content</p>
           <p class="text-3xl font-bold text-slate-900">{stats.posts}</p>
           <p class="text-sm text-slate-500 mt-1">{stats.pages} pages, {stats.fixtures} fixtures</p>
         </div>
 
-        <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
-          <div class="flex items-center gap-3 mb-3">
-            <div class="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center">
-              <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <!-- Media -->
+        <div class="group relative bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-md hover:border-amber-200 transition-all overflow-hidden">
+          <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-400 to-amber-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+          <div class="flex items-start justify-between mb-4">
+            <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-50 to-amber-100 flex items-center justify-center">
+              <svg class="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
               </svg>
             </div>
-            <p class="text-sm font-medium text-slate-500">Media</p>
           </div>
+          <p class="text-sm font-medium text-slate-500 mb-1">Media Files</p>
           <p class="text-3xl font-bold text-slate-900">{stats.media}</p>
           <p class="text-sm text-slate-500 mt-1">Uploads stored</p>
         </div>
@@ -132,38 +167,38 @@ function getHealthBgColor(score: number, max: number): string {
 
       <!-- Clubs Table -->
       <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-        <div class="flex flex-col gap-4 border-b border-slate-200 p-6 md:flex-row md:items-center md:justify-between">
+        <!-- Table Header -->
+        <div class="flex flex-col gap-4 border-b border-slate-200 p-6 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h3 class="text-lg font-bold text-slate-900">Clubs</h3>
-            <p class="text-sm text-slate-500">Search, inspect, impersonate, and manage clubs.</p>
+            <h2 class="text-lg font-bold text-slate-900">All Clubs</h2>
+            <p class="text-sm text-slate-500 mt-0.5">Search, inspect, and manage club settings.</p>
           </div>
-          <div class="flex items-center gap-3">
-            <div class="relative">
-              <input
-                id="club-search"
-                type="search"
-                placeholder="Search by club or slug..."
-                class="w-72 max-w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent"
-              />
-              <svg class="w-4 h-4 text-slate-400 absolute right-4 top-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M10 18a8 8 0 100-16 8 8 0 000 16z"/>
-              </svg>
-            </div>
+          <div class="relative">
+            <input
+              id="club-search"
+              type="search"
+              placeholder="Search clubs..."
+              class="w-full sm:w-72 pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all"
+            />
+            <svg class="w-4 h-4 text-slate-400 absolute left-3.5 top-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M10 18a8 8 0 100-16 8 8 0 000 16z"/>
+            </svg>
           </div>
         </div>
 
+        <!-- Table -->
         <div class="overflow-x-auto">
           <table class="min-w-full text-sm">
-            <thead class="bg-slate-50 text-slate-500 border-b border-slate-200">
+            <thead class="bg-slate-50/80 text-slate-500 border-b border-slate-200">
               <tr>
                 <th class="px-6 py-4 text-left font-semibold">Club</th>
                 <th class="px-6 py-4 text-left font-semibold">Health</th>
                 <th class="px-6 py-4 text-left font-semibold">Status</th>
-                <th class="px-6 py-4 text-left font-semibold">Template</th>
-                <th class="px-6 py-4 text-left font-semibold">Members</th>
-                <th class="px-6 py-4 text-left font-semibold">Content</th>
-                <th class="px-6 py-4 text-left font-semibold">Last Activity</th>
-                <th class="px-6 py-4 text-left font-semibold">Actions</th>
+                <th class="px-6 py-4 text-left font-semibold hidden lg:table-cell">Template</th>
+                <th class="px-6 py-4 text-left font-semibold hidden md:table-cell">Members</th>
+                <th class="px-6 py-4 text-left font-semibold hidden xl:table-cell">Content</th>
+                <th class="px-6 py-4 text-left font-semibold hidden lg:table-cell">Last Activity</th>
+                <th class="px-6 py-4 text-right font-semibold">Actions</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-100">
@@ -181,25 +216,25 @@ function getHealthBgColor(score: number, max: number): string {
                       {club.crest_url ? (
                         <img src={club.crest_url} alt="" class="w-10 h-10 rounded-xl object-contain bg-slate-50 border border-slate-200" />
                       ) : (
-                        <div class="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400">
+                        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center text-slate-400">
                           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
                           </svg>
                         </div>
                       )}
-                      <div>
-                        <p class="font-semibold text-slate-900">{club.name}</p>
-                        <p class="text-xs text-slate-500 flex items-center gap-1">
-                          <span class="slug-display">{club.slug}</span>.clubify.ie
+                      <div class="min-w-0">
+                        <p class="font-semibold text-slate-900 truncate">{club.name}</p>
+                        <div class="flex items-center gap-1 text-xs text-slate-500">
+                          <span class="slug-display truncate max-w-[120px]">{club.slug}</span>.clubify.ie
                           <button
-                            class="edit-slug-btn p-0.5 text-slate-400 hover:text-violet-600 transition-colors"
+                            class="edit-slug-btn p-0.5 text-slate-400 hover:text-primary-600 transition-colors"
                             title="Edit slug"
                           >
                             <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
                             </svg>
                           </button>
-                        </p>
+                        </div>
                       </div>
                     </div>
                   </td>
@@ -210,76 +245,60 @@ function getHealthBgColor(score: number, max: number): string {
                         title={`${club.health_score}/${club.health_max} health checks passed`}
                       >
                         <span
-                          class="w-2 h-2 rounded-full"
+                          class="w-1.5 h-1.5 rounded-full"
                           style={`background-color: ${getHealthBgColor(club.health_score, club.health_max)}`}
                         ></span>
                         {club.health_score}/{club.health_max}
-                      </div>
-                      <div class="hidden xl:flex items-center gap-1">
-                        <span
-                          class={`w-5 h-5 rounded flex items-center justify-center text-xs ${club.health_checks?.hasCrest ? 'bg-green-100 text-green-600' : 'bg-slate-100 text-slate-400'}`}
-                          title={club.health_checks?.hasCrest ? 'Has crest' : 'No crest'}
-                        >
-                          {club.health_checks?.hasCrest ? '&#10003;' : '&#10005;'}
-                        </span>
-                        <span
-                          class={`w-5 h-5 rounded flex items-center justify-center text-xs ${club.health_checks?.hasContact ? 'bg-green-100 text-green-600' : 'bg-slate-100 text-slate-400'}`}
-                          title={club.health_checks?.hasContact ? 'Has contact info' : 'No contact info'}
-                        >
-                          {club.health_checks?.hasContact ? '&#10003;' : '&#10005;'}
-                        </span>
-                        <span
-                          class={`w-5 h-5 rounded flex items-center justify-center text-xs ${club.health_checks?.hasPublishedPost ? 'bg-green-100 text-green-600' : 'bg-slate-100 text-slate-400'}`}
-                          title={club.health_checks?.hasPublishedPost ? 'Has published content' : 'No published content'}
-                        >
-                          {club.health_checks?.hasPublishedPost ? '&#10003;' : '&#10005;'}
-                        </span>
                       </div>
                     </div>
                   </td>
                   <td class="px-6 py-4">
                     <span
-                      class={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ${
-                        club.is_live ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'
+                      class={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ${
+                        club.is_live ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-amber-50 text-amber-700 border border-amber-200'
                       }`}
                       data-status-pill
                     >
-                      <span class={`w-1.5 h-1.5 rounded-full mr-1.5 ${club.is_live ? 'bg-green-500' : 'bg-amber-500'}`}></span>
+                      <span class={`w-1.5 h-1.5 rounded-full ${club.is_live ? 'bg-emerald-500' : 'bg-amber-500'}`}></span>
                       {club.is_live ? 'Live' : 'Draft'}
                     </span>
                   </td>
-                  <td class="px-6 py-4">
-                    <span class="capitalize text-slate-700 bg-slate-100 px-2 py-1 rounded-lg text-xs font-medium">
+                  <td class="px-6 py-4 hidden lg:table-cell">
+                    <span class="capitalize text-slate-700 bg-slate-100 px-2.5 py-1 rounded-lg text-xs font-medium">
                       {club.template}
                     </span>
                   </td>
-                  <td class="px-6 py-4 text-slate-700">{club.member_count}</td>
-                  <td class="px-6 py-4">
-                    <div class="text-slate-700">
-                      <span class="text-slate-900 font-medium">{club.post_count}</span> posts
-                      <span class="text-slate-400 mx-1">&middot;</span>
-                      <span class="text-slate-900 font-medium">{club.fixture_count}</span> fixtures
+                  <td class="px-6 py-4 hidden md:table-cell">
+                    <span class="text-slate-700 font-medium">{club.member_count}</span>
+                  </td>
+                  <td class="px-6 py-4 hidden xl:table-cell">
+                    <div class="text-slate-700 text-xs">
+                      <span class="font-medium">{club.post_count}</span> posts
+                      <span class="text-slate-300 mx-1">&middot;</span>
+                      <span class="font-medium">{club.fixture_count}</span> fixtures
                     </div>
                   </td>
-                  <td class="px-6 py-4 text-slate-600 text-xs">
-                    {club.last_content_at ? formatDateTime(club.last_content_at) : '-'}
+                  <td class="px-6 py-4 hidden lg:table-cell">
+                    <span class="text-slate-500 text-xs">
+                      {club.last_content_at ? formatDateTime(club.last_content_at) : '-'}
+                    </span>
                   </td>
                   <td class="px-6 py-4">
-                    <div class="flex flex-wrap gap-2">
+                    <div class="flex items-center justify-end gap-2">
                       <a
                         href={`/${club.slug}`}
                         target="_blank"
-                        class="inline-flex items-center gap-1 rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50 hover:border-slate-300 transition-colors"
+                        class="inline-flex items-center gap-1 rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50 hover:border-slate-300 transition-all"
                         title="View public site"
                       >
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
                         </svg>
-                        Site
+                        <span class="hidden sm:inline">Site</span>
                       </a>
                       <button
                         type="button"
-                        class="impersonate-btn inline-flex items-center gap-1 rounded-lg border border-violet-200 bg-violet-50 px-3 py-1.5 text-xs font-medium text-violet-700 hover:bg-violet-100 hover:border-violet-300 transition-colors"
+                        class="impersonate-btn inline-flex items-center gap-1 rounded-lg border border-primary-200 bg-primary-50 px-2.5 py-1.5 text-xs font-medium text-primary-700 hover:bg-primary-100 hover:border-primary-300 transition-all"
                         data-club-id={club.id}
                         title="View as club admin"
                       >
@@ -287,11 +306,16 @@ function getHealthBgColor(score: number, max: number): string {
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                         </svg>
-                        View As
+                        <span class="hidden sm:inline">View As</span>
                       </button>
                       <button
                         type="button"
-                        class="toggle-live-btn inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-semibold text-white bg-slate-900 hover:bg-slate-800 transition-colors"
+                        class="toggle-live-btn inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-semibold transition-all"
+                        class:list={[
+                          club.is_live
+                            ? 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                            : 'bg-emerald-500 text-white hover:bg-emerald-600 shadow-sm shadow-emerald-500/25'
+                        ]}
                         data-club-id={club.id}
                         data-live={club.is_live ? '1' : '0'}
                       >
@@ -299,14 +323,13 @@ function getHealthBgColor(score: number, max: number): string {
                       </button>
                       <button
                         type="button"
-                        class="export-btn inline-flex items-center gap-1 rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50 hover:border-slate-300 transition-colors"
+                        class="export-btn inline-flex items-center justify-center rounded-lg border border-slate-200 p-1.5 text-slate-500 hover:bg-slate-50 hover:text-slate-700 hover:border-slate-300 transition-all"
                         data-club-id={club.id}
                         title="Export GDPR data"
                       >
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
                         </svg>
-                        Export
                       </button>
                     </div>
                   </td>
@@ -315,22 +338,44 @@ function getHealthBgColor(score: number, max: number): string {
             </tbody>
           </table>
         </div>
+
+        <!-- Empty state -->
+        {clubs.length === 0 && (
+          <div class="p-12 text-center">
+            <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-slate-100 flex items-center justify-center">
+              <svg class="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+              </svg>
+            </div>
+            <h3 class="text-lg font-semibold text-slate-900 mb-2">No clubs yet</h3>
+            <p class="text-slate-500">Clubs will appear here once they sign up.</p>
+          </div>
+        )}
       </div>
     </main>
   </div>
 
   <!-- Edit Slug Modal -->
   <div id="slug-modal" class="hidden fixed inset-0 z-50 overflow-y-auto">
-    <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm" data-modal-backdrop></div>
+    <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" data-modal-backdrop></div>
     <div class="flex min-h-full items-center justify-center p-4">
-      <div class="relative bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-md">
+      <div class="relative bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-md animate-[slideUp_0.2s_ease-out]">
         <div class="p-6 border-b border-slate-200">
-          <h3 class="text-lg font-bold text-slate-900">Edit Club Slug</h3>
-          <p class="text-sm text-slate-500 mt-1">Change the URL path for this club.</p>
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="text-lg font-bold text-slate-900">Edit Club Slug</h3>
+              <p class="text-sm text-slate-500 mt-1">Change the URL path for this club.</p>
+            </div>
+            <button data-modal-close class="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+              </svg>
+            </button>
+          </div>
         </div>
         <form id="slug-form" class="p-6">
           <input type="hidden" id="slug-club-id" />
-          <div class="mb-4">
+          <div class="mb-6">
             <label class="block text-sm font-medium text-slate-700 mb-2">New Slug</label>
             <div class="flex items-center gap-2">
               <input
@@ -340,10 +385,10 @@ function getHealthBgColor(score: number, max: number): string {
                 minlength="3"
                 maxlength="50"
                 required
-                class="flex-1 px-4 py-3 border border-slate-300 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500"
+                class="flex-1 px-4 py-3 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all"
                 placeholder="club-name"
               />
-              <span class="text-slate-500">.clubify.ie</span>
+              <span class="text-slate-500 text-sm">.clubify.ie</span>
             </div>
             <p class="text-xs text-slate-500 mt-2">Lowercase letters, numbers, and hyphens only. 3-50 characters.</p>
           </div>
@@ -357,7 +402,7 @@ function getHealthBgColor(score: number, max: number): string {
             </button>
             <button
               type="submit"
-              class="px-4 py-2.5 text-sm font-semibold text-white bg-violet-600 hover:bg-violet-700 rounded-xl transition-colors"
+              class="px-4 py-2.5 text-sm font-semibold text-white bg-primary-500 hover:bg-primary-600 rounded-xl transition-colors shadow-sm shadow-primary-500/25"
             >
               Update Slug
             </button>
@@ -414,11 +459,16 @@ function getHealthBgColor(score: number, max: number): string {
 
         btn.dataset.live = newLive ? '1' : '0';
         btn.textContent = newLive ? 'Set Draft' : 'Go Live';
+        btn.className = `toggle-live-btn inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-semibold transition-all ${
+          newLive
+            ? 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+            : 'bg-emerald-500 text-white hover:bg-emerald-600 shadow-sm shadow-emerald-500/25'
+        }`;
 
         if (pill) {
-          pill.innerHTML = `<span class="w-1.5 h-1.5 rounded-full mr-1.5 ${newLive ? 'bg-green-500' : 'bg-amber-500'}"></span>${newLive ? 'Live' : 'Draft'}`;
-          pill.className = `inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ${
-            newLive ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'
+          pill.innerHTML = `<span class="w-1.5 h-1.5 rounded-full ${newLive ? 'bg-emerald-500' : 'bg-amber-500'}"></span>${newLive ? 'Live' : 'Draft'}`;
+          pill.className = `inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ${
+            newLive ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-amber-50 text-amber-700 border border-amber-200'
           }`;
         }
       } catch (error: any) {
@@ -458,7 +508,7 @@ function getHealthBgColor(score: number, max: number): string {
       } catch (error: any) {
         alert(error.message || 'Failed to impersonate');
         btn.disabled = false;
-        btn.innerHTML = `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>View As`;
+        btn.innerHTML = `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg><span class="hidden sm:inline">View As</span>`;
       }
     });
   });
@@ -471,7 +521,7 @@ function getHealthBgColor(score: number, max: number): string {
       if (!clubId) return;
 
       btn.disabled = true;
-      btn.innerHTML = '<span class="animate-pulse">Exporting...</span>';
+      btn.innerHTML = '<svg class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>';
 
       try {
         const response = await fetch(`/api/super-admin/clubs/${clubId}?export=gdpr`);
@@ -493,7 +543,7 @@ function getHealthBgColor(score: number, max: number): string {
         alert(error.message || 'Export failed');
       } finally {
         btn.disabled = false;
-        btn.innerHTML = `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>Export`;
+        btn.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>`;
       }
     });
   });
@@ -526,8 +576,9 @@ function getHealthBgColor(score: number, max: number): string {
     });
   });
 
-  slugModal?.querySelector('[data-modal-backdrop]')?.addEventListener('click', closeSlugModal);
-  slugModal?.querySelector('[data-modal-close]')?.addEventListener('click', closeSlugModal);
+  slugModal?.querySelectorAll('[data-modal-backdrop], [data-modal-close]').forEach(el => {
+    el.addEventListener('click', closeSlugModal);
+  });
 
   slugForm?.addEventListener('submit', async (e) => {
     e.preventDefault();

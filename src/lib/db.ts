@@ -218,6 +218,15 @@ export interface ClubOverview extends Club {
   fixture_count: number;
   page_count: number;
   last_content_at: string | null;
+  health_score: number;
+  health_max: number;
+  health_checks: {
+    hasCrest: boolean;
+    hasContact: boolean;
+    hasNav: boolean;
+    hasPublishedPost: boolean;
+    hasSocialConnection: boolean;
+  };
 }
 
 export interface SiteSettings {

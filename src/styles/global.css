@@ -1,26 +1,25 @@
 @import "tailwindcss";
 
-/* Custom theme tokens - GAA inspired colors */
+/* ========================================
+   Clubify Design System - Modern SaaS
+   Teal-based, sport-neutral palette
+   ======================================== */
+
 @theme {
-  /* Primary brand colors - Irish green and gold */
-  --color-gaa-green: #006838;
-  --color-gaa-gold: #FFB300;
-  --color-gaa-dark: #004225;
+  /* Primary brand colors - Teal (sport-neutral) */
+  --color-primary-50: #f0fdfa;
+  --color-primary-100: #ccfbf1;
+  --color-primary-200: #99f6e4;
+  --color-primary-300: #5eead4;
+  --color-primary-400: #2dd4bf;
+  --color-primary-500: #14b8a6;
+  --color-primary-600: #0d9488;
+  --color-primary-700: #0f766e;
+  --color-primary-800: #115e59;
+  --color-primary-900: #134e4a;
+  --color-primary-950: #042f2e;
 
-  /* Modern gradient palette */
-  --color-primary-50: #f0fdf4;
-  --color-primary-100: #dcfce7;
-  --color-primary-200: #bbf7d0;
-  --color-primary-300: #86efac;
-  --color-primary-400: #4ade80;
-  --color-primary-500: #22c55e;
-  --color-primary-600: #16a34a;
-  --color-primary-700: #15803d;
-  --color-primary-800: #166534;
-  --color-primary-900: #14532d;
-  --color-primary-950: #052e16;
-
-  /* Accent colors */
+  /* Accent colors - Warm amber for CTAs */
   --color-accent-50: #fffbeb;
   --color-accent-100: #fef3c7;
   --color-accent-200: #fde68a;
@@ -29,7 +28,7 @@
   --color-accent-500: #f59e0b;
   --color-accent-600: #d97706;
 
-  /* Neutral palette */
+  /* Neutral palette - Slate */
   --color-slate-50: #f8fafc;
   --color-slate-100: #f1f5f9;
   --color-slate-200: #e2e8f0;
@@ -42,6 +41,15 @@
   --color-slate-900: #0f172a;
   --color-slate-950: #020617;
 
+  /* Sport-specific colors (for sport pages) */
+  --color-sport-gaa: #006838;
+  --color-sport-football: #1e40af;
+  --color-sport-rugby: #166534;
+  --color-sport-athletics: #dc2626;
+  --color-sport-golf: #15803d;
+  --color-sport-tennis: #ca8a04;
+  --color-sport-cycling: #0891b2;
+
   /* Animation durations */
   --animate-gradient: gradient 15s ease infinite;
   --animate-float: float 6s ease-in-out infinite;
@@ -50,52 +58,96 @@
 }
 
 /* ========================================
-   Admin Design System Tokens
+   Design System Tokens
    ======================================== */
 
 :root {
-  /* Border Radius - Consistent across all admin UI */
-  --radius-card: 1rem;         /* 16px - rounded-2xl for cards */
-  --radius-button: 0.75rem;    /* 12px - rounded-xl for buttons */
-  --radius-input: 0.75rem;     /* 12px - rounded-xl for inputs */
-  --radius-badge: 9999px;      /* Full round for badges/pills */
-  --radius-modal: 1rem;        /* 16px - rounded-2xl for modals */
+  /* Typography Scale - Fluid responsive sizing */
+  --text-hero: clamp(2.5rem, 5vw, 4.5rem);
+  --text-h1: clamp(2rem, 4vw, 3.5rem);
+  --text-h2: clamp(1.75rem, 3vw, 2.5rem);
+  --text-h3: clamp(1.25rem, 2vw, 1.5rem);
+  --text-body: 1rem;
+  --text-small: 0.875rem;
+  --text-xs: 0.75rem;
 
-  /* Spacing - Consistent padding/gaps */
-  --spacing-card: 1.5rem;      /* 24px - p-6 for card content */
-  --spacing-section: 2rem;     /* 32px - gap between sections */
-  --spacing-button-x: 1rem;    /* 16px - px-4 for buttons */
-  --spacing-button-y: 0.75rem; /* 12px - py-3 for buttons */
-  --spacing-input-x: 1rem;     /* 16px - px-4 for inputs */
-  --spacing-input-y: 0.75rem;  /* 12px - py-3 for inputs */
-  --spacing-grid: 1.5rem;      /* 24px - gap-6 for grids */
+  /* Line heights */
+  --leading-tight: 1.1;
+  --leading-snug: 1.3;
+  --leading-normal: 1.6;
+  --leading-relaxed: 1.75;
 
-  /* Shadows - Elevation system */
+  /* High contrast text colors (WCAG AA compliant) */
+  --color-text-primary: #0f172a;    /* 15.9:1 on white */
+  --color-text-secondary: #334155;  /* 8.6:1 on white */
+  --color-text-muted: #64748b;      /* 4.6:1 on white - meets AA */
+
+  /* Spacing Scale */
+  --space-xs: 0.25rem;    /* 4px */
+  --space-sm: 0.5rem;     /* 8px */
+  --space-md: 1rem;       /* 16px */
+  --space-lg: 1.5rem;     /* 24px */
+  --space-xl: 2rem;       /* 32px */
+  --space-2xl: 3rem;      /* 48px */
+  --space-3xl: 4rem;      /* 64px */
+  --space-section: clamp(4rem, 8vw, 8rem);
+
+  /* Border Radius */
+  --radius-sm: 0.375rem;     /* 6px */
+  --radius-md: 0.5rem;       /* 8px */
+  --radius-lg: 0.75rem;      /* 12px */
+  --radius-xl: 1rem;         /* 16px */
+  --radius-2xl: 1.5rem;      /* 24px */
+  --radius-full: 9999px;
+  --radius-card: 1rem;
+  --radius-button: 0.75rem;
+  --radius-input: 0.75rem;
+  --radius-badge: 9999px;
+  --radius-modal: 1rem;
+
+  /* Spacing - Component specific */
+  --spacing-card: 1.5rem;
+  --spacing-section: 2rem;
+  --spacing-button-x: 1rem;
+  --spacing-button-y: 0.75rem;
+  --spacing-input-x: 1rem;
+  --spacing-input-y: 0.75rem;
+  --spacing-grid: 1.5rem;
+
+  /* Shadows - Elevation system (teal-tinted) */
+  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
   --shadow-card: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   --shadow-card-hover: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  --shadow-button: 0 10px 15px -3px rgb(34 197 94 / 0.25);
+  --shadow-button: 0 10px 15px -3px rgb(20 184 166 / 0.25);
+  --shadow-button-hover: 0 10px 20px -3px rgb(20 184 166 / 0.35);
   --shadow-modal: 0 25px 50px -12px rgb(0 0 0 / 0.25);
   --shadow-dropdown: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
 
-  /* Typography - Admin specific */
+  /* Typography weights */
   --font-weight-normal: 400;
   --font-weight-medium: 500;
   --font-weight-semibold: 600;
   --font-weight-bold: 700;
 
   /* Borders */
-  --border-color: #e2e8f0;     /* slate-200 */
-  --border-color-focus: #22c55e; /* primary-500 */
+  --border-color: #e2e8f0;
+  --border-color-focus: #14b8a6;
   --border-width: 1px;
 
   /* Input backgrounds */
-  --input-bg: #f8fafc;         /* slate-50 */
+  --input-bg: #f8fafc;
   --input-bg-focus: #ffffff;
 
   /* Transitions */
   --transition-fast: 150ms ease;
   --transition-normal: 200ms ease;
   --transition-slow: 300ms ease;
+  --transition-spring: 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 /* Keyframe animations */
@@ -137,16 +189,16 @@
   }
 }
 
-/* Animated gradient background */
+/* Animated gradient background - Teal based */
 .gradient-bg {
   background: linear-gradient(
     -45deg,
-    #006838,
-    #004225,
+    #0f766e,
+    #134e4a,
+    #14b8a6,
+    #2dd4bf,
     #0d9488,
-    #22c55e,
-    #FFB300,
-    #006838
+    #0f766e
   );
   background-size: 400% 400%;
   animation: gradient 15s ease infinite;
@@ -156,24 +208,31 @@
 .mesh-gradient {
   background-color: #0f172a;
   background-image:
-    radial-gradient(at 40% 20%, hsla(152, 100%, 20%, 0.5) 0px, transparent 50%),
-    radial-gradient(at 80% 0%, hsla(45, 100%, 50%, 0.15) 0px, transparent 50%),
-    radial-gradient(at 0% 50%, hsla(152, 100%, 25%, 0.3) 0px, transparent 50%),
-    radial-gradient(at 80% 50%, hsla(170, 80%, 30%, 0.2) 0px, transparent 50%),
-    radial-gradient(at 0% 100%, hsla(152, 100%, 15%, 0.4) 0px, transparent 50%),
-    radial-gradient(at 80% 100%, hsla(45, 100%, 45%, 0.1) 0px, transparent 50%);
+    radial-gradient(at 40% 20%, hsla(174, 80%, 25%, 0.5) 0px, transparent 50%),
+    radial-gradient(at 80% 0%, hsla(174, 60%, 40%, 0.2) 0px, transparent 50%),
+    radial-gradient(at 0% 50%, hsla(174, 80%, 30%, 0.3) 0px, transparent 50%),
+    radial-gradient(at 80% 50%, hsla(174, 70%, 35%, 0.2) 0px, transparent 50%),
+    radial-gradient(at 0% 100%, hsla(174, 80%, 20%, 0.4) 0px, transparent 50%),
+    radial-gradient(at 80% 100%, hsla(174, 60%, 45%, 0.15) 0px, transparent 50%);
 }
 
-/* Light mesh gradient for marketing hero */
+/* Light mesh gradient for marketing hero - Modern SaaS style */
 .mesh-gradient-light {
-  background-color: #ffffff;
+  background-color: #fafafa;
   background-image:
-    radial-gradient(at 40% 20%, hsla(152, 80%, 90%, 0.8) 0px, transparent 50%),
-    radial-gradient(at 80% 0%, hsla(45, 100%, 90%, 0.5) 0px, transparent 50%),
-    radial-gradient(at 0% 50%, hsla(152, 80%, 85%, 0.6) 0px, transparent 50%),
-    radial-gradient(at 80% 50%, hsla(170, 80%, 90%, 0.4) 0px, transparent 50%),
-    radial-gradient(at 0% 100%, hsla(152, 80%, 92%, 0.5) 0px, transparent 50%),
-    radial-gradient(at 80% 100%, hsla(45, 100%, 92%, 0.3) 0px, transparent 50%);
+    radial-gradient(at 0% 0%, hsla(174, 80%, 95%, 0.8) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, hsla(174, 60%, 92%, 0.6) 0px, transparent 50%),
+    radial-gradient(at 50% 50%, hsla(174, 70%, 97%, 0.5) 0px, transparent 60%),
+    radial-gradient(at 0% 100%, hsla(174, 60%, 94%, 0.4) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, hsla(174, 80%, 96%, 0.3) 0px, transparent 50%);
+}
+
+/* Subtle grid pattern for modern SaaS look */
+.grid-pattern {
+  background-image:
+    linear-gradient(rgba(20, 184, 166, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(20, 184, 166, 0.03) 1px, transparent 1px);
+  background-size: 60px 60px;
 }
 
 /* Glass morphism effect (dark) */
@@ -204,13 +263,13 @@ body {
 
 /* Focus styles for accessibility */
 :focus-visible {
-  outline: 2px solid #22c55e;
+  outline: 2px solid #14b8a6;
   outline-offset: 2px;
 }
 
 /* Selection colors */
 ::selection {
-  background-color: #22c55e;
+  background-color: #14b8a6;
   color: white;
 }
 
@@ -242,7 +301,7 @@ body {
 }
 
 .markdown a {
-  color: #16a34a;
+  color: #0d9488;
   text-decoration: underline;
   text-decoration-thickness: 2px;
   text-underline-offset: 2px;
@@ -302,7 +361,7 @@ body {
   justify-content: center;
   gap: 0.5rem;
   padding: var(--spacing-button-y) var(--spacing-button-x);
-  background-color: #22c55e;
+  background-color: #14b8a6;
   color: white;
   font-weight: var(--font-weight-medium);
   border-radius: var(--radius-button);
@@ -311,7 +370,7 @@ body {
 }
 
 .admin-btn-primary:hover {
-  background-color: #16a34a;
+  background-color: #0d9488;
 }
 
 .admin-btn-primary:active {
@@ -375,7 +434,7 @@ body {
   outline: none;
   background-color: var(--input-bg-focus);
   border-color: var(--border-color-focus);
-  box-shadow: 0 0 0 3px rgb(34 197 94 / 0.1);
+  box-shadow: 0 0 0 3px rgb(20 184 166 / 0.1);
 }
 
 .admin-input:disabled {
@@ -405,7 +464,7 @@ body {
   outline: none;
   background-color: var(--input-bg-focus);
   border-color: var(--border-color-focus);
-  box-shadow: 0 0 0 3px rgb(34 197 94 / 0.1);
+  box-shadow: 0 0 0 3px rgb(20 184 166 / 0.1);
 }
 
 /* Label - Form labels */
@@ -494,4 +553,166 @@ body {
   font-size: 1.875rem;
   font-weight: var(--font-weight-bold);
   color: #0f172a;
+}
+
+/* ========================================
+   Marketing Animation Utilities
+   ======================================== */
+
+/* Animation delay utilities - replaces inline styles */
+.animate-delay-100 { animation-delay: 0.1s; }
+.animate-delay-200 { animation-delay: 0.2s; }
+.animate-delay-300 { animation-delay: 0.3s; }
+.animate-delay-400 { animation-delay: 0.4s; }
+.animate-delay-500 { animation-delay: 0.5s; }
+.animate-delay-600 { animation-delay: 0.6s; }
+
+/* Animation on scroll base class */
+.animate-on-scroll {
+  opacity: 0;
+  animation-fill-mode: forwards;
+}
+
+/* ========================================
+   Marketing Section Utilities
+   ======================================== */
+
+/* Section badge - uppercase label above titles */
+.section-badge {
+  display: inline-block;
+  color: #0d9488;
+  font-weight: 600;
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 1rem;
+}
+
+/* Section badge with background - modern SaaS style */
+.section-badge-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.375rem 1rem;
+  background-color: #f0fdfa;
+  color: #0d9488;
+  font-weight: 500;
+  font-size: 0.875rem;
+  border-radius: 9999px;
+  border: 1px solid #99f6e4;
+}
+
+/* Section title - large headings */
+.section-title {
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 1.5rem;
+}
+
+@media (min-width: 640px) {
+  .section-title {
+    font-size: 2.25rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .section-title {
+    font-size: 3rem;
+  }
+}
+
+/* Section subtitle - supporting text */
+.section-subtitle {
+  font-size: 1.125rem;
+  color: #475569;
+  max-width: 42rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+@media (min-width: 768px) {
+  .section-subtitle {
+    font-size: 1.25rem;
+  }
+}
+
+/* ========================================
+   Marketing Card Utilities
+   ======================================== */
+
+/* Feature card with hover effect */
+.marketing-card {
+  background: white;
+  border-radius: 1rem;
+  border: 1px solid #e2e8f0;
+  padding: 2rem;
+  transition: all 0.3s ease;
+}
+
+.marketing-card:hover {
+  border-color: #99f6e4;
+  box-shadow: 0 10px 25px -5px rgba(20, 184, 166, 0.1), 0 8px 10px -6px rgba(20, 184, 166, 0.05);
+  transform: translateY(-2px);
+}
+
+/* Icon container for feature cards */
+.icon-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  background: linear-gradient(135deg, #f0fdfa 0%, #ccfbf1 100%);
+  border-radius: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.icon-container svg {
+  width: 1.75rem;
+  height: 1.75rem;
+  color: #0d9488;
+}
+
+/* Modern bento grid card - for features page */
+.bento-card {
+  background: white;
+  border-radius: 1.5rem;
+  border: 1px solid #e2e8f0;
+  padding: 2rem;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.bento-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #14b8a6, #2dd4bf);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.bento-card:hover {
+  border-color: #99f6e4;
+  box-shadow: 0 20px 40px -10px rgba(20, 184, 166, 0.15);
+  transform: translateY(-4px);
+}
+
+.bento-card:hover::before {
+  opacity: 1;
+}
+
+/* Glass card for premium/highlighted content */
+.glass-card {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(20px);
+  border-radius: 1.5rem;
+  border: 1px solid rgba(20, 184, 166, 0.1);
+  padding: 2rem;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
 }
