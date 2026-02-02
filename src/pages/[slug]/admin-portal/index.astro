@@ -1,5 +1,10 @@
 ---
 import AdminLayout from '../../../components/admin/AdminLayout.astro';
+import AdminPageTemplate from '../../../components/admin/AdminPageTemplate.astro';
+import AdminSection from '../../../components/admin/AdminSection.astro';
+import AdminCard from '../../../components/admin/AdminCard.astro';
+import StatusChip from '../../../components/admin/StatusChip.astro';
+import Icon from '../../../components/admin/Icon.astro';
 import { DatabaseService } from '../../../lib/db';
 import { getAuthContext } from '../../../lib/auth';
 import { getSport } from '../../../lib/sports';
@@ -28,7 +33,6 @@ if (!member) {
 }
 
 const sport = getSport(club.club_type || 'gaa');
-const members = await db.getClubMembers(club.id);
 const upcomingFixtures = await db.getUpcomingFixtures(club.id, 3);
 const playedFixtures = await db.getPlayedFixtures(club.id, 3);
 const latestResult = playedFixtures[0] || null;
@@ -77,6 +81,12 @@ const formCountResult = await Astro.locals.runtime.env.DB.prepare(`
   WHERE club_id = ? AND created_at >= datetime('now','-7 days')
 `).bind(club.id).first();
 
+const mediaCountResult = await Astro.locals.runtime.env.DB.prepare(`
+  SELECT COUNT(*) as count
+  FROM media
+  WHERE club_id = ?
+`).bind(club.id).first();
+
 const posts = postsResult.results || [];
 const draftPostsCount = (draftPostsResult as any)?.count || 0;
 const postCount = (postCountResult as any)?.count || 0;
@@ -84,61 +94,23 @@ const fixtureCount = (fixtureCountResult as any)?.count || 0;
 const pageCount = (pageCountResult as any)?.count || 0;
 const contactCount = (contactCountResult as any)?.count || 0;
 const formCount = (formCountResult as any)?.count || 0;
-const memberCount = members.length;
-
-const sportFocus: Record<string, { title: string; description: string; cta: string; href: string }> = {
-  gaa: {
-    title: 'Matchday Hub',
-    description: 'Keep fixtures and results current so supporters always know the next game.',
-    cta: 'Add fixture',
-    href: `/${slug}/admin-portal/fixtures/new`,
-  },
-  football: {
-    title: 'Match Centre',
-    description: 'Update lineups, results, and post-match reports in one place.',
-    cta: 'Add result',
-    href: `/${slug}/admin-portal/fixtures`,
-  },
-  rugby: {
-    title: 'Squad Updates',
-    description: 'Post training updates, team sheets, and match reports quickly.',
-    cta: 'New post',
-    href: `/${slug}/admin-portal/posts/new`,
-  },
-  athletics: {
-    title: 'Event Results',
-    description: 'Highlight PBs and event results so members see progress fast.',
-    cta: 'Add event',
-    href: `/${slug}/admin-portal/fixtures/new`,
-  },
-  golf: {
-    title: 'Membership & Green Fees',
-    description: 'Publish pricing, visitor info, and booking links on your club site.',
-    cta: 'Edit pricing',
-    href: `/${slug}/admin-portal/settings/club#sport-settings`,
-  },
-  tennis: {
-    title: 'Court Booking Links',
-    description: 'Set booking links for members and guests from the dashboard.',
-    cta: 'Add booking link',
-    href: `/${slug}/admin-portal/settings/club#sport-settings`,
-  },
-  cycling: {
-    title: 'Club Routes',
-    description: 'Share upcoming spins, routes, and ride details quickly.',
-    cta: 'Add event',
-    href: `/${slug}/admin-portal/fixtures/new`,
-  },
-};
-
-const focus = sportFocus[club.club_type] || sportFocus.gaa;
+const mediaCount = (mediaCountResult as any)?.count || 0;
+const inboxCount = contactCount + formCount;
 
 function formatDate(dateStr: string | null): string {
   if (!dateStr) return '-';
   return new Date(dateStr).toLocaleDateString('en-IE', {
     day: 'numeric',
     month: 'short',
-    year: 'numeric',
+  });
+}
+
+function formatFullDate(dateStr: string | null): string {
+  if (!dateStr) return '-';
+  return new Date(dateStr).toLocaleDateString('en-IE', {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
   });
 }
 ---
@@ -151,231 +123,260 @@ function formatDate(dateStr: string | null): string {
   currentPage="dashboard"
 >
   <Fragment slot="header-actions">
-    <a href={`/${slug}/admin-portal/fixtures/new`} class="admin-btn-secondary text-sm">
-      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-      </svg>
-      <span class="hidden sm:inline">Add fixture</span>
-    </a>
-    <a href={`/${slug}/admin-portal/posts/new`} class="admin-btn-primary text-sm">
-      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-      </svg>
+    <a href={`/${slug}/admin-portal/posts/new`} class="btn-primary">
+      <Icon name="plus" size="md" />
       <span class="hidden sm:inline">New post</span>
     </a>
   </Fragment>
 
-  <div class="max-w-7xl mx-auto space-y-6">
-    <section class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+  <div class="max-w-6xl space-y-6">
+    <!-- Welcome -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
       <div>
-        <p class="text-sm text-slate-500">Welcome back</p>
-        <h1 class="text-3xl sm:text-4xl font-semibold text-slate-900 admin-display">{user.name.split(' ')[0]}, your club hub is ready.</h1>
-        <p class="text-slate-600 mt-2">Here’s the latest pulse for {club.name}.</p>
+        <h1 class="text-2xl font-semibold text-slate-900">Welcome back, {user.name.split(' ')[0]}</h1>
+        <p class="text-slate-500 mt-1">Here's what's happening with {club.name}</p>
       </div>
-      <div class="admin-panel-soft p-4 flex flex-wrap items-center gap-4">
-        <div>
-          <p class="text-xs uppercase tracking-[0.2em] text-slate-400">Sport</p>
-          <p class="text-lg font-semibold text-slate-900">{sport.name}</p>
-        </div>
-        <div class="h-8 w-px bg-slate-200 hidden sm:block"></div>
-        <div>
-          <p class="text-xs uppercase tracking-[0.2em] text-slate-400">Members</p>
-          <p class="text-lg font-semibold text-slate-900">{memberCount}</p>
-        </div>
-      </div>
-    </section>
-
-    <section class="admin-panel p-6">
-      <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-        <div class="flex items-start gap-4">
-          <div class="w-12 h-12 rounded-2xl flex items-center justify-center" style={`background: ${club.is_live ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.15)'}`}>
-            <svg class={`w-6 h-6 ${club.is_live ? 'text-emerald-600' : 'text-amber-600'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-            </svg>
-          </div>
-          <div>
-            <div class="flex items-center gap-2">
-              <span class={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${club.is_live ? 'bg-emerald-600 text-white' : 'bg-amber-500 text-white'}`}>
-                <span class={`w-1.5 h-1.5 rounded-full ${club.is_live ? 'bg-white animate-pulse' : 'bg-white/70'}`}></span>
-                {club.is_live ? 'Live' : 'Draft'}
-              </span>
-              <span class="text-slate-500 text-sm">{slug}.clubify.ie</span>
-            </div>
-            <p class={`text-sm mt-1 ${club.is_live ? 'text-emerald-700' : 'text-amber-700'}`}>
-              {club.is_live ? 'Your site is live and visible to everyone.' : 'Your site is private until you go live.'}
-            </p>
-          </div>
+      <div class="flex items-center gap-3">
+        <div class="flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium" class:list={[club.is_live ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700']}>
+          <span class:list={["w-2 h-2 rounded-full", club.is_live ? "bg-emerald-500" : "bg-amber-500"]}></span>
+          {club.is_live ? 'Live' : 'Draft'}
         </div>
         <button
           id="toggle-live"
           data-live={club.is_live ? '1' : '0'}
           data-club-id={club.id}
-          class={club.is_live ? 'admin-btn-secondary text-sm' : 'admin-btn-primary text-sm'}
+          class="text-sm font-medium text-slate-600 hover:text-slate-900 px-3 py-1.5 rounded-lg hover:bg-slate-100 transition-colors"
         >
           {club.is_live ? 'Set to Draft' : 'Go Live'}
         </button>
       </div>
-    </section>
+    </div>
 
-    <section class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-      <a href={`/${slug}/admin-portal/posts`} class="admin-panel-soft p-4 hover:shadow-md transition-shadow">
-        <p class="text-xs uppercase tracking-[0.2em] text-slate-400">Posts</p>
-        <p class="text-2xl font-semibold text-slate-900 mt-2">{postCount}</p>
+    <!-- Stats Grid -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <a href={`/${slug}/admin-portal/posts`} class="stat-card group hover:border-slate-300 transition-colors">
+        <div class="flex items-center justify-between">
+          <p class="stat-card-label">Posts</p>
+          <Icon name="posts" size="xl" class="text-slate-300 group-hover:text-slate-400 transition-colors" />
+        </div>
+        <p class="stat-card-value">{postCount}</p>
       </a>
-      <a href={`/${slug}/admin-portal/fixtures`} class="admin-panel-soft p-4 hover:shadow-md transition-shadow">
-        <p class="text-xs uppercase tracking-[0.2em] text-slate-400">Fixtures</p>
-        <p class="text-2xl font-semibold text-slate-900 mt-2">{fixtureCount}</p>
+      <a href={`/${slug}/admin-portal/fixtures`} class="stat-card group hover:border-slate-300 transition-colors">
+        <div class="flex items-center justify-between">
+          <p class="stat-card-label">Fixtures</p>
+          <Icon name="calendar" size="xl" class="text-slate-300 group-hover:text-slate-400 transition-colors" />
+        </div>
+        <p class="stat-card-value">{fixtureCount}</p>
       </a>
-      <a href={`/${slug}/admin-portal/pages`} class="admin-panel-soft p-4 hover:shadow-md transition-shadow">
-        <p class="text-xs uppercase tracking-[0.2em] text-slate-400">Pages</p>
-        <p class="text-2xl font-semibold text-slate-900 mt-2">{pageCount}</p>
+      <a href={`/${slug}/admin-portal/media`} class="stat-card group hover:border-slate-300 transition-colors">
+        <div class="flex items-center justify-between">
+          <p class="stat-card-label">Media</p>
+          <Icon name="media" size="xl" class="text-slate-300 group-hover:text-slate-400 transition-colors" />
+        </div>
+        <p class="stat-card-value">{mediaCount}</p>
       </a>
-      <a href={`/${slug}/admin-portal/inbox`} class="admin-panel-soft p-4 hover:shadow-md transition-shadow">
-        <p class="text-xs uppercase tracking-[0.2em] text-slate-400">Inbox (7d)</p>
-        <p class="text-2xl font-semibold text-slate-900 mt-2">{contactCount + formCount}</p>
+      <a href={`/${slug}/admin-portal/inbox`} class="stat-card group hover:border-slate-300 transition-colors">
+        <div class="flex items-center justify-between">
+          <p class="stat-card-label">Inbox (7d)</p>
+          <Icon name="inbox" size="xl" class="text-slate-300 group-hover:text-slate-400 transition-colors" />
+        </div>
+        <p class="stat-card-value">{inboxCount}</p>
       </a>
-    </section>
+    </div>
 
+    <!-- Draft Alert -->
     {draftPostsCount > 0 && (
-      <section class="admin-panel-soft p-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div class="card card-padded flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-amber-50 border-amber-200">
         <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center text-amber-600">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
+          <div class="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center">
+            <Icon name="edit" size="xl" class="text-amber-600" />
           </div>
           <div>
-            <p class="text-sm font-semibold text-slate-900">You have {draftPostsCount} draft post{draftPostsCount > 1 ? 's' : ''} ready.</p>
-            <p class="text-xs text-slate-500">Review and publish when ready.</p>
+            <p class="font-medium text-amber-900">{draftPostsCount} draft post{draftPostsCount > 1 ? 's' : ''} ready for review</p>
+            <p class="text-sm text-amber-700">Review and publish when ready</p>
           </div>
         </div>
-        <a href={`/${slug}/admin-portal/posts`} class="admin-btn-secondary text-sm">Review drafts</a>
-      </section>
+        <a href={`/${slug}/admin-portal/posts`} class="btn-secondary text-amber-700 border-amber-300 hover:bg-amber-100">
+          Review drafts
+        </a>
+      </div>
     )}
 
-    <section class="grid gap-6 lg:grid-cols-3">
+    <!-- Main Grid -->
+    <div class="grid gap-6 lg:grid-cols-3">
+      <!-- Left Column -->
       <div class="lg:col-span-2 space-y-6">
-        <div class="admin-panel p-6">
-          <div class="flex items-center justify-between mb-4">
-            <h2 class="text-lg font-semibold text-slate-900 admin-display">Quick actions</h2>
-            <span class="text-xs text-slate-400">Fast launch</span>
+        <!-- Quick Actions -->
+        <div class="card">
+          <div class="px-5 py-4 border-b border-slate-100">
+            <h2 class="font-semibold text-slate-900">Quick actions</h2>
           </div>
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <a href={`/${slug}/admin-portal/posts/new`} class="admin-panel-soft p-4 text-center hover:shadow-md transition-shadow">
-              <p class="text-sm font-semibold text-slate-900">New post</p>
-              <p class="text-xs text-slate-500 mt-1">Publish updates</p>
+          <div class="p-5 grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <a href={`/${slug}/admin-portal/posts/new`} class="flex flex-col items-center gap-2 p-4 rounded-lg border border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-colors text-center">
+              <Icon name="edit" size="xl" class="text-slate-400" />
+              <span class="text-sm font-medium text-slate-700">New post</span>
             </a>
-            <a href={`/${slug}/admin-portal/fixtures/new`} class="admin-panel-soft p-4 text-center hover:shadow-md transition-shadow">
-              <p class="text-sm font-semibold text-slate-900">Add fixture</p>
-              <p class="text-xs text-slate-500 mt-1">Match calendar</p>
+            <a href={`/${slug}/admin-portal/fixtures/new`} class="flex flex-col items-center gap-2 p-4 rounded-lg border border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-colors text-center">
+              <Icon name="calendar" size="xl" class="text-slate-400" />
+              <span class="text-sm font-medium text-slate-700">Add fixture</span>
             </a>
-            <a href={`/${slug}/admin-portal/pages`} class="admin-panel-soft p-4 text-center hover:shadow-md transition-shadow">
-              <p class="text-sm font-semibold text-slate-900">Edit pages</p>
-              <p class="text-xs text-slate-500 mt-1">Website copy</p>
+            <a href={`/${slug}/admin-portal/media`} class="flex flex-col items-center gap-2 p-4 rounded-lg border border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-colors text-center">
+              <Icon name="media" size="xl" class="text-slate-400" />
+              <span class="text-sm font-medium text-slate-700">Upload media</span>
             </a>
-            <a href={`/${slug}/admin-portal/inbox`} class="admin-panel-soft p-4 text-center hover:shadow-md transition-shadow">
-              <p class="text-sm font-semibold text-slate-900">View inbox</p>
-              <p class="text-xs text-slate-500 mt-1">New enquiries</p>
+            <a href={`/${slug}/admin-portal/website`} class="flex flex-col items-center gap-2 p-4 rounded-lg border border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-colors text-center">
+              <Icon name="layout" size="xl" class="text-slate-400" />
+              <span class="text-sm font-medium text-slate-700">Edit website</span>
             </a>
           </div>
         </div>
 
-        <div class="admin-panel p-6">
-          <div class="flex items-center justify-between mb-4">
-            <h2 class="text-lg font-semibold text-slate-900 admin-display">Latest posts</h2>
-            <a href={`/${slug}/admin-portal/posts`} class="text-sm font-semibold" style={`color: ${sport.primaryColor}`}>View all</a>
+        <!-- Recent Posts -->
+        <div class="card">
+          <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+            <h2 class="font-semibold text-slate-900">Recent posts</h2>
+            <a href={`/${slug}/admin-portal/posts`} class="text-sm font-medium text-slate-500 hover:text-slate-700">View all</a>
           </div>
           {posts.length === 0 ? (
-            <div class="text-sm text-slate-500">No posts yet. Publish your first update today.</div>
+            <div class="p-8 text-center">
+              <p class="text-slate-500">No posts yet</p>
+              <a href={`/${slug}/admin-portal/posts/new`} class="text-sm font-medium link mt-2 inline-block">Create your first post</a>
+            </div>
           ) : (
-            <div class="space-y-3">
-              {posts.slice(0, 3).map((post) => (
-                <a href={`/${slug}/admin-portal/posts/${post.id}`} class="block rounded-xl border border-slate-200 p-3 hover:shadow-sm transition-shadow">
-                  <div class="flex items-center justify-between">
-                    <div>
-                      <p class="text-sm font-semibold text-slate-900">{post.title}</p>
-                      <p class="text-xs text-slate-500 mt-1">{formatDate(post.published_at || post.created_at)}</p>
-                    </div>
-                    <span class={`text-xs font-semibold px-2 py-1 rounded-full ${post.status === 'published' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'}`}>
-                      {post.status}
-                    </span>
+            <div class="divide-y divide-slate-100">
+              {posts.slice(0, 4).map((post: any) => (
+                <a href={`/${slug}/admin-portal/posts/${post.id}`} class="flex items-center justify-between px-5 py-4 hover:bg-slate-50 transition-colors">
+                  <div class="min-w-0 flex-1">
+                    <p class="font-medium text-slate-900 truncate">{post.title}</p>
+                    <p class="text-sm text-slate-500 mt-0.5">{formatDate(post.published_at || post.created_at)}</p>
                   </div>
+                  <StatusChip variant={post.status === 'published' ? 'success' : 'neutral'} size="sm" class="ml-4">
+                    {post.status}
+                  </StatusChip>
                 </a>
               ))}
             </div>
           )}
         </div>
 
-        <div class="admin-panel p-6">
-          <div class="flex items-center justify-between mb-4">
-            <h2 class="text-lg font-semibold text-slate-900 admin-display">Fixtures & results</h2>
-            <a href={`/${slug}/admin-portal/fixtures`} class="text-sm font-semibold" style={`color: ${sport.primaryColor}`}>Manage</a>
+        <!-- Fixtures -->
+        <div class="card">
+          <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+            <h2 class="font-semibold text-slate-900">Fixtures & Results</h2>
+            <a href={`/${slug}/admin-portal/fixtures`} class="text-sm font-medium text-slate-500 hover:text-slate-700">Manage</a>
           </div>
-          <div class="grid gap-4 lg:grid-cols-2">
+          <div class="p-5 grid gap-4 sm:grid-cols-2">
             <div>
-              <p class="text-xs uppercase tracking-[0.2em] text-slate-400">Upcoming</p>
+              <p class="text-xs font-medium uppercase tracking-wide text-slate-400 mb-3">Upcoming</p>
               {upcomingFixtures.length === 0 ? (
-                <p class="text-sm text-slate-500 mt-2">No fixtures scheduled yet.</p>
+                <p class="text-sm text-slate-500">No fixtures scheduled</p>
               ) : (
-                <div class="mt-2 space-y-2">
-                  {upcomingFixtures.map((fixture) => (
-                    <div class="rounded-xl border border-slate-200 p-3 text-sm">
-                      <p class="font-semibold text-slate-900">{fixture.home_team} vs {fixture.away_team}</p>
-                      <p class="text-xs text-slate-500 mt-1">{formatDate(fixture.match_date)} • {fixture.venue || 'TBC'}</p>
+                <div class="space-y-2">
+                  {upcomingFixtures.slice(0, 2).map((fixture) => (
+                    <div class="p-3 rounded-lg border border-slate-200 bg-slate-50">
+                      <p class="text-sm font-medium text-slate-900">{fixture.home_team} vs {fixture.away_team}</p>
+                      <p class="text-xs text-slate-500 mt-1">{formatFullDate(fixture.match_date)} {fixture.venue ? `• ${fixture.venue}` : ''}</p>
                     </div>
                   ))}
                 </div>
               )}
             </div>
             <div>
-              <p class="text-xs uppercase tracking-[0.2em] text-slate-400">Latest result</p>
+              <p class="text-xs font-medium uppercase tracking-wide text-slate-400 mb-3">Latest Result</p>
               {latestResult ? (
-                <div class="mt-2 rounded-xl border border-slate-200 p-4">
-                  <p class="text-sm font-semibold text-slate-900">{latestResult.home_team} vs {latestResult.away_team}</p>
-                  <p class="text-xs text-slate-500 mt-1">{formatDate(latestResult.match_date)}</p>
+                <div class="p-3 rounded-lg border border-slate-200 bg-slate-50">
+                  <p class="text-sm font-medium text-slate-900">{latestResult.home_team} vs {latestResult.away_team}</p>
+                  <p class="text-xs text-slate-500 mt-1">{formatFullDate(latestResult.match_date)}</p>
                 </div>
               ) : (
-                <p class="text-sm text-slate-500 mt-2">No results yet.</p>
+                <p class="text-sm text-slate-500">No results yet</p>
               )}
             </div>
           </div>
         </div>
       </div>
 
+      <!-- Right Column -->
       <div class="space-y-6">
-        <div class="admin-panel p-6">
-          <p class="text-xs uppercase tracking-[0.2em] text-slate-400">Sport focus</p>
-          <h3 class="text-lg font-semibold text-slate-900 admin-display mt-2">{focus.title}</h3>
-          <p class="text-sm text-slate-600 mt-2">{focus.description}</p>
-          <a href={focus.href} class="admin-btn-primary text-sm mt-4 inline-flex">{focus.cta}</a>
-        </div>
+        <!-- Site Status -->
+        <AdminCard>
+          <div class="flex items-center gap-3 mb-4">
+            <div class:list={["w-10 h-10 rounded-lg flex items-center justify-center", club.is_live ? "bg-emerald-100" : "bg-slate-100"]}>
+              <Icon name="globe" size="xl" class={club.is_live ? "text-emerald-600" : "text-slate-500"} />
+            </div>
+            <div>
+              <p class="font-medium text-slate-900">Your website</p>
+              <p class="text-sm text-slate-500">{slug}.clubify.ie</p>
+            </div>
+          </div>
+          <a href={`/${slug}`} target="_blank" class="btn-secondary w-full justify-center">
+            <Icon name="external-link" size="md" />
+            View site
+          </a>
+        </AdminCard>
 
-        <div class="admin-panel p-6">
-          <div class="flex items-center justify-between">
-            <h3 class="text-lg font-semibold text-slate-900 admin-display">Inbox summary</h3>
+        <!-- Inbox Summary -->
+        <AdminCard>
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="font-semibold text-slate-900">Inbox</h3>
             <span class="text-xs text-slate-400">Last 7 days</span>
           </div>
-          <p class="text-2xl font-semibold text-slate-900 mt-3">{contactCount + formCount}</p>
-          <p class="text-sm text-slate-500">New submissions ready to review.</p>
-          <a href={`/${slug}/admin-portal/inbox`} class="admin-btn-secondary text-sm mt-4 inline-flex">Open inbox</a>
-        </div>
+          <p class="text-3xl font-semibold text-slate-900">{inboxCount}</p>
+          <p class="text-sm text-slate-500 mt-1">new submissions</p>
+          <a href={`/${slug}/admin-portal/inbox`} class="btn-secondary w-full justify-center mt-4">View inbox</a>
+        </AdminCard>
 
-        <div class="admin-panel p-6">
-          <h3 class="text-lg font-semibold text-slate-900 admin-display">Social publishing</h3>
-          <p class="text-sm text-slate-600 mt-2">Connect social accounts to push updates directly from Clubify.</p>
-          <a href={`/${slug}/admin-portal/settings/social`} class="admin-btn-secondary text-sm mt-4 inline-flex">Connect socials</a>
-        </div>
+        <!-- Sport Info -->
+        <AdminCard>
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-10 h-10 rounded-lg flex items-center justify-center text-white" style={`background-color: ${sport.primaryColor}`}>
+              <Icon name="activity" size="xl" />
+            </div>
+            <div>
+              <p class="font-medium text-slate-900">{sport.name}</p>
+              <p class="text-sm text-slate-500">{club.county}</p>
+            </div>
+          </div>
+          <a href={`/${slug}/admin-portal/settings/club`} class="text-sm font-medium link">Edit club settings</a>
+        </AdminCard>
 
-        <div class="admin-panel p-6">
-          <h3 class="text-lg font-semibold text-slate-900 admin-display">Content ideas</h3>
-          <ul class="mt-3 space-y-2 text-sm text-slate-600">
-            <li>Highlight a recent win or training session.</li>
-            <li>Share upcoming fixtures with key timings.</li>
-            <li>Thank sponsors with a short spotlight post.</li>
-          </ul>
-        </div>
+        <!-- Help -->
+        <AdminCard class="bg-slate-50 border-slate-200">
+          <h3 class="font-semibold text-slate-900 mb-2">Need help?</h3>
+          <p class="text-sm text-slate-600 mb-4">Check out our guides to get the most from Clubify.</p>
+          <a href="https://clubify.ie/help" target="_blank" class="text-sm font-medium link">View help centre</a>
+        </AdminCard>
       </div>
-    </section>
+    </div>
   </div>
 </AdminLayout>
+
+<script>
+  const toggleBtn = document.getElementById('toggle-live');
+  if (toggleBtn) {
+    toggleBtn.addEventListener('click', async () => {
+      const clubId = toggleBtn.getAttribute('data-club-id');
+      const isLive = toggleBtn.getAttribute('data-live') === '1';
+      const newLiveState = !isLive;
+
+      toggleBtn.setAttribute('disabled', 'true');
+      toggleBtn.textContent = newLiveState ? 'Going live...' : 'Setting to draft...';
+
+      try {
+        const response = await fetch(`/api/clubs/${clubId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ is_live: newLiveState }),
+        });
+
+        if (!response.ok) throw new Error('Failed to update');
+        window.location.reload();
+      } catch (error) {
+        console.error('Toggle live error:', error);
+        toggleBtn.removeAttribute('disabled');
+        toggleBtn.textContent = isLive ? 'Set to Draft' : 'Go Live';
+        alert('Failed to update. Please try again.');
+      }
+    });
+  }
+</script>

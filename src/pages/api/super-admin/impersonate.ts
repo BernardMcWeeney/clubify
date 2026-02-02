@@ -4,6 +4,9 @@ import { getAuthContext } from '../../../lib/auth';
 
 const IMPERSONATION_COOKIE = 'clubify_impersonate';
 
+// Only use secure cookies in production (HTTPS)
+const isProduction = import.meta.env.PROD;
+
 export const POST: APIRoute = async ({ request, locals, cookies }) => {
   try {
     if (!locals.runtime.env.DB) {
@@ -54,7 +57,7 @@ export const POST: APIRoute = async ({ request, locals, cookies }) => {
     cookies.set(IMPERSONATION_COOKIE, JSON.stringify(impersonationData), {
       path: '/',
       httpOnly: true,
-      secure: true,
+      secure: isProduction,
       sameSite: 'lax',
       maxAge: 60 * 60 * 2, // 2 hours max for impersonation
     });

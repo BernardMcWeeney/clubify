@@ -35,6 +35,8 @@ export interface Club {
   modules_config: string | null;
   sport_settings: string | null;
   is_live: number;
+  deleted_at: string | null;
+  deleted_by: string | null;
   setup_completed: number;
   setup_step: number;
   created_at: string;
@@ -531,7 +533,7 @@ export class DatabaseService {
       SELECT c.*, cm.role
       FROM clubs c
       JOIN club_members cm ON c.id = cm.club_id
-      WHERE cm.user_id = ?
+      WHERE cm.user_id = ? AND c.deleted_at IS NULL
       ORDER BY c.created_at DESC
     `).bind(userId).all<Club & { role: string }>();
 
@@ -541,13 +543,13 @@ export class DatabaseService {
   async getPlatformStats(): Promise<PlatformStats> {
     const result = await this.db.prepare(`
       SELECT
-        (SELECT COUNT(*) FROM clubs) as clubs,
-        (SELECT COUNT(*) FROM clubs WHERE is_live = 1) as live_clubs,
+        (SELECT COUNT(*) FROM clubs WHERE deleted_at IS NULL) as clubs,
+        (SELECT COUNT(*) FROM clubs WHERE is_live = 1 AND deleted_at IS NULL) as live_clubs,
         (SELECT COUNT(*) FROM users) as users,
-        (SELECT COUNT(*) FROM posts) as posts,
-        (SELECT COUNT(*) FROM fixtures) as fixtures,
-        (SELECT COUNT(*) FROM pages) as pages,
-        (SELECT COUNT(*) FROM media) as media
+        (SELECT COUNT(*) FROM posts p JOIN clubs c ON c.id = p.club_id WHERE c.deleted_at IS NULL) as posts,
+        (SELECT COUNT(*) FROM fixtures f JOIN clubs c ON c.id = f.club_id WHERE c.deleted_at IS NULL) as fixtures,
+        (SELECT COUNT(*) FROM pages pg JOIN clubs c ON c.id = pg.club_id WHERE c.deleted_at IS NULL) as pages,
+        (SELECT COUNT(*) FROM media m JOIN clubs c ON c.id = m.club_id WHERE c.deleted_at IS NULL) as media
     `).first<any>();
 
     return {
@@ -561,7 +563,10 @@ export class DatabaseService {
     };
   }
 
-  async getClubOverviews(): Promise<ClubOverview[]> {
+  async getClubOverviews(options: { includeDeleted?: boolean } = {}): Promise<ClubOverview[]> {
+    const includeDeleted = options.includeDeleted ?? false;
+    const whereClause = includeDeleted ? '' : 'WHERE c.deleted_at IS NULL';
+
     const results = await this.db.prepare(`
       SELECT
         c.*,
@@ -585,6 +590,7 @@ export class DatabaseService {
         CASE WHEN ss.nav_items IS NOT NULL AND ss.nav_items != '[]' AND ss.nav_items != '' THEN 1 ELSE 0 END as has_nav
       FROM clubs c
       LEFT JOIN site_settings ss ON ss.club_id = c.id
+      ${whereClause}
       ORDER BY c.created_at DESC
     `).all<any>();
 
@@ -1736,5 +1742,268 @@ export class DatabaseService {
     await this.db.prepare(`
       UPDATE sport_defaults SET status = ?, updated_at = datetime('now') WHERE sport = ?
     `).bind(status, normalized).run();
+  }
+
+  // ========================================
+  // Super Admin: Recycling Bin Operations
+  // ========================================
+
+  async softDeleteClub(clubId: string, deletedBy: string): Promise<void> {
+    // Try with deleted_by column first, fall back to without if it doesn't exist
+    try {
+      await this.db.prepare(`
+        UPDATE clubs
+        SET deleted_at = datetime('now'), deleted_by = ?, updated_at = datetime('now')
+        WHERE id = ? AND deleted_at IS NULL
+      `).bind(deletedBy, clubId).run();
+    } catch {
+      // Fallback if deleted_by column doesn't exist yet
+      await this.db.prepare(`
+        UPDATE clubs
+        SET deleted_at = datetime('now'), updated_at = datetime('now')
+        WHERE id = ? AND deleted_at IS NULL
+      `).bind(clubId).run();
+    }
+  }
+
+  async restoreClub(clubId: string): Promise<void> {
+    try {
+      await this.db.prepare(`
+        UPDATE clubs
+        SET deleted_at = NULL, deleted_by = NULL, updated_at = datetime('now')
+        WHERE id = ? AND deleted_at IS NOT NULL
+      `).bind(clubId).run();
+    } catch {
+      // Fallback if deleted_by column doesn't exist yet
+      await this.db.prepare(`
+        UPDATE clubs
+        SET deleted_at = NULL, updated_at = datetime('now')
+        WHERE id = ? AND deleted_at IS NOT NULL
+      `).bind(clubId).run();
+    }
+  }
+
+  async permanentlyDeleteClub(clubId: string): Promise<void> {
+    // Delete in order to respect foreign key constraints
+    // Most tables have ON DELETE CASCADE, but let's be explicit
+    await this.db.prepare(`DELETE FROM audit_log WHERE club_id = ?`).bind(clubId).run();
+    await this.db.prepare(`DELETE FROM publish_history WHERE club_id = ?`).bind(clubId).run();
+    await this.db.prepare(`DELETE FROM publish_jobs WHERE club_id = ?`).bind(clubId).run();
+    await this.db.prepare(`DELETE FROM social_connections WHERE club_id = ?`).bind(clubId).run();
+    await this.db.prepare(`DELETE FROM contact_submissions WHERE club_id = ?`).bind(clubId).run();
+    await this.db.prepare(`DELETE FROM contact_settings WHERE club_id = ?`).bind(clubId).run();
+    await this.db.prepare(`DELETE FROM form_submissions WHERE club_id = ?`).bind(clubId).run();
+    await this.db.prepare(`DELETE FROM form_fields WHERE form_id IN (SELECT id FROM forms WHERE club_id = ?)`).bind(clubId).run();
+    await this.db.prepare(`DELETE FROM forms WHERE club_id = ?`).bind(clubId).run();
+    await this.db.prepare(`DELETE FROM sponsors WHERE club_id = ?`).bind(clubId).run();
+    await this.db.prepare(`DELETE FROM homepage_configs WHERE club_id = ?`).bind(clubId).run();
+    await this.db.prepare(`DELETE FROM site_settings WHERE club_id = ?`).bind(clubId).run();
+    await this.db.prepare(`DELETE FROM push_subscriptions WHERE club_id = ?`).bind(clubId).run();
+    await this.db.prepare(`DELETE FROM media WHERE club_id = ?`).bind(clubId).run();
+    await this.db.prepare(`DELETE FROM fixtures WHERE club_id = ?`).bind(clubId).run();
+    await this.db.prepare(`DELETE FROM pages WHERE club_id = ?`).bind(clubId).run();
+    await this.db.prepare(`DELETE FROM posts WHERE club_id = ?`).bind(clubId).run();
+    await this.db.prepare(`DELETE FROM club_invitations WHERE club_id = ?`).bind(clubId).run();
+    await this.db.prepare(`DELETE FROM club_members WHERE club_id = ?`).bind(clubId).run();
+    await this.db.prepare(`DELETE FROM clubs WHERE id = ?`).bind(clubId).run();
+  }
+
+  async getDeletedClubs(): Promise<ClubOverview[]> {
+    // Try with deleted_by join first, fall back to simpler query if column doesn't exist
+    try {
+      const results = await this.db.prepare(`
+        SELECT
+          c.*,
+          u.name as deleted_by_name,
+          u.email as deleted_by_email,
+          (SELECT COUNT(*) FROM club_members cm WHERE cm.club_id = c.id) as member_count,
+          (SELECT COUNT(*) FROM posts p WHERE p.club_id = c.id) as post_count,
+          (SELECT COUNT(*) FROM fixtures f WHERE f.club_id = c.id) as fixture_count
+        FROM clubs c
+        LEFT JOIN users u ON c.deleted_by = u.id
+        WHERE c.deleted_at IS NOT NULL
+        ORDER BY c.deleted_at DESC
+      `).all<any>();
+
+      return (results.results || []).map(club => ({
+        ...club,
+        health_score: 0,
+        health_max: 5,
+        health_checks: {},
+      }));
+    } catch {
+      // Fallback if deleted_by column doesn't exist
+      const results = await this.db.prepare(`
+        SELECT
+          c.*,
+          (SELECT COUNT(*) FROM club_members cm WHERE cm.club_id = c.id) as member_count,
+          (SELECT COUNT(*) FROM posts p WHERE p.club_id = c.id) as post_count,
+          (SELECT COUNT(*) FROM fixtures f WHERE f.club_id = c.id) as fixture_count
+        FROM clubs c
+        WHERE c.deleted_at IS NOT NULL
+        ORDER BY c.deleted_at DESC
+      `).all<any>();
+
+      return (results.results || []).map(club => ({
+        ...club,
+        health_score: 0,
+        health_max: 5,
+        health_checks: {},
+      }));
+    }
+  }
+
+  // ========================================
+  // Super Admin: Cross-Site Member Operations
+  // ========================================
+
+  async getAllMembers(options: {
+    clubId?: string;
+    search?: string;
+    limit?: number;
+    offset?: number;
+  } = {}): Promise<{
+    members: (ClubMember & { user: User; club: Club })[];
+    total: number;
+  }> {
+    const { clubId, search, limit = 50, offset = 0 } = options;
+
+    let whereConditions = ['c.deleted_at IS NULL'];
+    const params: (string | number)[] = [];
+
+    if (clubId) {
+      whereConditions.push('cm.club_id = ?');
+      params.push(clubId);
+    }
+
+    if (search) {
+      whereConditions.push('(u.email LIKE ? OR u.name LIKE ? OR c.name LIKE ?)');
+      const searchPattern = `%${search}%`;
+      params.push(searchPattern, searchPattern, searchPattern);
+    }
+
+    const whereClause = whereConditions.length > 0
+      ? `WHERE ${whereConditions.join(' AND ')}`
+      : '';
+
+    // Get total count
+    const countResult = await this.db.prepare(`
+      SELECT COUNT(*) as total
+      FROM club_members cm
+      JOIN users u ON cm.user_id = u.id
+      JOIN clubs c ON cm.club_id = c.id
+      ${whereClause}
+    `).bind(...params).first<{ total: number }>();
+
+    // Get paginated results
+    const results = await this.db.prepare(`
+      SELECT
+        cm.*,
+        u.id as user_id, u.email, u.name, u.avatar_url, u.email_verified, u.created_at as user_created_at,
+        c.id as club_id, c.name as club_name, c.slug as club_slug, c.crest_url as club_crest, c.club_type
+      FROM club_members cm
+      JOIN users u ON cm.user_id = u.id
+      JOIN clubs c ON cm.club_id = c.id
+      ${whereClause}
+      ORDER BY cm.joined_at DESC
+      LIMIT ? OFFSET ?
+    `).bind(...params, limit, offset).all<any>();
+
+    const members = (results.results || []).map(r => ({
+      id: r.id,
+      club_id: r.club_id,
+      user_id: r.user_id,
+      role: r.role,
+      invited_by: r.invited_by,
+      invited_at: r.invited_at,
+      joined_at: r.joined_at,
+      user: {
+        id: r.user_id,
+        email: r.email,
+        name: r.name,
+        avatar_url: r.avatar_url,
+        email_verified: r.email_verified,
+        created_at: r.user_created_at,
+        updated_at: r.user_created_at,
+      } as User,
+      club: {
+        id: r.club_id,
+        name: r.club_name,
+        slug: r.club_slug,
+        crest_url: r.club_crest,
+        club_type: r.club_type,
+      } as Club,
+    }));
+
+    return {
+      members,
+      total: countResult?.total || 0,
+    };
+  }
+
+  async getMemberById(memberId: string): Promise<(ClubMember & { user: User; club: Club }) | null> {
+    const result = await this.db.prepare(`
+      SELECT
+        cm.*,
+        u.id as user_id, u.email, u.name, u.avatar_url, u.email_verified, u.created_at as user_created_at,
+        c.id as club_id, c.name as club_name, c.slug as club_slug, c.crest_url as club_crest, c.club_type
+      FROM club_members cm
+      JOIN users u ON cm.user_id = u.id
+      JOIN clubs c ON cm.club_id = c.id
+      WHERE cm.id = ?
+    `).bind(memberId).first<any>();
+
+    if (!result) return null;
+
+    return {
+      id: result.id,
+      club_id: result.club_id,
+      user_id: result.user_id,
+      role: result.role,
+      invited_by: result.invited_by,
+      invited_at: result.invited_at,
+      joined_at: result.joined_at,
+      user: {
+        id: result.user_id,
+        email: result.email,
+        name: result.name,
+        avatar_url: result.avatar_url,
+        email_verified: result.email_verified,
+        created_at: result.user_created_at,
+        updated_at: result.user_created_at,
+      } as User,
+      club: {
+        id: result.club_id,
+        name: result.club_name,
+        slug: result.club_slug,
+        crest_url: result.club_crest,
+        club_type: result.club_type,
+      } as Club,
+    };
+  }
+
+  async superAdminRemoveMember(clubId: string, userId: string): Promise<void> {
+    await this.db.prepare(`
+      DELETE FROM club_members WHERE club_id = ? AND user_id = ?
+    `).bind(clubId, userId).run();
+  }
+
+  async superAdminAddMember(data: {
+    clubId: string;
+    userId: string;
+    role: string;
+    addedBy: string;
+  }): Promise<ClubMember> {
+    const id = generateId();
+    await this.db.prepare(`
+      INSERT INTO club_members (id, club_id, user_id, role, invited_by, invited_at, joined_at)
+      VALUES (?, ?, ?, ?, ?, datetime('now'), datetime('now'))
+    `).bind(id, data.clubId, data.userId, data.role, data.addedBy).run();
+
+    const member = await this.db.prepare(`
+      SELECT * FROM club_members WHERE id = ?
+    `).bind(id).first<ClubMember>();
+
+    return member!;
   }
 }

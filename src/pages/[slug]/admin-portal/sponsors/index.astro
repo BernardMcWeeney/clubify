@@ -1,5 +1,9 @@
 ---
 import AdminLayout from '../../../../components/admin/AdminLayout.astro';
+import AdminPageTemplate from '../../../../components/admin/AdminPageTemplate.astro';
+import AdminCard from '../../../../components/admin/AdminCard.astro';
+import StatusChip from '../../../../components/admin/StatusChip.astro';
+import Icon from '../../../../components/admin/Icon.astro';
 import { DatabaseService } from '../../../../lib/db';
 import { getAuthContext } from '../../../../lib/auth';
 
@@ -46,13 +50,24 @@ const placementOptions = [
 const tiers = ['main', 'gold', 'silver', 'bronze'];
 const canManage = ['admin', 'pro'].includes(member.role);
 
-// Group by tier
 const sponsorsByTier = {
   main: sponsorRows.filter(s => s.tier === 'main'),
   gold: sponsorRows.filter(s => s.tier === 'gold'),
   silver: sponsorRows.filter(s => s.tier === 'silver'),
   bronze: sponsorRows.filter(s => s.tier === 'bronze'),
 };
+
+const tierConfig = {
+  main: { label: 'Main Partners', color: 'amber' },
+  gold: { label: 'Gold Tier', color: 'yellow' },
+  silver: { label: 'Silver Tier', color: 'slate' },
+  bronze: { label: 'Bronze Tier', color: 'orange' },
+};
+
+const breadcrumbs = [
+  { label: 'Dashboard', href: `/${slug}/admin-portal` },
+  { label: 'Sponsors' },
+];
 ---
 
 <AdminLayout
@@ -63,323 +78,187 @@ const sponsorsByTier = {
   currentPage="sponsors"
 >
   <Fragment slot="header-actions">
-    <button id="new-sponsor" class="flex items-center gap-2 px-4 py-2.5 bg-green-500 hover:bg-green-600 text-white rounded-xl transition-colors text-sm font-medium shadow-lg shadow-green-500/25" disabled={!canManage}>
-      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-      </svg>
-      New Sponsor
-    </button>
+    {canManage && (
+      <button id="new-sponsor" class="btn-primary">
+        <Icon name="plus" size="md" />
+        New Sponsor
+      </button>
+    )}
   </Fragment>
 
-  <div class="max-w-7xl mx-auto" id="sponsors-page" data-club-id={club.id}>
-    <!-- Header -->
-    <div class="mb-8">
-      <h1 class="text-3xl font-bold text-slate-900 mb-2">Sponsors</h1>
-      <p class="text-slate-600">Manage your club partners and showcase them across your website</p>
-    </div>
-
-    <!-- Stats -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-      <div class="bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl p-6 border border-amber-100">
-        <div class="flex items-center justify-between mb-4">
-          <div class="w-12 h-12 bg-amber-500 rounded-xl flex items-center justify-center">
-            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>
-            </svg>
-          </div>
+  <AdminPageTemplate
+    title="Sponsors"
+    subtitle="Manage your club partners and showcase them across your website"
+    breadcrumbs={breadcrumbs}
+  >
+    <div id="sponsors-page" data-club-id={club.id}>
+      <!-- Stats -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+        <div class="stat-card stat-card-accent">
+          <p class="stat-card-label">Total</p>
+          <p class="stat-card-value">{sponsorRows.length}</p>
         </div>
-        <p class="text-sm font-medium text-amber-700 mb-1">Main Partners</p>
-        <p class="text-3xl font-bold text-amber-900">{sponsorsByTier.main.length}</p>
+        <div class="stat-card">
+          <div class="flex items-center gap-2 mb-1">
+            <div class="w-3 h-3 rounded-full bg-amber-500"></div>
+            <p class="stat-card-label">Main</p>
+          </div>
+          <p class="stat-card-value">{sponsorsByTier.main.length}</p>
+        </div>
+        <div class="stat-card">
+          <div class="flex items-center gap-2 mb-1">
+            <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+            <p class="stat-card-label">Gold</p>
+          </div>
+          <p class="stat-card-value">{sponsorsByTier.gold.length}</p>
+        </div>
+        <div class="stat-card">
+          <div class="flex items-center gap-2 mb-1">
+            <div class="w-3 h-3 rounded-full bg-slate-400"></div>
+            <p class="stat-card-label">Silver/Bronze</p>
+          </div>
+          <p class="stat-card-value">{sponsorsByTier.silver.length + sponsorsByTier.bronze.length}</p>
+        </div>
       </div>
 
-      <div class="bg-gradient-to-br from-yellow-50 to-amber-50 rounded-2xl p-6 border border-yellow-100">
-        <div class="flex items-center justify-between mb-4">
-          <div class="w-12 h-12 bg-yellow-500 rounded-xl flex items-center justify-center">
-            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l.7 2.154a1 1 0 00.95.69h2.264c.969 0 1.371 1.24.588 1.81l-1.833 1.332a1 1 0 00-.364 1.118l.7 2.154c.3.922-.755 1.688-1.538 1.118l-1.833-1.332a1 1 0 00-1.176 0l-1.833 1.332c-.783.57-1.838-.196-1.539-1.118l.7-2.154a1 1 0 00-.363-1.118L6.497 7.58c-.783-.57-.38-1.81.588-1.81h2.264a1 1 0 00.95-.69l.7-2.154z"/>
-            </svg>
-          </div>
-        </div>
-        <p class="text-sm font-medium text-yellow-700 mb-1">Gold Tier</p>
-        <p class="text-3xl font-bold text-yellow-900">{sponsorsByTier.gold.length}</p>
-      </div>
-
-      <div class="bg-gradient-to-br from-slate-50 to-gray-50 rounded-2xl p-6 border border-slate-200">
-        <div class="flex items-center justify-between mb-4">
-          <div class="w-12 h-12 bg-slate-400 rounded-xl flex items-center justify-center">
-            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l.7 2.154a1 1 0 00.95.69h2.264c.969 0 1.371 1.24.588 1.81l-1.833 1.332a1 1 0 00-.364 1.118l.7 2.154c.3.922-.755 1.688-1.538 1.118l-1.833-1.332a1 1 0 00-1.176 0l-1.833 1.332c-.783.57-1.838-.196-1.539-1.118l.7-2.154a1 1 0 00-.363-1.118L6.497 7.58c-.783-.57-.38-1.81.588-1.81h2.264a1 1 0 00.95-.69l.7-2.154z"/>
-            </svg>
-          </div>
-        </div>
-        <p class="text-sm font-medium text-slate-700 mb-1">Silver Tier</p>
-        <p class="text-3xl font-bold text-slate-900">{sponsorsByTier.silver.length}</p>
-      </div>
-
-      <div class="bg-gradient-to-br from-orange-50 to-red-50 rounded-2xl p-6 border border-orange-100">
-        <div class="flex items-center justify-between mb-4">
-          <div class="w-12 h-12 bg-orange-600 rounded-xl flex items-center justify-center">
-            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l.7 2.154a1 1 0 00.95.69h2.264c.969 0 1.371 1.24.588 1.81l-1.833 1.332a1 1 0 00-.364 1.118l.7 2.154c.3.922-.755 1.688-1.538 1.118l-1.833-1.332a1 1 0 00-1.176 0l-1.833 1.332c-.783.57-1.838-.196-1.539-1.118l.7-2.154a1 1 0 00-.363-1.118L6.497 7.58c-.783-.57-.38-1.81.588-1.81h2.264a1 1 0 00.95-.69l.7-2.154z"/>
-            </svg>
-          </div>
-        </div>
-        <p class="text-sm font-medium text-orange-700 mb-1">Bronze Tier</p>
-        <p class="text-3xl font-bold text-orange-900">{sponsorsByTier.bronze.length}</p>
-      </div>
-    </div>
-
-    {sponsorRows.length > 0 ? (
-      <div class="space-y-8">
-        <!-- Main Partners -->
-        {sponsorsByTier.main.length > 0 && (
-          <div>
-            <div class="flex items-center gap-3 mb-6">
-              <div class="w-10 h-10 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl flex items-center justify-center">
-                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>
-                </svg>
+      {sponsorRows.length > 0 ? (
+        <div class="space-y-6">
+          {Object.entries(sponsorsByTier).map(([tier, tierSponsors]) => tierSponsors.length > 0 && (
+            <AdminCard padding="none">
+              <div class="p-5 border-b border-slate-100 flex items-center gap-3">
+                <div class:list={[
+                  "w-10 h-10 rounded-lg flex items-center justify-center",
+                  tier === 'main' ? 'bg-amber-500' : tier === 'gold' ? 'bg-yellow-500' : tier === 'silver' ? 'bg-slate-400' : 'bg-orange-500'
+                ]}>
+                  <Icon name="star" size="lg" class="text-white" />
+                </div>
+                <div>
+                  <h2 class="text-lg font-semibold text-slate-900">{tierConfig[tier as keyof typeof tierConfig].label}</h2>
+                  <p class="text-sm text-slate-500">{tierSponsors.length} sponsor{tierSponsors.length !== 1 ? 's' : ''}</p>
+                </div>
               </div>
-              <h2 class="text-2xl font-bold text-slate-900">Main Partners</h2>
-              <span class="px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-sm font-semibold">{sponsorsByTier.main.length}</span>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {sponsorsByTier.main.map((sponsor: any) => (
-                <button
-                  type="button"
-                  class="sponsor-card group bg-white rounded-2xl border-2 border-slate-200 p-6 hover:border-amber-400 hover:shadow-xl transition-all duration-300 text-left"
-                  data-sponsor={JSON.stringify(sponsor)}
-                >
-                  <div class="aspect-video bg-slate-50 rounded-xl flex items-center justify-center mb-4 overflow-hidden border border-slate-100">
-                    {sponsor.logo_url ? (
-                      <img src={sponsor.logo_url} alt={sponsor.name} class="w-full h-full object-contain p-4" />
-                    ) : (
-                      <div class="text-4xl font-bold text-slate-300">
-                        {sponsor.name.slice(0, 2).toUpperCase()}
-                      </div>
+              <div class:list={[
+                "p-5 grid gap-4",
+                tier === 'main' ? 'sm:grid-cols-2' : tier === 'gold' ? 'sm:grid-cols-3' : 'sm:grid-cols-4'
+              ]}>
+                {tierSponsors.map((sponsor: any) => (
+                  <button
+                    type="button"
+                    class="sponsor-card group text-left p-4 rounded-xl border border-slate-200 hover:border-slate-300 hover:shadow-md transition-all bg-white"
+                    data-sponsor={JSON.stringify(sponsor)}
+                  >
+                    <div class:list={[
+                      "aspect-video bg-slate-50 rounded-lg flex items-center justify-center mb-3 overflow-hidden border border-slate-100",
+                      tier === 'main' || tier === 'gold' ? '' : 'aspect-square'
+                    ]}>
+                      {sponsor.logo_url ? (
+                        <img src={sponsor.logo_url} alt={sponsor.name} class="w-full h-full object-contain p-3" />
+                      ) : (
+                        <div class="text-2xl font-bold text-slate-300">
+                          {sponsor.name.slice(0, 2).toUpperCase()}
+                        </div>
+                      )}
+                    </div>
+                    <h3 class="font-semibold text-slate-900 mb-1 group-hover:text-slate-700 transition-colors truncate">{sponsor.name}</h3>
+                    {tier === 'main' && sponsor.sponsoring && (
+                      <p class="text-sm text-slate-500 line-clamp-1 mb-2">{sponsor.sponsoring}</p>
                     )}
-                  </div>
-                  <h3 class="text-lg font-bold text-slate-900 mb-2 group-hover:text-amber-600 transition-colors">{sponsor.name}</h3>
-                  <p class="text-sm text-slate-600 mb-4 line-clamp-2">{sponsor.sponsoring || 'No description'}</p>
-                  <div class="flex items-center justify-between">
-                    <span class={`px-3 py-1.5 rounded-full text-xs font-semibold ${sponsor.is_active ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'}`}>
+                    <StatusChip variant={sponsor.is_active ? 'success' : 'neutral'} size="sm">
                       {sponsor.is_active ? 'Active' : 'Hidden'}
-                    </span>
-                    {sponsor.website_url && (
-                      <svg class="w-5 h-5 text-slate-400 group-hover:text-amber-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
-                      </svg>
-                    )}
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        <!-- Gold Tier -->
-        {sponsorsByTier.gold.length > 0 && (
-          <div>
-            <div class="flex items-center gap-3 mb-6">
-              <div class="w-10 h-10 bg-gradient-to-br from-yellow-500 to-amber-600 rounded-xl flex items-center justify-center">
-                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l.7 2.154a1 1 0 00.95.69h2.264c.969 0 1.371 1.24.588 1.81l-1.833 1.332a1 1 0 00-.364 1.118l.7 2.154c.3.922-.755 1.688-1.538 1.118l-1.833-1.332a1 1 0 00-1.176 0l-1.833 1.332c-.783.57-1.838-.196-1.539-1.118l.7-2.154a1 1 0 00-.363-1.118L6.497 7.58c-.783-.57-.38-1.81.588-1.81h2.264a1 1 0 00.95-.69l.7-2.154z"/>
-                </svg>
+                    </StatusChip>
+                  </button>
+                ))}
               </div>
-              <h2 class="text-2xl font-bold text-slate-900">Gold Tier</h2>
-              <span class="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-sm font-semibold">{sponsorsByTier.gold.length}</span>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {sponsorsByTier.gold.map((sponsor: any) => (
-                <button
-                  type="button"
-                  class="sponsor-card group bg-white rounded-2xl border-2 border-slate-200 p-5 hover:border-yellow-400 hover:shadow-xl transition-all duration-300 text-left"
-                  data-sponsor={JSON.stringify(sponsor)}
-                >
-                  <div class="aspect-video bg-slate-50 rounded-xl flex items-center justify-center mb-3 overflow-hidden border border-slate-100">
-                    {sponsor.logo_url ? (
-                      <img src={sponsor.logo_url} alt={sponsor.name} class="w-full h-full object-contain p-3" />
-                    ) : (
-                      <div class="text-2xl font-bold text-slate-300">
-                        {sponsor.name.slice(0, 2).toUpperCase()}
-                      </div>
-                    )}
-                  </div>
-                  <h3 class="text-base font-bold text-slate-900 mb-1 group-hover:text-yellow-600 transition-colors">{sponsor.name}</h3>
-                  <span class={`inline-block px-2.5 py-1 rounded-full text-xs font-semibold ${sponsor.is_active ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'}`}>
-                    {sponsor.is_active ? 'Active' : 'Hidden'}
-                  </span>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        <!-- Silver Tier -->
-        {sponsorsByTier.silver.length > 0 && (
-          <div>
-            <div class="flex items-center gap-3 mb-6">
-              <div class="w-10 h-10 bg-gradient-to-br from-slate-400 to-slate-600 rounded-xl flex items-center justify-center">
-                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l.7 2.154a1 1 0 00.95.69h2.264c.969 0 1.371 1.24.588 1.81l-1.833 1.332a1 1 0 00-.364 1.118l.7 2.154c.3.922-.755 1.688-1.538 1.118l-1.833-1.332a1 1 0 00-1.176 0l-1.833 1.332c-.783.57-1.838-.196-1.539-1.118l.7-2.154a1 1 0 00-.363-1.118L6.497 7.58c-.783-.57-.38-1.81.588-1.81h2.264a1 1 0 00.95-.69l.7-2.154z"/>
-                </svg>
-              </div>
-              <h2 class="text-2xl font-bold text-slate-900">Silver Tier</h2>
-              <span class="px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-sm font-semibold">{sponsorsByTier.silver.length}</span>
-            </div>
-            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-              {sponsorsByTier.silver.map((sponsor: any) => (
-                <button
-                  type="button"
-                  class="sponsor-card group bg-white rounded-xl border-2 border-slate-200 p-4 hover:border-slate-400 hover:shadow-lg transition-all duration-300"
-                  data-sponsor={JSON.stringify(sponsor)}
-                >
-                  <div class="aspect-square bg-slate-50 rounded-lg flex items-center justify-center mb-2 overflow-hidden border border-slate-100">
-                    {sponsor.logo_url ? (
-                      <img src={sponsor.logo_url} alt={sponsor.name} class="w-full h-full object-contain p-2" />
-                    ) : (
-                      <div class="text-xl font-bold text-slate-300">
-                        {sponsor.name.slice(0, 2).toUpperCase()}
-                      </div>
-                    )}
-                  </div>
-                  <p class="text-xs font-semibold text-slate-900 text-center line-clamp-1">{sponsor.name}</p>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        <!-- Bronze Tier -->
-        {sponsorsByTier.bronze.length > 0 && (
-          <div>
-            <div class="flex items-center gap-3 mb-6">
-              <div class="w-10 h-10 bg-gradient-to-br from-orange-600 to-red-600 rounded-xl flex items-center justify-center">
-                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l.7 2.154a1 1 0 00.95.69h2.264c.969 0 1.371 1.24.588 1.81l-1.833 1.332a1 1 0 00-.364 1.118l.7 2.154c.3.922-.755 1.688-1.538 1.118l-1.833-1.332a1 1 0 00-1.176 0l-1.833 1.332c-.783.57-1.838-.196-1.539-1.118l.7-2.154a1 1 0 00-.363-1.118L6.497 7.58c-.783-.57-.38-1.81.588-1.81h2.264a1 1 0 00.95-.69l.7-2.154z"/>
-                </svg>
-              </div>
-              <h2 class="text-2xl font-bold text-slate-900">Bronze Tier</h2>
-              <span class="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm font-semibold">{sponsorsByTier.bronze.length}</span>
-            </div>
-            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-              {sponsorsByTier.bronze.map((sponsor: any) => (
-                <button
-                  type="button"
-                  class="sponsor-card group bg-white rounded-xl border-2 border-slate-200 p-4 hover:border-orange-400 hover:shadow-lg transition-all duration-300"
-                  data-sponsor={JSON.stringify(sponsor)}
-                >
-                  <div class="aspect-square bg-slate-50 rounded-lg flex items-center justify-center mb-2 overflow-hidden border border-slate-100">
-                    {sponsor.logo_url ? (
-                      <img src={sponsor.logo_url} alt={sponsor.name} class="w-full h-full object-contain p-2" />
-                    ) : (
-                      <div class="text-xl font-bold text-slate-300">
-                        {sponsor.name.slice(0, 2).toUpperCase()}
-                      </div>
-                    )}
-                  </div>
-                  <p class="text-xs font-semibold text-slate-900 text-center line-clamp-1">{sponsor.name}</p>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-    ) : (
-      <div class="bg-white rounded-2xl border border-dashed border-slate-200 p-16 text-center">
-        <div class="w-20 h-20 bg-amber-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
-          <svg class="w-10 h-10 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l.7 2.154a1 1 0 00.95.69h2.264c.969 0 1.371 1.24.588 1.81l-1.833 1.332a1 1 0 00-.364 1.118l.7 2.154c.3.922-.755 1.688-1.538 1.118l-1.833-1.332a1 1 0 00-1.176 0l-1.833 1.332c-.783.57-1.838-.196-1.539-1.118l.7-2.154a1 1 0 00-.363-1.118L6.497 7.58c-.783-.57-.38-1.81.588-1.81h2.264a1 1 0 00.95-.69l.7-2.154z"/>
-          </svg>
+            </AdminCard>
+          ))}
         </div>
-        <h3 class="text-2xl font-bold text-slate-900 mb-3">No sponsors yet</h3>
-        <p class="text-slate-500 mb-8 max-w-md mx-auto">Add your club partners and showcase them across your website and app. Perfect for recognizing local businesses who support your club.</p>
-        <button id="empty-new" class="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-600 text-white rounded-xl text-sm font-semibold hover:shadow-lg hover:scale-105 transition-all" disabled={!canManage}>
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-          </svg>
-          Add your first sponsor
-        </button>
-      </div>
-    )}
-  </div>
+      ) : (
+        <AdminCard>
+          <div class="py-12 text-center">
+            <div class="w-12 h-12 mx-auto mb-4 rounded-full bg-slate-100 flex items-center justify-center">
+              <Icon name="star" size="xl" class="text-slate-400" />
+            </div>
+            <h3 class="text-lg font-medium text-slate-900 mb-1">No sponsors yet</h3>
+            <p class="text-sm text-slate-500 mb-4">Add your club partners and showcase them across your website.</p>
+            {canManage && (
+              <button id="empty-new" class="btn-primary">
+                <Icon name="plus" size="md" />
+                Add your first sponsor
+              </button>
+            )}
+          </div>
+        </AdminCard>
+      )}
+    </div>
+  </AdminPageTemplate>
 
   <!-- Edit Modal -->
-  <div id="edit-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-      <div class="sticky top-0 bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between">
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl flex items-center justify-center">
-            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l.7 2.154a1 1 0 00.95.69h2.264c.969 0 1.371 1.24.588 1.81l-1.833 1.332a1 1 0 00-.364 1.118l.7 2.154c.3.922-.755 1.688-1.538 1.118l-1.833-1.332a1 1 0 00-1.176 0l-1.833 1.332c-.783.57-1.838-.196-1.539-1.118l.7-2.154a1 1 0 00-.363-1.118L6.497 7.58c-.783-.57-.38-1.81.588-1.81h2.264a1 1 0 00.95-.69l.7-2.154z"/>
-            </svg>
-          </div>
-          <div>
-            <h2 class="text-xl font-bold text-slate-900">Sponsor Details</h2>
-            <p class="text-sm text-slate-500" id="form-mode">New sponsor</p>
-          </div>
+  <div id="edit-modal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto border border-slate-200">
+      <div class="sticky top-0 bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between rounded-t-xl">
+        <div>
+          <h2 class="text-lg font-semibold text-slate-900">Sponsor Details</h2>
+          <p class="text-sm text-slate-500" id="form-mode">New sponsor</p>
         </div>
-        <button id="close-modal" class="w-8 h-8 rounded-lg hover:bg-slate-100 flex items-center justify-center transition-colors">
-          <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-          </svg>
+        <button id="close-modal" class="p-1.5 text-slate-400 hover:text-slate-600 rounded-md hover:bg-slate-100 transition-colors">
+          <Icon name="x" size="lg" />
         </button>
       </div>
 
-      <form id="sponsor-form" class="p-6 space-y-5">
+      <form id="sponsor-form" class="p-6 space-y-4">
         <div>
-          <label class="block text-sm font-semibold text-slate-700 mb-2">Sponsor name *</label>
-          <input id="sponsor-name" type="text" class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all" placeholder="Greenfield Builders" required />
+          <label class="block text-sm font-medium text-slate-700 mb-2">Sponsor name *</label>
+          <input id="sponsor-name" type="text" class="input-themed w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white transition-colors" placeholder="Greenfield Builders" required />
         </div>
 
         <div>
-          <label class="block text-sm font-semibold text-slate-700 mb-2">Logo URL</label>
-          <input id="sponsor-logo" type="text" class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all" placeholder="https://example.com/logo.png" />
+          <label class="block text-sm font-medium text-slate-700 mb-2">Logo URL</label>
+          <input id="sponsor-logo" type="text" class="input-themed w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white transition-colors" placeholder="https://example.com/logo.png" />
         </div>
 
         <div>
-          <label class="block text-sm font-semibold text-slate-700 mb-2">Website</label>
-          <input id="sponsor-website" type="text" class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all" placeholder="https://example.com" />
+          <label class="block text-sm font-medium text-slate-700 mb-2">Website</label>
+          <input id="sponsor-website" type="text" class="input-themed w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white transition-colors" placeholder="https://example.com" />
         </div>
 
-        <div class="grid gap-5 sm:grid-cols-2">
+        <div class="grid gap-4 sm:grid-cols-2">
           <div>
-            <label class="block text-sm font-semibold text-slate-700 mb-2">Tier</label>
-            <select id="sponsor-tier" class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all">
+            <label class="block text-sm font-medium text-slate-700 mb-2">Tier</label>
+            <select id="sponsor-tier" class="input-themed w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:bg-white transition-colors">
               {tiers.map((tier) => (
                 <option value={tier}>{tier.charAt(0).toUpperCase() + tier.slice(1)}</option>
               ))}
             </select>
           </div>
           <div>
-            <label class="block text-sm font-semibold text-slate-700 mb-2">Sort order</label>
-            <input id="sponsor-order" type="number" class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all" value="0" />
+            <label class="block text-sm font-medium text-slate-700 mb-2">Sort order</label>
+            <input id="sponsor-order" type="number" class="input-themed w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:bg-white transition-colors" value="0" />
           </div>
         </div>
 
         <div>
-          <label class="block text-sm font-semibold text-slate-700 mb-2">Sponsoring / Notes</label>
-          <textarea id="sponsor-notes" rows="3" class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all" placeholder="Main kit sponsor, U14s jersey..."></textarea>
+          <label class="block text-sm font-medium text-slate-700 mb-2">Sponsoring / Notes</label>
+          <textarea id="sponsor-notes" rows="2" class="input-themed w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white transition-colors resize-none" placeholder="Main kit sponsor, U14s jersey..."></textarea>
         </div>
 
-        <div class="grid gap-5 sm:grid-cols-2">
+        <div class="grid gap-4 sm:grid-cols-2">
           <div>
-            <label class="block text-sm font-semibold text-slate-700 mb-2">Start date</label>
-            <input id="sponsor-start" type="date" class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all" />
+            <label class="block text-sm font-medium text-slate-700 mb-2">Start date</label>
+            <input id="sponsor-start" type="date" class="input-themed w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:bg-white transition-colors" />
           </div>
           <div>
-            <label class="block text-sm font-semibold text-slate-700 mb-2">End date</label>
-            <input id="sponsor-end" type="date" class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all" />
+            <label class="block text-sm font-medium text-slate-700 mb-2">End date</label>
+            <input id="sponsor-end" type="date" class="input-themed w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:bg-white transition-colors" />
           </div>
         </div>
 
         <div>
-          <label class="block text-sm font-semibold text-slate-700 mb-3">Placements</label>
-          <div class="grid gap-2">
+          <label class="block text-sm font-medium text-slate-700 mb-2">Placements</label>
+          <div class="grid gap-2 sm:grid-cols-2">
             {placementOptions.map((option) => (
-              <label class="flex items-center gap-3 rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer">
-                <input type="checkbox" class="placement-checkbox rounded border-slate-300 text-amber-600 focus:ring-2 focus:ring-amber-500" value={option.id} />
-                <div class="flex-1">
+              <label class="flex items-center gap-3 p-3 rounded-xl border border-slate-200 text-sm hover:bg-slate-50 transition-colors cursor-pointer">
+                <input type="checkbox" class="placement-checkbox rounded border-slate-300 accent-[var(--admin-accent)]" value={option.id} />
+                <div>
                   <p class="font-medium text-slate-800">{option.label}</p>
                   <p class="text-xs text-slate-500">{option.hint}</p>
                 </div>
@@ -388,19 +267,31 @@ const sponsorsByTier = {
           </div>
         </div>
 
-        <label class="flex items-center gap-3 p-4 rounded-xl border-2 border-green-200 bg-green-50 cursor-pointer">
-          <input id="sponsor-active" type="checkbox" class="rounded border-slate-300 text-green-600 focus:ring-2 focus:ring-green-500" checked />
-          <span class="text-sm font-semibold text-green-900">Sponsor is active</span>
+        <label class="flex items-center gap-3 p-4 rounded-xl border-2 border-emerald-200 bg-emerald-50 cursor-pointer">
+          <input id="sponsor-active" type="checkbox" class="rounded border-slate-300 text-emerald-600" checked />
+          <span class="text-sm font-medium text-emerald-900">Sponsor is active</span>
         </label>
 
-        <div class="flex items-center justify-between pt-4 border-t border-slate-200">
-          <button id="delete-sponsor" type="button" class="px-5 py-3 rounded-xl text-sm font-semibold text-red-600 hover:bg-red-50 transition-all" disabled={!canManage}>Delete Sponsor</button>
-          <button type="submit" class="px-6 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 text-white text-sm font-semibold hover:shadow-lg hover:scale-105 transition-all" disabled={!canManage}>Save Sponsor</button>
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-4 border-t border-slate-200">
+          <button id="delete-sponsor" type="button" class="text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 px-4 py-2 rounded-lg transition-colors" disabled={!canManage}>
+            Delete
+          </button>
+          <div class="flex gap-3 w-full sm:w-auto">
+            <button type="button" id="cancel-btn" class="btn-secondary flex-1 sm:flex-none">Cancel</button>
+            <button type="submit" class="btn-primary flex-1 sm:flex-none" disabled={!canManage}>Save Sponsor</button>
+          </div>
         </div>
       </form>
     </div>
   </div>
 </AdminLayout>
+
+<style>
+  .input-themed:focus {
+    border-color: var(--admin-accent, #14b8a6);
+    box-shadow: 0 0 0 2px var(--admin-ring, rgba(20, 184, 166, 0.2));
+  }
+</style>
 
 <script>
   const page = document.getElementById('sponsors-page');
@@ -410,6 +301,7 @@ const sponsorsByTier = {
   const formMode = document.getElementById('form-mode') as HTMLElement;
   const deleteBtn = document.getElementById('delete-sponsor') as HTMLButtonElement;
   const closeModalBtn = document.getElementById('close-modal') as HTMLButtonElement;
+  const cancelBtn = document.getElementById('cancel-btn') as HTMLButtonElement;
 
   const fields = {
     name: document.getElementById('sponsor-name') as HTMLInputElement,
@@ -484,6 +376,7 @@ const sponsorsByTier = {
   });
 
   closeModalBtn?.addEventListener('click', hideModal);
+  cancelBtn?.addEventListener('click', hideModal);
 
   modal?.addEventListener('click', (e) => {
     if (e.target === modal) hideModal();
@@ -517,6 +410,10 @@ const sponsorsByTier = {
     event.preventDefault();
     if (!clubId) return;
 
+    const submitBtn = form.querySelector('button[type="submit"]') as HTMLButtonElement;
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Saving...';
+
     const placements = Array.from(document.querySelectorAll('.placement-checkbox'))
       .filter((el) => (el as HTMLInputElement).checked)
       .map((el) => (el as HTMLInputElement).value);
@@ -538,23 +435,26 @@ const sponsorsByTier = {
       ? `/api/clubs/${clubId}/sponsors/${currentId}`
       : `/api/clubs/${clubId}/sponsors`;
 
-    const res = await fetch(endpoint, {
-      method: currentId ? 'PATCH' : 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
+    try {
+      const res = await fetch(endpoint, {
+        method: currentId ? 'PATCH' : 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
 
-    if (res.ok) {
-      window.location.reload();
-    } else {
-      const data = await res.json();
-      alert(data.error || 'Failed to save sponsor');
+      if (res.ok) {
+        window.location.reload();
+      } else {
+        const data = await res.json();
+        alert(data.error || 'Failed to save sponsor');
+      }
+    } catch (error) {
+      alert('Failed to save sponsor');
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Save Sponsor';
     }
   });
 
   clearForm();
 </script>
-
-<style>
-  @import "../../../../styles/global.css";
-</style>

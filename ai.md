@@ -545,3 +545,124 @@ Super Admin
 	•	super admin dashboard shows clubs, types, activity, domain status, failures
 	•	can support onboarding/domain issues without deep digging
 	•	can manage templates/features per sport
+Clubify monorepo spec (short version): 3 areas, Cloudflare-friendly
+
+Goal
+
+Keep the codebase scalable without getting complicated: separate Marketing, App UI, and Platform/API so sports/templates/modules don’t explode your Astro src/pages.
+
+⸻
+
+1) The 3 areas
+
+A) Marketing (Astro) — clubify.ie
+
+Purpose: fast pages + SEO + conversion
+	•	/ /pricing /templates /security /contact
+	•	/sports/{gaa|football|rugby|athletics|golf|tennis|cycling} (GAA live, others coming soon)
+Rules:
+	•	No tenant logic
+	•	No admin hub UI
+	•	Can post to waitlist/contact endpoints only
+
+B) App UI (React) — tenant site + hub + future Capacitor
+
+Purpose: everything that must match mobile parity
+	•	clubify.ie/admin (global login + onboarding + tenant select)
+	•	clubslug.clubify.ie/* (public tenant site)
+	•	clubslug.clubify.ie/admin/* (club hub)
+	•	Custom domains: myclub.ie/* and myclub.ie/admin/*
+Rules:
+	•	One UI stack for web + mobile parity
+	•	Feature/module visibility driven by config (sport + role)
+
+C) Platform/API (Cloudflare Worker)
+
+Purpose: tenancy + auth + domains + content + jobs
+	•	auth/session
+	•	clubs + onboarding
+	•	domain onboarding + verification + SSL status
+	•	content: posts/pages/fixtures/gallery/sponsors/forms/inbox
+	•	audit log + super admin endpoints
+Rules:
+	•	API is the only place that touches DB directly
+
+⸻
+
+2) Repo layout (minimal monorepo)
+
+.
+├── apps
+│   ├── marketing      # Astro marketing site
+│   └── app            # React app (tenant + admin hub)
+├── services
+│   └── api            # Cloudflare Worker API
+├── packages
+│   ├── core           # shared types, permissions, feature gating helpers
+│   ├── config         # sports + templates + module enablement registry
+│   └── ui             # shared React UI components (admin design system)
+├── db
+│   └── migrations     # SQL migrations (kept simple)
+└── infra
+    └── wrangler       # wrangler configs + scripts
+
+
+⸻
+
+3) Cloudflare deployment
+
+Deployables
+	•	Cloudflare Pages: apps/marketing → clubify.ie
+	•	Cloudflare Pages: apps/app → *.clubify.ie + clubify.ie/admin
+	•	Cloudflare Worker: services/api → api.clubify.ie (or same zone route)
+
+Routing intent
+	•	clubify.ie/* → marketing
+	•	clubify.ie/admin/* → app
+	•	*.clubify.ie/* → app
+	•	*.clubify.ie/admin/* → app
+	•	myclub.ie/* → app (after domain onboarding)
+
+⸻
+
+4) Sports + templates (data-driven)
+
+In packages/config define each sport once:
+	•	status: live / coming_soon
+	•	onboardingMode: allow_create / waitlist_only / invite_only
+	•	templates: exactly 3 per sport
+	•	enabledModules: list of module IDs
+	•	enabledWidgets: list of widget IDs
+	•	defaultPages: home/about/blog/history/gallery/contact/legal/rss
+
+Rule: no “if gaa” logic outside core + config.
+
+⸻
+
+5) Admin navigation + modules (simple rule)
+
+Admin sidebar is generated from:
+	•	club.club_type (sport config)
+	•	enabled modules
+	•	user role permissions
+	•	“Core” vs “Modules (Coming soon)” grouping
+
+No manual nav links scattered across pages.
+
+⸻
+
+6) Minimum DB changes required
+	•	Add clubs.club_type (gaa/football/…)
+	•	Ensure templates are sport-scoped: templates.club_type
+	•	Domain mapping table: club_domains(hostname, club_id, status)
+	•	Pages have toggles: status, nav_visible, nav_order
+
+⸻
+
+7) Implementation order (fast + safe)
+	1.	Create monorepo folders + move marketing into apps/marketing
+	2.	Create packages/config (sports/templates registry)
+	3.	Move hub/tenant UI into apps/app (keep API as-is)
+	4.	Update onboarding: Step 0 select sport (from config)
+	5.	Generate admin nav from config + role gating
+

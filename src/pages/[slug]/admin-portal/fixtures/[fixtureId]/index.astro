@@ -1,5 +1,9 @@
 ---
 import AdminLayout from '../../../../../components/admin/AdminLayout.astro';
+import AdminPageTemplate from '../../../../../components/admin/AdminPageTemplate.astro';
+import AdminCard from '../../../../../components/admin/AdminCard.astro';
+import StatusChip from '../../../../../components/admin/StatusChip.astro';
+import Button from '../../../../../components/ui/Button.astro';
 import { DatabaseService } from '../../../../../lib/db';
 import { getAuthContext } from '../../../../../lib/auth';
 
@@ -42,6 +46,12 @@ if (!fixture) {
 
 // Format date for input
 const matchDateFormatted = fixture.match_date?.split('T')[0] || fixture.match_date;
+
+const breadcrumbs = [
+  { label: 'Dashboard', href: `/${slug}/admin-portal` },
+  { label: 'Fixtures', href: `/${slug}/admin-portal/fixtures` },
+  { label: 'Edit Fixture' },
+];
 ---
 
 <AdminLayout
@@ -51,187 +61,191 @@ const matchDateFormatted = fixture.match_date?.split('T')[0] || fixture.match_da
   member={member}
   currentPage="fixtures"
 >
-  <Fragment slot="header-left">
-    <div class="flex items-center gap-4">
-      <a href={`/${slug}/admin-portal/fixtures`} class="p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
-        </svg>
-      </a>
-      <h1 class="text-xl font-bold text-slate-900">Edit Fixture</h1>
+  <AdminPageTemplate
+    title="Edit Fixture"
+    subtitle={`vs ${fixture.opponent}`}
+    breadcrumbs={breadcrumbs}
+  >
+    <div slot="actions">
       {fixture.status === 'played' && (
-        <span class="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">Played</span>
+        <StatusChip variant="success" size="sm">Played</StatusChip>
       )}
     </div>
-  </Fragment>
 
-  <form id="fixture-form" class="max-w-2xl">
-    <div class="space-y-6">
-      <!-- Opponent -->
-      <div>
-        <label for="opponent" class="block text-sm font-medium text-slate-700 mb-2">Opponent *</label>
-        <input
-          type="text"
-          id="opponent"
-          name="opponent"
-          required
-          maxlength="100"
-          value={fixture.opponent}
-          class="w-full px-4 py-3 bg-white border border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-        />
-      </div>
-
-      <!-- Date and Time -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <label for="matchDate" class="block text-sm font-medium text-slate-700 mb-2">Date *</label>
-          <input
-            type="date"
-            id="matchDate"
-            name="matchDate"
-            required
-            value={matchDateFormatted}
-            class="w-full px-4 py-3 bg-white border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-          />
-        </div>
-        <div>
-          <label for="matchTime" class="block text-sm font-medium text-slate-700 mb-2">Time</label>
-          <input
-            type="time"
-            id="matchTime"
-            name="matchTime"
-            value={fixture.match_time || ''}
-            class="w-full px-4 py-3 bg-white border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-          />
-        </div>
-      </div>
-
-      <!-- Home/Away -->
-      <div>
-        <label class="block text-sm font-medium text-slate-700 mb-2">Home or Away *</label>
-        <div class="flex gap-4">
-          <label class="flex items-center gap-2 cursor-pointer">
+    <form id="fixture-form">
+      <AdminCard>
+        <div class="space-y-6">
+          <!-- Opponent -->
+          <div>
+            <label for="opponent" class="block text-sm font-medium text-slate-700 mb-2">Opponent *</label>
             <input
-              type="radio"
-              name="isHome"
-              value="true"
-              checked={fixture.is_home}
-              class="w-4 h-4 text-green-500 bg-white border-slate-300 focus:ring-green-500"
+              type="text"
+              id="opponent"
+              name="opponent"
+              required
+              maxlength="100"
+              value={fixture.opponent}
+              class="input-themed w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white transition-colors"
             />
-            <span class="text-slate-900">Home</span>
-          </label>
-          <label class="flex items-center gap-2 cursor-pointer">
+          </div>
+
+          <!-- Date and Time -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label for="matchDate" class="block text-sm font-medium text-slate-700 mb-2">Date *</label>
+              <input
+                type="date"
+                id="matchDate"
+                name="matchDate"
+                required
+                value={matchDateFormatted}
+                class="input-themed w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:bg-white transition-colors"
+              />
+            </div>
+            <div>
+              <label for="matchTime" class="block text-sm font-medium text-slate-700 mb-2">Time</label>
+              <input
+                type="time"
+                id="matchTime"
+                name="matchTime"
+                value={fixture.match_time || ''}
+                class="input-themed w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:bg-white transition-colors"
+              />
+            </div>
+          </div>
+
+          <!-- Home/Away -->
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-2">Home or Away *</label>
+            <div class="flex gap-4">
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="isHome"
+                  value="true"
+                  checked={fixture.is_home}
+                  class="w-4 h-4 accent-[var(--admin-accent)]"
+                />
+                <span class="text-slate-900">Home</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="isHome"
+                  value="false"
+                  checked={!fixture.is_home}
+                  class="w-4 h-4 accent-[var(--admin-accent)]"
+                />
+                <span class="text-slate-900">Away</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Venue -->
+          <div>
+            <label for="venue" class="block text-sm font-medium text-slate-700 mb-2">Venue</label>
             <input
-              type="radio"
-              name="isHome"
-              value="false"
-              checked={!fixture.is_home}
-              class="w-4 h-4 text-green-500 bg-white border-slate-300 focus:ring-green-500"
+              type="text"
+              id="venue"
+              name="venue"
+              maxlength="200"
+              value={fixture.venue || ''}
+              class="input-themed w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white transition-colors"
             />
-            <span class="text-slate-900">Away</span>
-          </label>
-        </div>
-      </div>
+          </div>
 
-      <!-- Venue -->
-      <div>
-        <label for="venue" class="block text-sm font-medium text-slate-700 mb-2">Venue</label>
-        <input
-          type="text"
-          id="venue"
-          name="venue"
-          maxlength="200"
-          value={fixture.venue || ''}
-          class="w-full px-4 py-3 bg-white border border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-        />
-      </div>
+          <!-- Competition -->
+          <div>
+            <label for="competition" class="block text-sm font-medium text-slate-700 mb-2">Competition</label>
+            <input
+              type="text"
+              id="competition"
+              name="competition"
+              maxlength="100"
+              value={fixture.competition || ''}
+              class="input-themed w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white transition-colors"
+            />
+          </div>
 
-      <!-- Competition -->
-      <div>
-        <label for="competition" class="block text-sm font-medium text-slate-700 mb-2">Competition</label>
-        <input
-          type="text"
-          id="competition"
-          name="competition"
-          maxlength="100"
-          value={fixture.competition || ''}
-          class="w-full px-4 py-3 bg-white border border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-        />
-      </div>
+          <!-- Team Name -->
+          <div>
+            <label for="teamName" class="block text-sm font-medium text-slate-700 mb-2">Team</label>
+            <input
+              type="text"
+              id="teamName"
+              name="teamName"
+              maxlength="100"
+              value={fixture.team_name || ''}
+              class="input-themed w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white transition-colors"
+            />
+          </div>
 
-      <!-- Team Name -->
-      <div>
-        <label for="teamName" class="block text-sm font-medium text-slate-700 mb-2">Team</label>
-        <input
-          type="text"
-          id="teamName"
-          name="teamName"
-          maxlength="100"
-          value={fixture.team_name || ''}
-          class="w-full px-4 py-3 bg-white border border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-        />
-      </div>
+          <!-- Notes -->
+          <div>
+            <label for="notes" class="block text-sm font-medium text-slate-700 mb-2">Notes</label>
+            <textarea
+              id="notes"
+              name="notes"
+              rows="3"
+              class="input-themed w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white transition-colors resize-none"
+            >{fixture.notes || ''}</textarea>
+          </div>
 
-      <!-- Notes -->
-      <div>
-        <label for="notes" class="block text-sm font-medium text-slate-700 mb-2">Notes</label>
-        <textarea
-          id="notes"
-          name="notes"
-          rows="3"
-          class="w-full px-4 py-3 bg-white border border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
-        >{fixture.notes || ''}</textarea>
-      </div>
+          <!-- Actions -->
+          <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-4 border-t border-slate-200">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full sm:w-auto">
+              <Button type="submit" variant="primary">
+                Save Changes
+              </Button>
+              {fixture.status !== 'played' && (
+                <a
+                  href={`/${slug}/admin-portal/fixtures/${fixtureId}/result`}
+                  class="w-full sm:w-auto px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl transition-colors font-medium text-center"
+                >
+                  Enter Result
+                </a>
+              )}
+            </div>
 
-      <!-- Actions -->
-      <div class="flex items-center justify-between pt-4 border-t border-slate-200">
-        <div class="flex items-center gap-4">
-          <button
-            type="submit"
-            class="px-6 py-3 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors font-medium"
-          >
-            Save Changes
-          </button>
-          {fixture.status !== 'played' && (
-            <a
-              href={`/${slug}/admin-portal/fixtures/${fixtureId}/result`}
-              class="px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition-colors font-medium"
+            <button
+              type="button"
+              id="delete-btn"
+              class="w-full sm:w-auto px-6 py-3 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl transition-colors font-medium"
             >
-              Enter Result
-            </a>
-          )}
+              Delete
+            </button>
+          </div>
         </div>
+      </AdminCard>
 
-        <button
-          type="button"
-          id="delete-btn"
-          class="px-6 py-3 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg transition-colors font-medium"
-        >
-          Delete
-        </button>
+      <div id="loading" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50">
+        <div class="bg-white rounded-xl p-6 text-center border border-slate-200 shadow-xl">
+          <div class="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin mx-auto mb-3" style="border-color: var(--admin-accent); border-top-color: transparent;"></div>
+          <p class="text-slate-700">Saving...</p>
+        </div>
+      </div>
+    </form>
+
+    <!-- Delete Modal -->
+    <div id="delete-modal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50">
+      <div class="bg-white rounded-xl p-6 max-w-md mx-4 border border-slate-200 shadow-xl">
+        <h3 class="text-lg font-bold text-slate-900 mb-2">Delete Fixture</h3>
+        <p class="text-slate-500 mb-6">Are you sure you want to delete this fixture vs {fixture.opponent}?</p>
+        <div class="flex items-center gap-3 justify-end">
+          <button id="cancel-delete" class="px-4 py-2 text-slate-600 hover:text-slate-900 transition-colors">Cancel</button>
+          <button id="confirm-delete" class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors">Delete</button>
+        </div>
       </div>
     </div>
-
-    <div id="loading" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50">
-      <div class="bg-white rounded-xl p-6 text-center border border-slate-200 shadow-xl">
-        <div class="w-8 h-8 border-2 border-green-500 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
-        <p class="text-slate-700">Saving...</p>
-      </div>
-    </div>
-  </form>
-
-  <!-- Delete Modal -->
-  <div id="delete-modal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50">
-    <div class="bg-white rounded-xl p-6 max-w-md mx-4 border border-slate-200 shadow-xl">
-      <h3 class="text-lg font-bold text-slate-900 mb-2">Delete Fixture</h3>
-      <p class="text-slate-500 mb-6">Are you sure you want to delete this fixture vs {fixture.opponent}?</p>
-      <div class="flex items-center gap-3 justify-end">
-        <button id="cancel-delete" class="px-4 py-2 text-slate-600 hover:text-slate-900 transition-colors">Cancel</button>
-        <button id="confirm-delete" class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors">Delete</button>
-      </div>
-    </div>
-  </div>
+  </AdminPageTemplate>
 </AdminLayout>
+
+<style>
+  .input-themed:focus {
+    border-color: var(--admin-accent, #14b8a6);
+    box-shadow: 0 0 0 2px var(--admin-ring, rgba(20, 184, 166, 0.2));
+  }
+</style>
 
 <script define:vars={{ clubId: club.id, fixtureId, slug }}>
   const form = document.getElementById('fixture-form');

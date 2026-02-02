@@ -1,5 +1,10 @@
 ---
 import AdminLayout from '../../../../components/admin/AdminLayout.astro';
+import AdminPageTemplate from '../../../../components/admin/AdminPageTemplate.astro';
+import AdminTable from '../../../../components/admin/AdminTable.astro';
+import StatusChip from '../../../../components/admin/StatusChip.astro';
+import Icon from '../../../../components/admin/Icon.astro';
+import Button from '../../../../components/ui/Button.astro';
 import { DatabaseService } from '../../../../lib/db';
 import { getAuthContext } from '../../../../lib/auth';
 
@@ -26,7 +31,18 @@ if (!member) {
   return Astro.redirect('/admin');
 }
 
-// Get all posts
+interface Post {
+  id: string;
+  title: string;
+  summary: string | null;
+  status: string;
+  category: string;
+  published_at: string | null;
+  created_at: string;
+  author_name: string | null;
+  slug: string;
+}
+
 const results = await Astro.locals.runtime.env.DB.prepare(`
   SELECT p.*, u.name as author_name
   FROM posts p
@@ -35,7 +51,10 @@ const results = await Astro.locals.runtime.env.DB.prepare(`
   ORDER BY p.created_at DESC
 `).bind(club.id).all();
 
-const posts = results.results || [];
+const posts = (results.results || []) as Post[];
+
+const publishedCount = posts.filter(p => p.status === 'published').length;
+const draftCount = posts.filter(p => p.status === 'draft').length;
 
 function formatDate(dateStr: string | null): string {
   if (!dateStr) return '-';
@@ -46,15 +65,20 @@ function formatDate(dateStr: string | null): string {
   });
 }
 
-function getCategoryColor(category: string): string {
-  const colors: Record<string, string> = {
-    news: 'bg-blue-100 text-blue-700',
-    'match-report': 'bg-green-100 text-green-700',
-    fundraiser: 'bg-amber-100 text-amber-700',
-    notice: 'bg-purple-100 text-purple-700',
+function getCategoryLabel(category: string): string {
+  const labels: Record<string, string> = {
+    news: 'News',
+    'match-report': 'Match Report',
+    fundraiser: 'Fundraiser',
+    notice: 'Notice',
   };
-  return colors[category] || 'bg-slate-100 text-slate-600';
+  return labels[category] || category;
 }
+
+const breadcrumbs = [
+  { label: 'Dashboard', href: `/${slug}/admin-portal` },
+  { label: 'Posts' },
+];
 ---
 
 <AdminLayout
@@ -65,80 +89,78 @@ function getCategoryColor(category: string): string {
   currentPage="posts"
 >
   <Fragment slot="header-actions">
-    <a
-      href={`/${slug}/admin-portal/posts/new`}
-      class="flex items-center gap-2 px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-xl transition-colors text-sm font-medium shadow-lg shadow-green-500/25"
-    >
-      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-      </svg>
+    <Button href={`/${slug}/admin-portal/posts/new`} variant="primary">
+      <Icon name="plus" size="md" />
       New post
-    </a>
+    </Button>
   </Fragment>
 
-  {posts.length > 0 ? (
-    <div class="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
-      <table class="w-full">
-        <thead>
-          <tr class="border-b border-slate-200 bg-slate-50">
-            <th class="text-left px-6 py-4 text-slate-600 font-semibold text-sm">Title</th>
-            <th class="text-left px-6 py-4 text-slate-600 font-semibold text-sm hidden md:table-cell">Category</th>
-            <th class="text-left px-6 py-4 text-slate-600 font-semibold text-sm hidden lg:table-cell">Author</th>
-            <th class="text-left px-6 py-4 text-slate-600 font-semibold text-sm">Status</th>
-            <th class="text-left px-6 py-4 text-slate-600 font-semibold text-sm hidden sm:table-cell">Date</th>
-            <th class="px-6 py-4"></th>
+  <AdminPageTemplate
+    title="Posts"
+    subtitle="Manage your club's news and updates"
+    breadcrumbs={breadcrumbs}
+    wide
+  >
+    <div slot="actions" class="flex items-center gap-4 text-sm">
+      <span class="text-slate-500">{publishedCount} published</span>
+      <span class="text-slate-300">|</span>
+      <span class="text-slate-500">{draftCount} drafts</span>
+    </div>
+
+    {posts.length > 0 ? (
+      <AdminTable>
+        <thead slot="head">
+          <tr>
+            <th>Title</th>
+            <th class="hidden md:table-cell">Category</th>
+            <th class="hidden lg:table-cell">Author</th>
+            <th>Status</th>
+            <th class="hidden sm:table-cell">Date</th>
+            <th class="w-12"></th>
           </tr>
         </thead>
-        <tbody>
-          {posts.map((post: any) => (
-            <tr class="border-b border-slate-100 hover:bg-slate-50 transition-colors">
-              <td class="px-6 py-4">
-                <a href={`/${slug}/admin-portal/posts/${post.id}`} class="text-slate-900 font-medium hover:text-green-600 transition-colors">
+        <tbody slot="body">
+          {posts.map((post) => (
+            <tr>
+              <td>
+                <a href={`/${slug}/admin-portal/posts/${post.id}`} class="font-medium text-slate-900 hover:text-slate-600 transition-colors">
                   {post.title}
                 </a>
                 {post.summary && (
-                  <p class="text-slate-500 text-sm mt-1 line-clamp-1">{post.summary}</p>
+                  <p class="text-sm text-slate-500 mt-0.5 line-clamp-1">{post.summary}</p>
                 )}
               </td>
-              <td class="px-6 py-4 hidden md:table-cell">
-                <span class={`px-2.5 py-1 rounded-full text-xs font-medium capitalize ${getCategoryColor(post.category)}`}>
-                  {post.category.replace('-', ' ')}
-                </span>
+              <td class="hidden md:table-cell">
+                <span class="text-sm text-slate-600">{getCategoryLabel(post.category)}</span>
               </td>
-              <td class="px-6 py-4 hidden lg:table-cell">
-                <span class="text-slate-500 text-sm">{post.author_name || 'Unknown'}</span>
+              <td class="hidden lg:table-cell">
+                <span class="text-sm text-slate-500">{post.author_name || 'Unknown'}</span>
               </td>
-              <td class="px-6 py-4">
-                {post.status === 'published' ? (
-                  <span class="px-2.5 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">Published</span>
-                ) : (
-                  <span class="px-2.5 py-1 bg-slate-100 text-slate-500 rounded-full text-xs font-medium">Draft</span>
-                )}
+              <td>
+                <StatusChip variant={post.status === 'published' ? 'success' : 'neutral'} size="sm">
+                  {post.status}
+                </StatusChip>
               </td>
-              <td class="px-6 py-4 hidden sm:table-cell">
-                <span class="text-slate-500 text-sm">{formatDate(post.published_at || post.created_at)}</span>
+              <td class="hidden sm:table-cell">
+                <span class="text-sm text-slate-500">{formatDate(post.published_at || post.created_at)}</span>
               </td>
-              <td class="px-6 py-4">
-                <div class="flex items-center justify-end gap-2">
+              <td>
+                <div class="flex items-center justify-end gap-1">
                   <a
                     href={`/${slug}/admin-portal/posts/${post.id}`}
-                    class="p-2 text-slate-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                    class="p-1.5 text-slate-400 hover:text-slate-600 rounded-md hover:bg-slate-100 transition-colors"
                     title="Edit"
                   >
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                    </svg>
+                    <Icon name="edit" size="md" />
                   </a>
                   {post.status === 'published' && (
                     <a
                       href={`/${slug}/news/${post.slug}`}
                       target="_blank"
-                      class="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                      class="p-1.5 text-slate-400 hover:text-slate-600 rounded-md hover:bg-slate-100 transition-colors"
                       title="View"
                     >
-                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
-                      </svg>
+                      <Icon name="external-link" size="md" />
                     </a>
                   )}
                 </div>
@@ -146,26 +168,24 @@ function getCategoryColor(category: string): string {
             </tr>
           ))}
         </tbody>
-      </table>
-    </div>
-  ) : (
-    <div class="bg-white rounded-xl border border-slate-200 p-12 text-center shadow-sm">
-      <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-slate-100 flex items-center justify-center">
-        <svg class="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/>
-        </svg>
-      </div>
-      <h3 class="text-lg font-semibold text-slate-900 mb-2">No posts yet</h3>
-      <p class="text-slate-500 mb-6">Create your first post to share news with your club.</p>
-      <a
-        href={`/${slug}/admin-portal/posts/new`}
-        class="inline-flex items-center gap-2 px-6 py-3 bg-green-500 hover:bg-green-600 text-white rounded-xl transition-colors font-medium shadow-lg shadow-green-500/25"
+      </AdminTable>
+    ) : (
+      <AdminTable
+        emptyTitle="No posts yet"
+        emptyDescription="Create your first post to share news with your club."
       >
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-        </svg>
-        Create your first post
-      </a>
-    </div>
-  )}
+        <div slot="empty" class="text-center py-8">
+          <div class="w-12 h-12 mx-auto mb-4 rounded-full bg-slate-100 flex items-center justify-center">
+            <Icon name="posts" size="xl" class="text-slate-400" />
+          </div>
+          <h3 class="text-lg font-medium text-slate-900 mb-1">No posts yet</h3>
+          <p class="text-sm text-slate-500 mb-4">Create your first post to share news with your club.</p>
+          <Button href={`/${slug}/admin-portal/posts/new`} variant="primary">
+            <Icon name="plus" size="md" />
+            Create your first post
+          </Button>
+        </div>
+      </AdminTable>
+    )}
+  </AdminPageTemplate>
 </AdminLayout>

@@ -1,5 +1,8 @@
 ---
 import AdminLayout from '../../../../components/admin/AdminLayout.astro';
+import AdminPageTemplate from '../../../../components/admin/AdminPageTemplate.astro';
+import AdminCard from '../../../../components/admin/AdminCard.astro';
+import Icon from '../../../../components/admin/Icon.astro';
 import { DatabaseService } from '../../../../lib/db';
 import { getAuthContext } from '../../../../lib/auth';
 
@@ -26,17 +29,46 @@ if (!member) {
   return Astro.redirect('/admin');
 }
 
+interface ContactSubmission {
+  id: string;
+  name: string | null;
+  email: string | null;
+  phone: string | null;
+  message: string;
+  consent: number;
+  created_at: string;
+}
+
+interface FormSubmission {
+  id: string;
+  form_id: string;
+  data: string;
+  created_at: string;
+}
+
+interface Form {
+  id: string;
+  name: string;
+  slug: string;
+}
+
 const contactSettings = await db.getContactSettings(club.id);
 const retentionDays = contactSettings?.retention_days ?? 30;
-const contactSubmissions = await db.getContactSubmissions(club.id, retentionDays);
-const forms = await db.getForms(club.id);
+const contactSubmissions = await db.getContactSubmissions(club.id, retentionDays) as ContactSubmission[];
+const forms = await db.getForms(club.id) as Form[];
 
 const formSubmissionsByForm = await Promise.all(
   forms.map(async (form) => ({
     form,
-    submissions: await db.getFormSubmissions(form.id)
+    submissions: await db.getFormSubmissions(form.id) as FormSubmission[]
   }))
 );
+
+const totalFormSubmissions = formSubmissionsByForm.reduce((sum, { submissions }) => sum + submissions.length, 0);
+const recentCount = contactSubmissions.filter(s => {
+  const diffHours = (new Date().getTime() - new Date(s.created_at).getTime()) / 3600000;
+  return diffHours < 24;
+}).length;
 
 function formatDate(dateStr: string): string {
   const date = new Date(dateStr);
@@ -52,6 +84,11 @@ function formatDate(dateStr: string): string {
 
   return date.toLocaleDateString('en-IE', { day: 'numeric', month: 'short' });
 }
+
+const breadcrumbs = [
+  { label: 'Dashboard', href: `/${slug}/admin-portal` },
+  { label: 'Inbox' },
+];
 ---
 
 <AdminLayout
@@ -61,129 +98,87 @@ function formatDate(dateStr: string): string {
   member={member}
   currentPage="inbox"
 >
-  <div class="max-w-7xl mx-auto">
-    <!-- Header -->
-    <div class="mb-8">
-      <h1 class="text-3xl font-bold text-slate-900 mb-2">Inbox</h1>
-      <p class="text-slate-600">All contact messages and form submissions in one place</p>
+  <AdminPageTemplate
+    title="Inbox"
+    subtitle="All form submissions and contact messages"
+    breadcrumbs={breadcrumbs}
+  >
+    <!-- Stats -->
+    <div class="grid grid-cols-3 gap-4 mb-6">
+      <div class="stat-card stat-card-accent">
+        <p class="stat-card-label">Contact Form</p>
+        <p class="stat-card-value">{contactSubmissions.length}</p>
+        <p class="text-xs text-slate-500 mt-1">Last {retentionDays} days</p>
+      </div>
+      <div class="stat-card">
+        <p class="stat-card-label">Form Submissions</p>
+        <p class="stat-card-value">{totalFormSubmissions}</p>
+        <p class="text-xs text-slate-500 mt-1">{forms.length} form{forms.length !== 1 ? 's' : ''}</p>
+      </div>
+      <div class="stat-card">
+        <p class="stat-card-label">Recent (24h)</p>
+        <p class="stat-card-value">{recentCount}</p>
+        <p class="text-xs text-slate-500 mt-1">new messages</p>
+      </div>
     </div>
 
     <!-- GDPR Notice -->
-    <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl border border-blue-200 p-6 mb-8">
-      <div class="flex items-start gap-4">
-        <div class="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center flex-shrink-0">
-          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
-          </svg>
-        </div>
-        <div class="flex-1">
-          <h3 class="font-semibold text-blue-900 mb-1">GDPR Compliance</h3>
-          <p class="text-sm text-blue-800">Submissions automatically purge after <span class="font-semibold">{retentionDays} days</span>. You can adjust this in <a href={`/${slug}/admin-portal/website/contact-form`} class="underline hover:text-blue-900">contact form settings</a>.</p>
-        </div>
-      </div>
-    </div>
-
-    <!-- Stats Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-      <div class="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-6 border border-purple-100">
-        <div class="flex items-center justify-between mb-4">
-          <div class="w-12 h-12 bg-purple-500 rounded-xl flex items-center justify-center">
-            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-            </svg>
-          </div>
-        </div>
-        <p class="text-sm font-medium text-purple-700 mb-1">Contact Form</p>
-        <p class="text-3xl font-bold text-purple-900">{contactSubmissions.length}</p>
-        <p class="text-xs text-purple-600 mt-2">Last {retentionDays} days</p>
-      </div>
-
-      <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-6 border border-green-100">
-        <div class="flex items-center justify-between mb-4">
-          <div class="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center">
-            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-            </svg>
-          </div>
-        </div>
-        <p class="text-sm font-medium text-green-700 mb-1">Custom Forms</p>
-        <p class="text-3xl font-bold text-green-900">{forms.length}</p>
-        <p class="text-xs text-green-600 mt-2">{formSubmissionsByForm.reduce((sum, { submissions }) => sum + submissions.length, 0)} total submissions</p>
-      </div>
-
-      <div class="bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl p-6 border border-amber-100">
-        <div class="flex items-center justify-between mb-4">
-          <div class="w-12 h-12 bg-amber-500 rounded-xl flex items-center justify-center">
-            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
-          </div>
-        </div>
-        <p class="text-sm font-medium text-amber-700 mb-1">Recent Activity</p>
-        <p class="text-3xl font-bold text-amber-900">{contactSubmissions.filter(s => {
-          const diffHours = (new Date().getTime() - new Date(s.created_at).getTime()) / 3600000;
-          return diffHours < 24;
-        }).length}</p>
-        <p class="text-xs text-amber-600 mt-2">Last 24 hours</p>
+    <div class="alert alert-info mb-6">
+      <Icon name="shield" size="lg" class="alert-icon flex-shrink-0 mt-0.5" />
+      <div>
+        <p class="text-sm font-medium" style="color: var(--admin-accent)">GDPR Compliance</p>
+        <p class="text-sm text-slate-600">Submissions auto-purge after {retentionDays} days. <a href={`/${slug}/admin-portal/website/contact-form`} class="link">Adjust settings</a></p>
       </div>
     </div>
 
     <!-- Tabs -->
-    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-      <div class="border-b border-slate-200 px-6 py-4">
-        <div class="flex items-center justify-between gap-4">
-          <div class="flex gap-2">
-            <button class="tab-btn px-4 py-2 rounded-lg text-sm font-semibold transition-all" data-tab="contact">
-              Contact Form ({contactSubmissions.length})
-            </button>
-            <button class="tab-btn px-4 py-2 rounded-lg text-sm font-semibold transition-all" data-tab="forms">
-              Custom Forms
-            </button>
-          </div>
+    <AdminCard padding="none">
+      <div class="border-b border-slate-200">
+        <div class="tabs px-4">
+          <button class="tab active" data-tab="contact">
+            Contact ({contactSubmissions.length})
+          </button>
+          <button class="tab" data-tab="forms">
+            Forms ({totalFormSubmissions})
+          </button>
         </div>
       </div>
 
       <!-- Contact Form Tab -->
-      <div id="tab-contact" class="tab-panel p-6">
+      <div id="tab-contact" class="tab-panel">
         {contactSubmissions.length > 0 ? (
-          <div class="space-y-3">
+          <div class="divide-y divide-slate-100">
             {contactSubmissions.map((submission) => (
-              <div class="bg-slate-50 rounded-xl border border-slate-200 p-5 hover:border-purple-300 hover:shadow-md transition-all">
-                <div class="flex items-start justify-between gap-4 mb-4">
+              <div class="p-5 hover:bg-slate-50 transition-colors">
+                <div class="flex flex-col sm:flex-row items-start justify-between gap-4 mb-3">
                   <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-600 text-white flex items-center justify-center text-sm font-semibold">
+                    <div class="w-10 h-10 rounded-full flex items-center justify-center text-white font-medium text-sm" style="background: var(--admin-accent)">
                       {submission.name ? submission.name.charAt(0).toUpperCase() : '?'}
                     </div>
                     <div>
-                      <h3 class="text-base font-semibold text-slate-900">{submission.name || 'Anonymous'}</h3>
+                      <p class="font-medium text-slate-900">{submission.name || 'Anonymous'}</p>
                       <p class="text-xs text-slate-500">{formatDate(submission.created_at)}</p>
                     </div>
                   </div>
-                  <div class="flex flex-wrap items-center gap-2 text-xs">
+                  <div class="flex flex-wrap items-center gap-2">
                     {submission.email && (
-                      <a href={`mailto:${submission.email}`} class="px-3 py-1.5 bg-white rounded-lg border border-slate-200 text-slate-600 hover:border-purple-300 hover:text-purple-600 transition-all flex items-center gap-1.5">
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-                        </svg>
+                      <a href={`mailto:${submission.email}`} class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-md bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors">
+                        <Icon name="mail" size="sm" />
                         {submission.email}
                       </a>
                     )}
                     {submission.phone && (
-                      <a href={`tel:${submission.phone}`} class="px-3 py-1.5 bg-white rounded-lg border border-slate-200 text-slate-600 hover:border-purple-300 hover:text-purple-600 transition-all flex items-center gap-1.5">
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
-                        </svg>
+                      <a href={`tel:${submission.phone}`} class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-md bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors">
+                        <Icon name="phone" size="sm" />
                         {submission.phone}
                       </a>
                     )}
                   </div>
                 </div>
-                <p class="text-sm text-slate-700 bg-white rounded-lg p-4 border border-slate-100">{submission.message}</p>
-                {submission.consent && (
-                  <div class="mt-3 flex items-center gap-2 text-xs text-green-600">
-                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                    </svg>
+                <p class="text-sm text-slate-700 bg-slate-50 rounded-lg p-3 border border-slate-100">{submission.message}</p>
+                {submission.consent === 1 && (
+                  <div class="mt-2 flex items-center gap-1.5 text-xs text-emerald-600">
+                    <Icon name="check-circle" size="md" />
                     GDPR consent given
                   </div>
                 )}
@@ -191,102 +186,92 @@ function formatDate(dateStr: string): string {
             ))}
           </div>
         ) : (
-          <div class="text-center py-16">
-            <div class="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <svg class="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V7a2 2 0 00-2-2H6a2 2 0 00-2 2v6m16 0l-3 5H7l-3-5m16 0H4"/>
-              </svg>
+          <div class="py-12 text-center">
+            <div class="w-12 h-12 mx-auto mb-4 rounded-full bg-slate-100 flex items-center justify-center">
+              <Icon name="inbox" size="xl" class="text-slate-400" />
             </div>
-            <h3 class="text-lg font-semibold text-slate-900 mb-2">No contact submissions yet</h3>
-            <p class="text-slate-500">Messages from your contact form will appear here</p>
+            <h3 class="text-lg font-medium text-slate-900 mb-1">No messages yet</h3>
+            <p class="text-sm text-slate-500">Contact form submissions will appear here</p>
           </div>
         )}
       </div>
 
-      <!-- Custom Forms Tab -->
-      <div id="tab-forms" class="tab-panel p-6 hidden">
+      <!-- Forms Tab -->
+      <div id="tab-forms" class="tab-panel hidden">
         {formSubmissionsByForm.length > 0 ? (
-          <div class="space-y-6">
+          <div class="divide-y divide-slate-100">
             {formSubmissionsByForm.map(({ form, submissions }) => (
-              <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl border border-green-200 p-6">
-                <div class="flex items-center justify-between mb-4">
+              <div class="p-5">
+                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
                   <div class="flex items-center gap-3">
-                    <div class="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center">
-                      <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                      </svg>
+                    <div class="w-10 h-10 rounded-lg flex items-center justify-center icon-accent-bg">
+                      <Icon name="clipboard" size="lg" class="icon-accent" />
                     </div>
                     <div>
-                      <h3 class="text-lg font-bold text-green-900">{form.name}</h3>
-                      <p class="text-sm text-green-700">/{slug}/forms/{form.slug}</p>
+                      <p class="font-medium text-slate-900">{form.name}</p>
+                      <p class="text-sm text-slate-500">/{slug}/forms/{form.slug}</p>
                     </div>
                   </div>
                   <div class="flex items-center gap-3">
-                    <span class="px-3 py-1.5 bg-white rounded-lg text-sm font-semibold text-green-700 border border-green-200">
-                      {submissions.length} submission{submissions.length !== 1 ? 's' : ''}
-                    </span>
-                    <a href={`/${slug}/admin-portal/forms/${form.id}`} class="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg text-sm font-semibold transition-all">
-                      Manage Form
-                    </a>
+                    <span class="badge badge-accent">{submissions.length} submission{submissions.length !== 1 ? 's' : ''}</span>
+                    <a href={`/${slug}/admin-portal/forms/${form.id}`} class="btn-secondary text-sm">Manage</a>
                   </div>
                 </div>
 
                 {submissions.length > 0 ? (
-                  <div class="space-y-3">
-                    {submissions.slice(0, 5).map((submission) => (
-                      <div class="bg-white rounded-xl border border-green-100 p-4">
-                        <div class="flex items-center justify-between mb-3">
-                          <p class="text-xs text-slate-500 font-medium">{formatDate(submission.created_at)}</p>
+                  <div class="space-y-2">
+                    {submissions.slice(0, 3).map((submission) => (
+                      <div class="p-3 rounded-lg bg-slate-50 border border-slate-100">
+                        <div class="flex items-center justify-between mb-2">
+                          <span class="text-xs text-slate-500">{formatDate(submission.created_at)}</span>
                         </div>
                         <pre class="text-sm text-slate-700 whitespace-pre-wrap font-sans">{submission.data}</pre>
                       </div>
                     ))}
-                    {submissions.length > 5 && (
-                      <a href={`/${slug}/admin-portal/forms/${form.id}`} class="block text-center py-3 text-sm text-green-600 font-semibold hover:text-green-700">
-                        View all {submissions.length} submissions →
+                    {submissions.length > 3 && (
+                      <a href={`/${slug}/admin-portal/forms/${form.id}`} class="block text-center py-2 text-sm link">
+                        View all {submissions.length} submissions
                       </a>
                     )}
                   </div>
                 ) : (
-                  <p class="text-center text-green-700 py-8">No submissions yet</p>
+                  <p class="text-sm text-slate-500 text-center py-4">No submissions yet</p>
                 )}
               </div>
             ))}
           </div>
         ) : (
-          <div class="text-center py-16">
-            <div class="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <svg class="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-              </svg>
+          <div class="py-12 text-center">
+            <div class="w-12 h-12 mx-auto mb-4 rounded-full bg-slate-100 flex items-center justify-center">
+              <Icon name="clipboard" size="xl" class="text-slate-400" />
             </div>
-            <h3 class="text-lg font-semibold text-slate-900 mb-2">No forms created yet</h3>
-            <p class="text-slate-500 mb-6">Create custom forms for registrations, volunteers, and enquiries</p>
-            <a href={`/${slug}/admin-portal/forms`} class="inline-flex items-center gap-2 px-5 py-3 bg-green-500 text-white rounded-xl text-sm font-semibold hover:bg-green-600 shadow-lg shadow-green-500/25">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-              </svg>
-              Create your first form
-            </a>
+            <h3 class="text-lg font-medium text-slate-900 mb-1">No forms created</h3>
+            <p class="text-sm text-slate-500 mb-4">Create custom forms to collect information</p>
+            <a href={`/${slug}/admin-portal/forms`} class="btn-primary">Create a form</a>
           </div>
         )}
       </div>
-    </div>
-  </div>
+    </AdminCard>
+  </AdminPageTemplate>
 </AdminLayout>
 
+<style>
+  .icon-accent-bg {
+    background: var(--admin-accent-soft, rgba(20, 184, 166, 0.1));
+  }
+  .icon-accent {
+    color: var(--admin-accent, #14b8a6);
+  }
+</style>
+
 <script>
-  const buttons = document.querySelectorAll('.tab-btn');
+  const buttons = document.querySelectorAll('.tab');
   const panels = document.querySelectorAll('.tab-panel');
 
   function activate(tab: string) {
     buttons.forEach((btn) => {
       const isActive = btn.getAttribute('data-tab') === tab;
-      btn.classList.toggle('bg-slate-900', isActive);
-      btn.classList.toggle('text-white', isActive);
-      btn.classList.toggle('shadow-lg', isActive);
-      btn.classList.toggle('text-slate-600', !isActive);
-      btn.classList.toggle('hover:bg-slate-100', !isActive);
+      btn.classList.toggle('active', isActive);
     });
 
     panels.forEach((panel) => {
@@ -300,10 +285,4 @@ function formatDate(dateStr: string): string {
       if (tab) activate(tab);
     });
   });
-
-  activate('contact');
 </script>
-
-<style>
-  @import "../../../../styles/global.css";
-</style>

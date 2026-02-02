@@ -45,12 +45,12 @@ const {
 } = Astro.props;
 
 const selectClasses = `
-  w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl
+  select-themed w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl
   text-slate-900 appearance-none
-  focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 focus:bg-white
+  focus:outline-none focus:bg-white
   disabled:bg-slate-100 disabled:opacity-60 disabled:cursor-not-allowed
   transition-colors
-  ${error ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : ''}
+  ${error ? 'select-error' : ''}
   ${className}
 `.trim();
 ---
@@ -100,3 +100,18 @@ const selectClasses = `
     <p class="text-sm text-red-600">{error}</p>
   )}
 </div>
+
+<style>
+  /* Select uses admin accent color for focus with fallback to teal */
+  .select-themed:focus {
+    border-color: var(--admin-accent, #14b8a6);
+    box-shadow: 0 0 0 2px var(--admin-ring, rgba(20, 184, 166, 0.2));
+  }
+  .select-themed.select-error {
+    border-color: rgb(239 68 68);
+  }
+  .select-themed.select-error:focus {
+    border-color: rgb(239 68 68);
+    box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2);
+  }
+</style>

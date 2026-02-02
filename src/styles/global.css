@@ -149,6 +149,35 @@
   --transition-normal: 200ms ease;
   --transition-slow: 300ms ease;
   --transition-spring: 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* ========================================
+     Admin Design System Tokens
+     ======================================== */
+
+  /* Admin content widths */
+  --admin-content-max-width: 1280px;
+  --admin-content-wide-max-width: 1600px;
+
+  /* Admin spacing */
+  --admin-page-padding: 24px;
+  --admin-section-gap: 24px;
+  --admin-title-gap: 12px;
+  --admin-card-padding: 16px;
+  --admin-card-padding-lg: 24px;
+
+  /* Icon sizes */
+  --icon-size-sm: 14px;
+  --icon-size-md: 16px;
+  --icon-size-lg: 18px;
+  --icon-size-xl: 20px;
+
+  /* Default admin accent (overridden by sport-specific colors in AdminLayout) */
+  --admin-accent: #14b8a6;
+  --admin-accent-hover: #0d9488;
+  --admin-accent-soft: rgba(20, 184, 166, 0.08);
+  --admin-accent-strong: rgba(20, 184, 166, 0.15);
+  --admin-accent-border: rgba(20, 184, 166, 0.2);
+  --admin-ring: rgba(20, 184, 166, 0.2);
 }
 
 /* Keyframe animations */
@@ -915,4 +944,192 @@ body {
   border: 1px solid rgba(20, 184, 166, 0.1);
   padding: 2rem;
   box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
+}
+
+/* ========================================
+   Sport-Themed Utility Classes
+   Uses CSS variables set by AdminLayout
+   ======================================== */
+
+/* Text colors using sport accent */
+.sport-text {
+  color: var(--admin-accent);
+}
+
+.sport-text-hover:hover {
+  color: var(--admin-accent-hover);
+}
+
+/* Background colors using sport accent */
+.sport-bg {
+  background-color: var(--admin-accent);
+}
+
+.sport-bg-soft {
+  background-color: var(--admin-accent-soft);
+}
+
+.sport-bg-strong {
+  background-color: var(--admin-accent-strong);
+}
+
+.sport-bg-hover:hover {
+  background-color: var(--admin-accent-hover);
+}
+
+/* Border colors using sport accent */
+.sport-border {
+  border-color: var(--admin-accent-border);
+}
+
+.sport-border-solid {
+  border-color: var(--admin-accent);
+}
+
+/* Focus ring using sport accent */
+.sport-ring:focus,
+.sport-ring:focus-visible {
+  box-shadow: 0 0 0 3px var(--admin-ring);
+  outline: none;
+}
+
+/* Gradient backgrounds with sport colors */
+.sport-gradient {
+  background: linear-gradient(135deg, var(--admin-accent), var(--admin-accent-hover));
+}
+
+.sport-gradient-soft {
+  background: linear-gradient(135deg, var(--admin-accent-soft), var(--admin-accent-strong));
+}
+
+/* Sport-themed button - primary */
+.sport-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: var(--spacing-button-y) var(--spacing-button-x);
+  background-color: var(--admin-accent);
+  color: white;
+  font-weight: var(--font-weight-semibold);
+  border-radius: var(--radius-button);
+  box-shadow: 0 12px 24px -14px var(--admin-accent);
+  transition: background-color var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.sport-btn-primary:hover {
+  background-color: var(--admin-accent-hover);
+  box-shadow: 0 16px 32px -16px var(--admin-accent);
+}
+
+.sport-btn-primary:active {
+  transform: scale(0.98);
+}
+
+/* Sport-themed button - secondary */
+.sport-btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: var(--spacing-button-y) var(--spacing-button-x);
+  background-color: var(--admin-accent-soft);
+  color: var(--admin-accent);
+  font-weight: var(--font-weight-semibold);
+  border-radius: var(--radius-button);
+  border: 1px solid var(--admin-accent-border);
+  transition: background-color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.sport-btn-secondary:hover {
+  background-color: var(--admin-accent-strong);
+  border-color: var(--admin-accent);
+}
+
+/* Sport-themed badge/pill */
+.sport-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--admin-accent);
+  background-color: var(--admin-accent-soft);
+  border: 1px solid var(--admin-accent-border);
+}
+
+/* Sport-themed card header accent */
+.sport-card-accent {
+  position: relative;
+}
+
+.sport-card-accent::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--admin-accent), var(--admin-accent-hover));
+  border-radius: var(--radius-card) var(--radius-card) 0 0;
+}
+
+/* Sport-themed link */
+.sport-link {
+  color: var(--admin-accent);
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 2px;
+  transition: color var(--transition-fast);
+}
+
+.sport-link:hover {
+  color: var(--admin-accent-hover);
+}
+
+/* Sport-themed input focus */
+.sport-input:focus {
+  outline: none;
+  border-color: var(--admin-accent);
+  box-shadow: 0 0 0 3px var(--admin-ring);
+}
+
+/* Sport-themed progress bar */
+.sport-progress {
+  background-color: var(--admin-accent-soft);
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.sport-progress-bar {
+  background-color: var(--admin-accent);
+  height: 100%;
+  border-radius: 9999px;
+  transition: width 0.3s ease;
+}
+
+/* Sport-themed checkbox/toggle */
+.sport-toggle:checked {
+  background-color: var(--admin-accent);
+  border-color: var(--admin-accent);
+}
+
+/* Sport-themed icon container */
+.sport-icon-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  background: var(--admin-accent-soft);
+  color: var(--admin-accent);
+  border-radius: 0.75rem;
+}
+
+.sport-icon-container-lg {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 1rem;
 }

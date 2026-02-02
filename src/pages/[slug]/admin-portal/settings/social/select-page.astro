@@ -1,5 +1,8 @@
 ---
 import AdminLayout from '../../../../../components/admin/AdminLayout.astro';
+import AdminPageTemplate from '../../../../../components/admin/AdminPageTemplate.astro';
+import AdminCard from '../../../../../components/admin/AdminCard.astro';
+import Icon from '../../../../../components/admin/Icon.astro';
 import { DatabaseService } from '../../../../../lib/db';
 import { getAuthContext } from '../../../../../lib/auth';
 
@@ -41,6 +44,13 @@ if (pagesParam) {
 if (pages.length === 0) {
   return Astro.redirect(`/${slug}/admin-portal/settings/social?error=no_pages_found`);
 }
+
+const breadcrumbs = [
+  { label: 'Dashboard', href: `/${slug}/admin-portal` },
+  { label: 'Settings', href: `/${slug}/admin-portal/settings` },
+  { label: 'Social', href: `/${slug}/admin-portal/settings/social` },
+  { label: 'Select Page' },
+];
 ---
 
 <AdminLayout
@@ -50,60 +60,47 @@ if (pages.length === 0) {
   member={member}
   currentPage="settings"
 >
-  <Fragment slot="header-left">
-    <div class="flex items-center gap-4">
-      <a href={`/${slug}/admin-portal/settings/social`} class="p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
-        </svg>
-      </a>
-      <h1 class="text-xl font-bold text-slate-900">Select Facebook Page</h1>
-    </div>
-  </Fragment>
+  <AdminPageTemplate
+    title="Select Facebook Page"
+    subtitle={`You manage multiple Facebook Pages. Select the page you want to connect to ${club.name}.`}
+    breadcrumbs={breadcrumbs}
+  >
+    <div class="max-w-2xl">
+      <div class="space-y-4">
+        {pages.map((page) => (
+          <button
+            class="page-option w-full flex items-center gap-4 p-4 bg-white hover:bg-slate-50 rounded-xl border border-slate-200 hover:border-slate-300 transition-colors text-left shadow-sm"
+            data-page-id={page.id}
+            data-page-name={page.name}
+            data-page-token={page.token}
+          >
+            <div class="w-12 h-12 rounded-xl bg-[#1877F2] flex items-center justify-center">
+              <Icon name="facebook" size="xl" class="text-white" />
+            </div>
+            <div class="flex-1">
+              <h3 class="text-lg font-semibold text-slate-900">{page.name}</h3>
+              <p class="text-slate-500 text-sm">Page ID: {page.id}</p>
+            </div>
+            <Icon name="chevron-right" size="lg" class="text-slate-400" />
+          </button>
+        ))}
+      </div>
 
-  <div class="max-w-2xl">
-    <p class="text-slate-600 mb-8">
-      You manage multiple Facebook Pages. Select the page you want to connect to {club.name}.
-    </p>
+      <div class="mt-6 text-center">
+        <a href={`/${slug}/admin-portal/settings/social`} class="text-slate-500 hover:text-slate-900 text-sm">
+          Cancel and go back
+        </a>
+      </div>
 
-    <div class="space-y-4">
-      {pages.map((page) => (
-        <button
-          class="page-option w-full flex items-center gap-4 p-4 bg-white hover:bg-slate-50 rounded-xl border border-slate-200 hover:border-slate-300 transition-colors text-left shadow-sm"
-          data-page-id={page.id}
-          data-page-name={page.name}
-          data-page-token={page.token}
-        >
-          <div class="w-12 h-12 rounded-xl bg-[#1877F2] flex items-center justify-center">
-            <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
-              <path fill-rule="evenodd" d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z" clip-rule="evenodd"/>
-            </svg>
-          </div>
-          <div class="flex-1">
-            <h3 class="text-lg font-semibold text-slate-900">{page.name}</h3>
-            <p class="text-slate-500 text-sm">Page ID: {page.id}</p>
-          </div>
-          <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-          </svg>
-        </button>
-      ))}
-    </div>
-
-    <div class="mt-6 text-center">
-      <a href={`/${slug}/admin-portal/settings/social`} class="text-slate-500 hover:text-slate-900 text-sm">
-        Cancel and go back
-      </a>
-    </div>
-
-    <!-- Loading overlay -->
-    <div id="loading" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50">
-      <div class="bg-white rounded-xl p-6 text-center border border-slate-200 shadow-xl">
-        <div class="w-8 h-8 border-2 border-green-500 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
-        <p class="text-slate-700">Connecting page...</p>
+      <!-- Loading overlay -->
+      <div id="loading" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50">
+        <AdminCard class="p-6 text-center">
+          <div class="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin mx-auto mb-3" style="border-color: var(--admin-accent); border-top-color: transparent;"></div>
+          <p class="text-slate-700">Connecting page...</p>
+        </AdminCard>
       </div>
     </div>
-  </div>
+  </AdminPageTemplate>
 </AdminLayout>
 
 <script define:vars={{ clubId: club.id, slug }}>

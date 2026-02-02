@@ -22,6 +22,8 @@ if (!superAdminEmail || user.email.toLowerCase() !== superAdminEmail.toLowerCase
 
 const stats = await db.getPlatformStats();
 const clubs = await db.getClubOverviews();
+const deletedClubs = await db.getDeletedClubs();
+const { members, total: totalMembers } = await db.getAllMembers({ limit: 50 });
 const liveRate = stats.clubs ? Math.round((stats.live_clubs / stats.clubs) * 100) : 0;
 
 // Health score helpers
@@ -165,6 +167,35 @@ function getHealthBgColor(score: number, max: number): string {
         </div>
       </div>
 
+      <!-- Tab Navigation -->
+      <div class="mb-6">
+        <div class="flex gap-1 p-1 bg-slate-100 rounded-xl w-fit">
+          <button
+            id="tab-clubs"
+            class="tab-btn px-4 py-2 text-sm font-semibold rounded-lg transition-all bg-white text-slate-900 shadow-sm"
+            data-tab="clubs"
+          >
+            Clubs ({clubs.length})
+          </button>
+          <button
+            id="tab-members"
+            class="tab-btn px-4 py-2 text-sm font-semibold rounded-lg transition-all text-slate-600 hover:text-slate-900"
+            data-tab="members"
+          >
+            Members ({totalMembers})
+          </button>
+          <button
+            id="tab-bin"
+            class="tab-btn px-4 py-2 text-sm font-semibold rounded-lg transition-all text-slate-600 hover:text-slate-900"
+            data-tab="bin"
+          >
+            Recycling Bin ({deletedClubs.length})
+          </button>
+        </div>
+      </div>
+
+      <!-- Clubs Tab -->
+      <div id="panel-clubs" class="tab-panel">
       <!-- Clubs Table -->
       <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
         <!-- Table Header -->
@@ -331,6 +362,17 @@ function getHealthBgColor(score: number, max: number): string {
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
                         </svg>
                       </button>
+                      <button
+                        type="button"
+                        class="delete-club-btn inline-flex items-center justify-center rounded-lg border border-red-200 bg-red-50 p-1.5 text-red-500 hover:bg-red-100 hover:text-red-600 hover:border-red-300 transition-all"
+                        data-club-id={club.id}
+                        data-club-name={club.name}
+                        title="Delete club"
+                      >
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                        </svg>
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -351,6 +393,241 @@ function getHealthBgColor(score: number, max: number): string {
             <p class="text-slate-500">Clubs will appear here once they sign up.</p>
           </div>
         )}
+      </div>
+      </div>
+
+      <!-- Members Tab -->
+      <div id="panel-members" class="tab-panel hidden">
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+          <div class="flex flex-col gap-4 border-b border-slate-200 p-6 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 class="text-lg font-bold text-slate-900">All Members</h2>
+              <p class="text-sm text-slate-500 mt-0.5">Manage members across all clubs.</p>
+            </div>
+            <div class="relative">
+              <input
+                id="member-search"
+                type="search"
+                placeholder="Search by name, email, or club..."
+                class="w-full sm:w-80 pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all"
+              />
+              <svg class="w-4 h-4 text-slate-400 absolute left-3.5 top-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M10 18a8 8 0 100-16 8 8 0 000 16z"/>
+              </svg>
+            </div>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="min-w-full text-sm">
+              <thead class="bg-slate-50/80 text-slate-500 border-b border-slate-200">
+                <tr>
+                  <th class="px-6 py-4 text-left font-semibold">Member</th>
+                  <th class="px-6 py-4 text-left font-semibold">Club</th>
+                  <th class="px-6 py-4 text-left font-semibold">Role</th>
+                  <th class="px-6 py-4 text-left font-semibold hidden md:table-cell">Joined</th>
+                  <th class="px-6 py-4 text-right font-semibold">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="members-tbody" class="divide-y divide-slate-100">
+                {members.map((member) => (
+                  <tr
+                    class="hover:bg-slate-50/50 transition-colors"
+                    data-member-row
+                    data-search={`${member.user.email.toLowerCase()} ${member.user.name.toLowerCase()} ${member.club.name.toLowerCase()}`}
+                    data-member-id={member.id}
+                    data-user-id={member.user_id}
+                    data-club-id={member.club_id}
+                  >
+                    <td class="px-6 py-4">
+                      <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center text-blue-600 font-semibold text-sm">
+                          {member.user.name.charAt(0).toUpperCase()}
+                        </div>
+                        <div class="min-w-0">
+                          <p class="font-semibold text-slate-900 truncate">{member.user.name}</p>
+                          <p class="text-xs text-slate-500 truncate">{member.user.email}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="px-6 py-4">
+                      <div class="flex items-center gap-2">
+                        {member.club.crest_url ? (
+                          <img src={member.club.crest_url} alt="" class="w-6 h-6 rounded-lg object-contain bg-slate-50" />
+                        ) : (
+                          <div class="w-6 h-6 rounded-lg bg-slate-100 flex items-center justify-center text-slate-400 text-xs font-bold">
+                            {member.club.name.charAt(0)}
+                          </div>
+                        )}
+                        <span class="text-slate-700 font-medium truncate max-w-[150px]">{member.club.name}</span>
+                      </div>
+                    </td>
+                    <td class="px-6 py-4">
+                      <span class={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${
+                        member.role === 'admin' ? 'bg-purple-50 text-purple-700 border border-purple-200' :
+                        member.role === 'pro' ? 'bg-blue-50 text-blue-700 border border-blue-200' :
+                        member.role === 'treasurer' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
+                        member.role === 'editor' ? 'bg-amber-50 text-amber-700 border border-amber-200' :
+                        'bg-slate-50 text-slate-700 border border-slate-200'
+                      }`}>
+                        {member.role}
+                      </span>
+                    </td>
+                    <td class="px-6 py-4 hidden md:table-cell">
+                      <span class="text-slate-500 text-xs">{formatDateTime(member.joined_at)}</span>
+                    </td>
+                    <td class="px-6 py-4">
+                      <div class="flex items-center justify-end gap-2">
+                        <button
+                          type="button"
+                          class="send-reset-btn inline-flex items-center gap-1 rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50 hover:border-slate-300 transition-all"
+                          data-user-id={member.user_id}
+                          data-user-email={member.user.email}
+                          title="Send password reset"
+                        >
+                          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
+                          </svg>
+                          <span class="hidden sm:inline">Reset</span>
+                        </button>
+                        <button
+                          type="button"
+                          class="remove-member-btn inline-flex items-center justify-center rounded-lg border border-red-200 bg-red-50 p-1.5 text-red-500 hover:bg-red-100 hover:text-red-600 hover:border-red-300 transition-all"
+                          data-member-id={member.id}
+                          data-user-name={member.user.name}
+                          data-club-name={member.club.name}
+                          title="Remove from club"
+                        >
+                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7a4 4 0 11-8 0 4 4 0 018 0zM9 14a6 6 0 00-6 6v1h12v-1a6 6 0 00-6-6zM21 12h-6"/>
+                          </svg>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {members.length === 0 && (
+            <div class="p-12 text-center">
+              <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-slate-100 flex items-center justify-center">
+                <svg class="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+                </svg>
+              </div>
+              <h3 class="text-lg font-semibold text-slate-900 mb-2">No members yet</h3>
+              <p class="text-slate-500">Members will appear here once clubs have team members.</p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <!-- Recycling Bin Tab -->
+      <div id="panel-bin" class="tab-panel hidden">
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+          <div class="flex flex-col gap-4 border-b border-slate-200 p-6 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 class="text-lg font-bold text-slate-900">Recycling Bin</h2>
+              <p class="text-sm text-slate-500 mt-0.5">Deleted clubs can be restored or permanently removed.</p>
+            </div>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="min-w-full text-sm">
+              <thead class="bg-slate-50/80 text-slate-500 border-b border-slate-200">
+                <tr>
+                  <th class="px-6 py-4 text-left font-semibold">Club</th>
+                  <th class="px-6 py-4 text-left font-semibold">Deleted</th>
+                  <th class="px-6 py-4 text-left font-semibold hidden md:table-cell">Deleted By</th>
+                  <th class="px-6 py-4 text-left font-semibold hidden lg:table-cell">Stats</th>
+                  <th class="px-6 py-4 text-right font-semibold">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="bin-tbody" class="divide-y divide-slate-100">
+                {deletedClubs.map((club) => (
+                  <tr
+                    class="hover:bg-slate-50/50 transition-colors"
+                    data-bin-row
+                    data-club-id={club.id}
+                    data-club-name={club.name}
+                  >
+                    <td class="px-6 py-4">
+                      <div class="flex items-center gap-3">
+                        {club.crest_url ? (
+                          <img src={club.crest_url} alt="" class="w-10 h-10 rounded-xl object-contain bg-slate-50 border border-slate-200 opacity-50" />
+                        ) : (
+                          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center text-slate-400 opacity-50">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                            </svg>
+                          </div>
+                        )}
+                        <div class="min-w-0">
+                          <p class="font-semibold text-slate-900 truncate">{club.name}</p>
+                          <p class="text-xs text-slate-500">{club.slug}.clubify.ie</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="px-6 py-4">
+                      <span class="text-slate-500 text-sm">{formatDateTime(club.deleted_at)}</span>
+                    </td>
+                    <td class="px-6 py-4 hidden md:table-cell">
+                      <span class="text-slate-700 text-sm">{club.deleted_by_name || 'Unknown'}</span>
+                    </td>
+                    <td class="px-6 py-4 hidden lg:table-cell">
+                      <div class="text-slate-700 text-xs">
+                        <span class="font-medium">{club.member_count}</span> members
+                        <span class="text-slate-300 mx-1">&middot;</span>
+                        <span class="font-medium">{club.post_count}</span> posts
+                      </div>
+                    </td>
+                    <td class="px-6 py-4">
+                      <div class="flex items-center justify-end gap-2">
+                        <button
+                          type="button"
+                          class="restore-club-btn inline-flex items-center gap-1 rounded-lg border border-emerald-200 bg-emerald-50 px-2.5 py-1.5 text-xs font-medium text-emerald-700 hover:bg-emerald-100 hover:border-emerald-300 transition-all"
+                          data-club-id={club.id}
+                          data-club-name={club.name}
+                          title="Restore club"
+                        >
+                          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                          </svg>
+                          Restore
+                        </button>
+                        <button
+                          type="button"
+                          class="permanent-delete-btn inline-flex items-center gap-1 rounded-lg border border-red-200 bg-red-50 px-2.5 py-1.5 text-xs font-medium text-red-600 hover:bg-red-100 hover:border-red-300 transition-all"
+                          data-club-id={club.id}
+                          data-club-name={club.name}
+                          title="Permanently delete"
+                        >
+                          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                          </svg>
+                          Delete Forever
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {deletedClubs.length === 0 && (
+            <div class="p-12 text-center">
+              <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-slate-100 flex items-center justify-center">
+                <svg class="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                </svg>
+              </div>
+              <h3 class="text-lg font-semibold text-slate-900 mb-2">Recycling bin is empty</h3>
+              <p class="text-slate-500">Deleted clubs will appear here.</p>
+            </div>
+          )}
+        </div>
       </div>
     </main>
   </div>
@@ -618,5 +895,216 @@ function getHealthBgColor(score: number, max: number): string {
       submitBtn.disabled = false;
       submitBtn.textContent = 'Update Slug';
     }
+  });
+
+  // Tab Navigation
+  const tabBtns = document.querySelectorAll('.tab-btn');
+  const tabPanels = document.querySelectorAll('.tab-panel');
+
+  tabBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const tab = (btn as HTMLElement).dataset.tab;
+      if (!tab) return;
+
+      // Update button states
+      tabBtns.forEach(b => {
+        b.classList.remove('bg-white', 'text-slate-900', 'shadow-sm');
+        b.classList.add('text-slate-600', 'hover:text-slate-900');
+      });
+      btn.classList.add('bg-white', 'text-slate-900', 'shadow-sm');
+      btn.classList.remove('text-slate-600', 'hover:text-slate-900');
+
+      // Show/hide panels
+      tabPanels.forEach(panel => {
+        panel.classList.add('hidden');
+      });
+      document.getElementById(`panel-${tab}`)?.classList.remove('hidden');
+    });
+  });
+
+  // Delete Club (soft delete to recycling bin)
+  document.querySelectorAll('.delete-club-btn').forEach(button => {
+    button.addEventListener('click', async () => {
+      const btn = button as HTMLButtonElement;
+      const clubId = btn.dataset.clubId;
+      const clubName = btn.dataset.clubName;
+      if (!clubId) return;
+
+      if (!confirm(`Are you sure you want to delete "${clubName}"? It will be moved to the recycling bin.`)) {
+        return;
+      }
+
+      btn.disabled = true;
+      const originalHtml = btn.innerHTML;
+      btn.innerHTML = '<svg class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke-width="2" stroke-dasharray="32" stroke-dashoffset="32"/></svg>';
+
+      try {
+        const response = await fetch(`/api/super-admin/clubs/${clubId}`, {
+          method: 'DELETE',
+        });
+
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || 'Failed to delete');
+
+        // Remove the row and reload to update counts
+        window.location.reload();
+      } catch (error: any) {
+        alert(error.message || 'Failed to delete club');
+        btn.disabled = false;
+        btn.innerHTML = originalHtml;
+      }
+    });
+  });
+
+  // Restore Club
+  document.querySelectorAll('.restore-club-btn').forEach(button => {
+    button.addEventListener('click', async () => {
+      const btn = button as HTMLButtonElement;
+      const clubId = btn.dataset.clubId;
+      const clubName = btn.dataset.clubName;
+      if (!clubId) return;
+
+      if (!confirm(`Restore "${clubName}"?`)) {
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Restoring...';
+
+      try {
+        const response = await fetch(`/api/super-admin/clubs/${clubId}/restore`, {
+          method: 'POST',
+        });
+
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || 'Failed to restore');
+
+        window.location.reload();
+      } catch (error: any) {
+        alert(error.message || 'Failed to restore club');
+        btn.disabled = false;
+        btn.textContent = 'Restore';
+      }
+    });
+  });
+
+  // Permanent Delete
+  document.querySelectorAll('.permanent-delete-btn').forEach(button => {
+    button.addEventListener('click', async () => {
+      const btn = button as HTMLButtonElement;
+      const clubId = btn.dataset.clubId;
+      const clubName = btn.dataset.clubName;
+      if (!clubId) return;
+
+      if (!confirm(`PERMANENTLY DELETE "${clubName}"?\n\nThis action CANNOT be undone. All club data, members, posts, and media will be permanently removed.`)) {
+        return;
+      }
+
+      // Double confirm
+      if (!confirm(`Are you ABSOLUTELY sure? Type the club name to confirm you want to permanently delete all data.`)) {
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Deleting...';
+
+      try {
+        const response = await fetch(`/api/super-admin/clubs/${clubId}/permanent`, {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ confirm: true }),
+        });
+
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || 'Failed to delete');
+
+        window.location.reload();
+      } catch (error: any) {
+        alert(error.message || 'Failed to permanently delete club');
+        btn.disabled = false;
+        btn.textContent = 'Delete Forever';
+      }
+    });
+  });
+
+  // Send Password Reset
+  document.querySelectorAll('.send-reset-btn').forEach(button => {
+    button.addEventListener('click', async () => {
+      const btn = button as HTMLButtonElement;
+      const userId = btn.dataset.userId;
+      const userEmail = btn.dataset.userEmail;
+      if (!userId) return;
+
+      if (!confirm(`Send password reset link to ${userEmail}?`)) {
+        return;
+      }
+
+      btn.disabled = true;
+      const originalHtml = btn.innerHTML;
+      btn.innerHTML = '<svg class="w-3.5 h-3.5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke-width="2" stroke-dasharray="32" stroke-dashoffset="32"/></svg>';
+
+      try {
+        const response = await fetch(`/api/super-admin/members/${userId}/send-reset`, {
+          method: 'POST',
+        });
+
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || 'Failed to send reset');
+
+        alert(`Password reset link sent to ${userEmail}`);
+      } catch (error: any) {
+        alert(error.message || 'Failed to send password reset');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalHtml;
+      }
+    });
+  });
+
+  // Remove Member
+  document.querySelectorAll('.remove-member-btn').forEach(button => {
+    button.addEventListener('click', async () => {
+      const btn = button as HTMLButtonElement;
+      const memberId = btn.dataset.memberId;
+      const userName = btn.dataset.userName;
+      const clubName = btn.dataset.clubName;
+      if (!memberId) return;
+
+      if (!confirm(`Remove "${userName}" from "${clubName}"?`)) {
+        return;
+      }
+
+      btn.disabled = true;
+      const originalHtml = btn.innerHTML;
+      btn.innerHTML = '<svg class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke-width="2" stroke-dasharray="32" stroke-dashoffset="32"/></svg>';
+
+      try {
+        const response = await fetch(`/api/super-admin/members/${memberId}`, {
+          method: 'DELETE',
+        });
+
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || 'Failed to remove member');
+
+        // Remove the row
+        btn.closest('tr')?.remove();
+      } catch (error: any) {
+        alert(error.message || 'Failed to remove member');
+        btn.disabled = false;
+        btn.innerHTML = originalHtml;
+      }
+    });
+  });
+
+  // Member Search
+  const memberSearchInput = document.getElementById('member-search') as HTMLInputElement;
+  const memberRows = Array.from(document.querySelectorAll('[data-member-row]'));
+
+  memberSearchInput?.addEventListener('input', () => {
+    const query = memberSearchInput.value.trim().toLowerCase();
+    memberRows.forEach(row => {
+      const haystack = (row as HTMLElement).dataset.search || '';
+      row.classList.toggle('hidden', query.length > 0 && !haystack.includes(query));
+    });
   });
 </script>

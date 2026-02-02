@@ -1,0 +1,59 @@
+---
+/**
+ * Breadcrumb Component - Navigation breadcrumbs for admin pages
+ *
+ * Usage:
+ * <Breadcrumb items={[
+ *   { label: 'Dashboard', href: '/club/admin-portal' },
+ *   { label: 'Posts', href: '/club/admin-portal/posts' },
+ *   { label: 'Edit Post' }  // No href = current page (not clickable)
+ * ]} />
+ */
+
+import Icon from './Icon.astro';
+
+export interface BreadcrumbItem {
+  /** Display label */
+  label: string;
+  /** Link URL (undefined = current page, not clickable) */
+  href?: string;
+}
+
+interface Props {
+  /** Breadcrumb items from root to current page */
+  items: BreadcrumbItem[];
+  /** Additional CSS classes */
+  class?: string;
+}
+
+const { items, class: className = '' } = Astro.props;
+---
+
+<nav aria-label="Breadcrumb" class={`flex items-center gap-1 text-sm ${className}`}>
+  {items.map((item, index) => {
+    const isLast = index === items.length - 1;
+    const isClickable = item.href && !isLast;
+
+    return (
+      <>
+        {index > 0 && (
+          <Icon name="chevron-right" size="sm" class="text-slate-400 flex-shrink-0" />
+        )}
+        {isClickable ? (
+          <a
+            href={item.href}
+            class="text-slate-500 hover:text-slate-700 transition-colors truncate max-w-[200px]"
+          >
+            {item.label}
+          </a>
+        ) : (
+          <span
+            class={`truncate max-w-[200px] ${isLast ? 'text-slate-700 font-medium' : 'text-slate-500'}`}
+          >
+            {item.label}
+          </span>
+        )}
+      </>
+    );
+  })}
+</nav>

@@ -1,0 +1,134 @@
+---
+/**
+ * AdminTable Component - Table wrapper with filters, empty state, and pagination
+ *
+ * Usage:
+ * <AdminTable emptyTitle="No posts yet" emptyDescription="Create your first post to get started.">
+ *   <div slot="filters">
+ *     <input type="search" placeholder="Search..." />
+ *   </div>
+ *   <thead slot="head">
+ *     <tr><th>Title</th><th>Status</th></tr>
+ *   </thead>
+ *   <tbody slot="body">
+ *     <tr><td>My Post</td><td>Published</td></tr>
+ *   </tbody>
+ *   <div slot="pagination">
+ *     <Pagination ... />
+ *   </div>
+ * </AdminTable>
+ */
+
+import EmptyState from '../ui/EmptyState.astro';
+import Icon from './Icon.astro';
+
+interface Props {
+  /** Title shown in empty state */
+  emptyTitle?: string;
+  /** Description shown in empty state */
+  emptyDescription?: string;
+  /** Show the table even when body slot has no content */
+  forceShow?: boolean;
+  /** Additional CSS classes */
+  class?: string;
+}
+
+const {
+  emptyTitle = 'No items found',
+  emptyDescription = 'Get started by creating a new item.',
+  forceShow = false,
+  class: className = '',
+} = Astro.props;
+
+const hasFilters = Astro.slots.has('filters');
+const hasHead = Astro.slots.has('head');
+const hasBody = Astro.slots.has('body');
+const hasPagination = Astro.slots.has('pagination');
+const hasEmptySlot = Astro.slots.has('empty');
+
+// Determine if we should show the table or empty state
+const showTable = forceShow || hasBody;
+---
+
+<div class={`bg-white border border-slate-200 rounded-xl overflow-hidden ${className}`}>
+  {/* Filters Row */}
+  {hasFilters && (
+    <div class="px-4 py-3 border-b border-slate-100 bg-slate-50/50">
+      <slot name="filters" />
+    </div>
+  )}
+
+  {showTable ? (
+    <>
+      {/* Table */}
+      <div class="overflow-x-auto">
+        <table class="w-full">
+          {hasHead && (
+            <slot name="head" />
+          )}
+          {hasBody && (
+            <slot name="body" />
+          )}
+        </table>
+      </div>
+
+      {/* Pagination Row */}
+      {hasPagination && (
+        <div class="px-4 py-3 border-t border-slate-100 bg-slate-50/50">
+          <slot name="pagination" />
+        </div>
+      )}
+    </>
+  ) : (
+    /* Empty State */
+    <div class="py-12 px-4">
+      {hasEmptySlot ? (
+        <slot name="empty" />
+      ) : (
+        <EmptyState
+          title={emptyTitle}
+          description={emptyDescription}
+        >
+          <Icon slot="icon" name="inbox" size="xl" class="text-slate-400" />
+        </EmptyState>
+      )}
+    </div>
+  )}
+</div>
+
+<style>
+  /* Table styling */
+  table {
+    border-collapse: collapse;
+  }
+
+  table :global(thead) {
+    background-color: rgb(248 250 252); /* slate-50 */
+  }
+
+  table :global(th) {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: rgb(100 116 139); /* slate-500 */
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+    border-bottom: 1px solid rgb(241 245 249); /* slate-100 */
+  }
+
+  table :global(td) {
+    padding: 0.875rem 1rem;
+    font-size: 0.875rem;
+    color: rgb(51 65 85); /* slate-700 */
+    border-bottom: 1px solid rgb(241 245 249); /* slate-100 */
+  }
+
+  table :global(tbody tr:hover) {
+    background-color: rgb(248 250 252); /* slate-50 */
+  }
+
+  table :global(tbody tr:last-child td) {
+    border-bottom: none;
+  }
+</style>

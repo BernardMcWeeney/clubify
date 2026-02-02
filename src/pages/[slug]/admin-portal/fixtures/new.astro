@@ -1,5 +1,8 @@
 ---
 import AdminLayout from '../../../../components/admin/AdminLayout.astro';
+import AdminPageTemplate from '../../../../components/admin/AdminPageTemplate.astro';
+import AdminCard from '../../../../components/admin/AdminCard.astro';
+import Button from '../../../../components/ui/Button.astro';
 import { DatabaseService } from '../../../../lib/db';
 import { getAuthContext } from '../../../../lib/auth';
 
@@ -33,6 +36,12 @@ if (!['admin', 'pro'].includes(member.role)) {
 
 // Get today's date in YYYY-MM-DD format
 const today = new Date().toISOString().split('T')[0];
+
+const breadcrumbs = [
+  { label: 'Dashboard', href: `/${slug}/admin-portal` },
+  { label: 'Fixtures', href: `/${slug}/admin-portal/fixtures` },
+  { label: 'Add Fixture' },
+];
 ---
 
 <AdminLayout
@@ -42,159 +51,160 @@ const today = new Date().toISOString().split('T')[0];
   member={member}
   currentPage="fixtures"
 >
-  <Fragment slot="header-left">
-    <div class="flex items-center gap-4">
-      <a href={`/${slug}/admin-portal/fixtures`} class="p-2 text-slate-400 hover:text-slate-600 transition-colors">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
-        </svg>
-      </a>
-      <h1 class="text-xl font-bold text-slate-900">Add Fixture</h1>
-    </div>
-  </Fragment>
-
-  <form id="fixture-form" class="max-w-2xl">
-    <div class="bg-white rounded-xl border border-slate-200 p-6 shadow-sm space-y-6">
-      <!-- Opponent -->
-      <div>
-        <label for="opponent" class="block text-sm font-medium text-slate-700 mb-2">Opponent *</label>
-        <input
-          type="text"
-          id="opponent"
-          name="opponent"
-          required
-          maxlength="100"
-          class="w-full px-4 py-3 bg-white border border-slate-300 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-          placeholder="e.g., Castleknock GAA"
-        />
-      </div>
-
-      <!-- Date and Time -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <label for="matchDate" class="block text-sm font-medium text-slate-700 mb-2">Date *</label>
-          <input
-            type="date"
-            id="matchDate"
-            name="matchDate"
-            required
-            min={today}
-            class="w-full px-4 py-3 bg-white border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-          />
-        </div>
-        <div>
-          <label for="matchTime" class="block text-sm font-medium text-slate-700 mb-2">Time</label>
-          <input
-            type="time"
-            id="matchTime"
-            name="matchTime"
-            class="w-full px-4 py-3 bg-white border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-          />
-        </div>
-      </div>
-
-      <!-- Home/Away -->
-      <div>
-        <label class="block text-sm font-medium text-slate-700 mb-2">Home or Away *</label>
-        <div class="flex gap-4">
-          <label class="flex items-center gap-2 cursor-pointer">
+  <AdminPageTemplate
+    title="Add Fixture"
+    subtitle="Schedule a new match or game"
+    breadcrumbs={breadcrumbs}
+  >
+    <form id="fixture-form">
+      <AdminCard>
+        <div class="space-y-6">
+          <!-- Opponent -->
+          <div>
+            <label for="opponent" class="block text-sm font-medium text-slate-700 mb-2">Opponent *</label>
             <input
-              type="radio"
-              name="isHome"
-              value="true"
-              checked
-              class="w-4 h-4 text-green-500 bg-white border-slate-300 focus:ring-green-500"
+              type="text"
+              id="opponent"
+              name="opponent"
+              required
+              maxlength="100"
+              class="input-themed w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white transition-colors"
+              placeholder="e.g., Castleknock GAA"
             />
-            <span class="text-slate-900">Home</span>
-          </label>
-          <label class="flex items-center gap-2 cursor-pointer">
+          </div>
+
+          <!-- Date and Time -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label for="matchDate" class="block text-sm font-medium text-slate-700 mb-2">Date *</label>
+              <input
+                type="date"
+                id="matchDate"
+                name="matchDate"
+                required
+                min={today}
+                class="input-themed w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:bg-white transition-colors"
+              />
+            </div>
+            <div>
+              <label for="matchTime" class="block text-sm font-medium text-slate-700 mb-2">Time</label>
+              <input
+                type="time"
+                id="matchTime"
+                name="matchTime"
+                class="input-themed w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:bg-white transition-colors"
+              />
+            </div>
+          </div>
+
+          <!-- Home/Away -->
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-2">Home or Away *</label>
+            <div class="flex gap-4">
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="isHome"
+                  value="true"
+                  checked
+                  class="w-4 h-4 accent-[var(--admin-accent)]"
+                />
+                <span class="text-slate-900">Home</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="isHome"
+                  value="false"
+                  class="w-4 h-4 accent-[var(--admin-accent)]"
+                />
+                <span class="text-slate-900">Away</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Venue -->
+          <div>
+            <label for="venue" class="block text-sm font-medium text-slate-700 mb-2">Venue</label>
             <input
-              type="radio"
-              name="isHome"
-              value="false"
-              class="w-4 h-4 text-green-500 bg-white border-slate-300 focus:ring-green-500"
+              type="text"
+              id="venue"
+              name="venue"
+              maxlength="200"
+              class="input-themed w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white transition-colors"
+              placeholder="e.g., Club Grounds, Porterstown Road"
             />
-            <span class="text-slate-900">Away</span>
-          </label>
+          </div>
+
+          <!-- Competition -->
+          <div>
+            <label for="competition" class="block text-sm font-medium text-slate-700 mb-2">Competition</label>
+            <input
+              type="text"
+              id="competition"
+              name="competition"
+              maxlength="100"
+              class="input-themed w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white transition-colors"
+              placeholder="e.g., Division 1 League, Championship"
+            />
+          </div>
+
+          <!-- Team Name -->
+          <div>
+            <label for="teamName" class="block text-sm font-medium text-slate-700 mb-2">Team</label>
+            <input
+              type="text"
+              id="teamName"
+              name="teamName"
+              maxlength="100"
+              class="input-themed w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white transition-colors"
+              placeholder="e.g., Senior Football, Minor Hurling"
+            />
+          </div>
+
+          <!-- Notes -->
+          <div>
+            <label for="notes" class="block text-sm font-medium text-slate-700 mb-2">Notes</label>
+            <textarea
+              id="notes"
+              name="notes"
+              rows="3"
+              class="input-themed w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white transition-colors resize-none"
+              placeholder="Any additional information..."
+            ></textarea>
+          </div>
+
+          <!-- Actions -->
+          <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3 pt-4 border-t border-slate-200">
+            <Button type="submit" variant="primary">
+              Add Fixture
+            </Button>
+            <a
+              href={`/${slug}/admin-portal/fixtures`}
+              class="px-6 py-3 text-slate-500 hover:text-slate-700 transition-colors font-medium"
+            >
+              Cancel
+            </a>
+          </div>
+        </div>
+      </AdminCard>
+
+      <div id="loading" class="hidden fixed inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center z-50">
+        <div class="bg-white rounded-xl p-6 text-center shadow-xl border border-slate-200">
+          <div class="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin mx-auto mb-3" style="border-color: var(--admin-accent); border-top-color: transparent;"></div>
+          <p class="text-slate-700">Saving...</p>
         </div>
       </div>
-
-      <!-- Venue -->
-      <div>
-        <label for="venue" class="block text-sm font-medium text-slate-700 mb-2">Venue</label>
-        <input
-          type="text"
-          id="venue"
-          name="venue"
-          maxlength="200"
-          class="w-full px-4 py-3 bg-white border border-slate-300 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-          placeholder="e.g., Club Grounds, Porterstown Road"
-        />
-      </div>
-
-      <!-- Competition -->
-      <div>
-        <label for="competition" class="block text-sm font-medium text-slate-700 mb-2">Competition</label>
-        <input
-          type="text"
-          id="competition"
-          name="competition"
-          maxlength="100"
-          class="w-full px-4 py-3 bg-white border border-slate-300 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-          placeholder="e.g., Division 1 League, Championship"
-        />
-      </div>
-
-      <!-- Team Name -->
-      <div>
-        <label for="teamName" class="block text-sm font-medium text-slate-700 mb-2">Team</label>
-        <input
-          type="text"
-          id="teamName"
-          name="teamName"
-          maxlength="100"
-          class="w-full px-4 py-3 bg-white border border-slate-300 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-          placeholder="e.g., Senior Football, Minor Hurling"
-        />
-      </div>
-
-      <!-- Notes -->
-      <div>
-        <label for="notes" class="block text-sm font-medium text-slate-700 mb-2">Notes</label>
-        <textarea
-          id="notes"
-          name="notes"
-          rows="3"
-          class="w-full px-4 py-3 bg-white border border-slate-300 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
-          placeholder="Any additional information..."
-        ></textarea>
-      </div>
-
-      <!-- Actions -->
-      <div class="flex items-center gap-4 pt-4 border-t border-slate-200">
-        <button
-          type="submit"
-          class="px-6 py-3 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors font-medium shadow-lg shadow-green-500/25"
-        >
-          Add Fixture
-        </button>
-        <a
-          href={`/${slug}/admin-portal/fixtures`}
-          class="px-6 py-3 text-slate-500 hover:text-slate-700 transition-colors font-medium"
-        >
-          Cancel
-        </a>
-      </div>
-    </div>
-
-    <div id="loading" class="hidden fixed inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center z-50">
-      <div class="bg-white rounded-xl p-6 text-center shadow-xl border border-slate-200">
-        <div class="w-8 h-8 border-2 border-green-500 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
-        <p class="text-slate-700">Saving...</p>
-      </div>
-    </div>
-  </form>
+    </form>
+  </AdminPageTemplate>
 </AdminLayout>
+
+<style>
+  .input-themed:focus {
+    border-color: var(--admin-accent, #14b8a6);
+    box-shadow: 0 0 0 2px var(--admin-ring, rgba(20, 184, 166, 0.2));
+  }
+</style>
 
 <script define:vars={{ clubId: club.id, slug }}>
   const form = document.getElementById('fixture-form');

@@ -1,5 +1,7 @@
 ---
 import AdminLayout from '../../../../components/admin/AdminLayout.astro';
+import AdminPageTemplate from '../../../../components/admin/AdminPageTemplate.astro';
+import Icon from '../../../../components/admin/Icon.astro';
 import { DatabaseService } from '../../../../lib/db';
 import { getAuthContext } from '../../../../lib/auth';
 
@@ -58,6 +60,12 @@ const errorMessages: Record<string, string> = {
   no_instagram_found: 'No Instagram Business account found linked to your Facebook Page.',
   callback_error: 'An error occurred during authorization',
 };
+
+const breadcrumbs = [
+  { label: 'Dashboard', href: `/${slug}/admin-portal` },
+  { label: 'Settings', href: `/${slug}/admin-portal/settings` },
+  { label: 'Social Connections' },
+];
 ---
 
 <AdminLayout
@@ -67,25 +75,16 @@ const errorMessages: Record<string, string> = {
   member={member}
   currentPage="settings"
 >
-  <Fragment slot="header-left">
-    <div class="flex items-center gap-4">
-      <a href={`/${slug}/admin-portal/settings`} class="p-2 text-slate-400 hover:text-slate-600 transition-colors">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
-        </svg>
-      </a>
-      <h1 class="text-xl font-bold text-slate-900">Social Connections</h1>
-    </div>
-  </Fragment>
-
-  <div class="max-w-3xl">
+  <AdminPageTemplate
+    title="Social Connections"
+    subtitle="Connect your club's social media accounts to publish news and results directly from Clubify."
+    breadcrumbs={breadcrumbs}
+  >
     <!-- Success/Error messages -->
     {success && (
       <div class="mb-6 p-4 bg-green-50 border border-green-200 rounded-xl">
         <div class="flex items-center gap-3">
-          <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-          </svg>
+          <Icon name="check" size="lg" class="text-green-600" />
           <p class="text-green-700">
             {success === 'facebook_connected' && 'Facebook Page connected successfully!'}
             {success === 'twitter_connected' && 'X (Twitter) account connected successfully!'}
@@ -98,17 +97,11 @@ const errorMessages: Record<string, string> = {
     {error && (
       <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl">
         <div class="flex items-center gap-3">
-          <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-          </svg>
+          <Icon name="alert-circle" size="lg" class="text-red-600" />
           <p class="text-red-700">{errorMessages[error] || 'An error occurred'}</p>
         </div>
       </div>
     )}
-
-    <p class="text-slate-600 mb-8">
-      Connect your club's social media accounts to publish news and results directly from Clubify.
-    </p>
 
     <!-- Facebook -->
     <div class="bg-white rounded-xl border border-slate-200 p-6 mb-6 shadow-sm">
@@ -328,7 +321,7 @@ const errorMessages: Record<string, string> = {
         </p>
       </div>
     )}
-  </div>
+  </AdminPageTemplate>
 </AdminLayout>
 
 <script define:vars={{ clubId: club.id, slug }}>

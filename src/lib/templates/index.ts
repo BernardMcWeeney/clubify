@@ -841,13 +841,41 @@ export function getActiveTemplatesForSport(sport: SportType | string): TemplateD
   return Object.values(TEMPLATES).filter(t => t.sport === normalizedSport && t.status === 'active');
 }
 
-// Legacy support: map old template IDs to new ones
-const LEGACY_TEMPLATE_MAP: Record<string, TemplateId> = {
-  'classic': 'GAA-classic',
-  'matchday': 'GAA-matchday',
-  'community': 'GAA-community',
+// Legacy support: map old template IDs to new ones based on sport
+const LEGACY_TEMPLATE_SUFFIXES: Record<string, string> = {
+  'classic': 'classic',
+  'matchday': 'matchday',
+  'community': 'community',
+  'performance': 'performance',
+  'competition': 'competition',
+  'social': 'social',
+  'routes': 'routes',
 };
 
-export function resolveTemplateId(templateId: string): TemplateId {
-  return LEGACY_TEMPLATE_MAP[templateId] || templateId as TemplateId;
+export function resolveTemplateId(templateId: string, sport?: string): TemplateId {
+  // If it's already a full template ID (contains hyphen with sport prefix), return as-is
+  if (templateId.includes('-') && TEMPLATES[templateId as TemplateId]) {
+    return templateId as TemplateId;
+  }
+
+  // Check if it's a legacy suffix-only template ID
+  if (LEGACY_TEMPLATE_SUFFIXES[templateId]) {
+    // Determine the sport prefix
+    const sportPrefix = sport?.toUpperCase() || 'GAA';
+    const fullTemplateId = `${sportPrefix}-${templateId}` as TemplateId;
+
+    // Check if this template exists for the sport
+    if (TEMPLATES[fullTemplateId]) {
+      return fullTemplateId;
+    }
+
+    // Fall back to GAA version
+    const gaaFallback = `GAA-${templateId}` as TemplateId;
+    if (TEMPLATES[gaaFallback]) {
+      return gaaFallback;
+    }
+  }
+
+  // Default to GAA-classic if nothing matches
+  return 'GAA-classic';
 }

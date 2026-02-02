@@ -6,6 +6,10 @@ interface Props {
   size?: 'sm' | 'md' | 'lg';
   /** Button type */
   type?: 'button' | 'submit' | 'reset';
+  /** Button name (for form submission) */
+  name?: string;
+  /** Button value (for form submission) */
+  value?: string;
   /** Disabled state */
   disabled?: boolean;
   /** Full width */
@@ -22,6 +26,8 @@ const {
   variant = 'primary',
   size = 'md',
   type = 'button',
+  name,
+  value,
   disabled = false,
   fullWidth = false,
   loading = false,
@@ -32,7 +38,7 @@ const {
 const baseClasses = 'inline-flex items-center justify-center gap-2 font-medium rounded-xl transition-all';
 
 const variantClasses = {
-  primary: 'bg-green-500 hover:bg-green-600 text-white shadow-lg shadow-green-500/25 active:scale-[0.98]',
+  primary: 'btn-primary-themed text-white shadow-lg active:scale-[0.98]',
   secondary: 'bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200',
   danger: 'bg-red-50 hover:bg-red-100 text-red-600 border border-red-200',
   ghost: 'hover:bg-slate-100 text-slate-600',
@@ -62,6 +68,8 @@ const Tag = href ? 'a' : 'button';
 <Tag
   href={href}
   type={!href ? type : undefined}
+  name={!href ? name : undefined}
+  value={!href ? value : undefined}
   disabled={!href && (disabled || loading)}
   class={allClasses}
 >
@@ -73,3 +81,14 @@ const Tag = href ? 'a' : 'button';
   )}
   <slot />
 </Tag>
+
+<style>
+  /* Primary button uses admin accent color with fallback to teal */
+  .btn-primary-themed {
+    background-color: var(--admin-accent, #14b8a6);
+    box-shadow: 0 10px 15px -3px color-mix(in srgb, var(--admin-accent, #14b8a6) 25%, transparent);
+  }
+  .btn-primary-themed:hover {
+    background-color: var(--admin-accent-hover, #0d9488);
+  }
+</style>

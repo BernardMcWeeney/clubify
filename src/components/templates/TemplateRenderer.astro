@@ -9,13 +9,14 @@ import Notices from './blocks/Notices.astro';
 import HighlightCards from './blocks/HighlightCards.astro';
 import VolunteerSpotlight from './blocks/VolunteerSpotlight.astro';
 import Contact from './blocks/Contact.astro';
-import { getDefaultConfig, type BlockConfig } from '../../lib/templates';
+import { getDefaultConfig, resolveTemplateId, type BlockConfig, type TemplateId } from '../../lib/templates';
 
 interface Club {
   id: string;
   name: string;
   slug: string;
   county: string;
+  club_type: string;
   crest_url?: string | null;
   primary_color: string;
   secondary_color: string;
@@ -79,7 +80,9 @@ const {
 } = Astro.props;
 
 // Get the block configuration - either custom or default for the template
-const templateId = club.template as 'classic' | 'matchday' | 'community';
+// Resolve legacy template IDs (classic, matchday, community) to new format (GAA-classic, etc.)
+// Pass the club's sport type so we get the right sport-specific template
+const templateId = resolveTemplateId(club.template, club.club_type) as TemplateId;
 const blocks = homepageConfig?.blocks || getDefaultConfig(templateId);
 
 // Sort blocks by order and filter out hidden ones

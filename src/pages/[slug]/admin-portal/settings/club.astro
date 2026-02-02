@@ -1,5 +1,8 @@
 ---
 import AdminLayout from '../../../../components/admin/AdminLayout.astro';
+import AdminPageTemplate from '../../../../components/admin/AdminPageTemplate.astro';
+import AdminCard from '../../../../components/admin/AdminCard.astro';
+import Icon from '../../../../components/admin/Icon.astro';
 import { DatabaseService } from '../../../../lib/db';
 import { getAuthContext } from '../../../../lib/auth';
 import { hasPermission, type Role } from '../../../../lib/permissions';
@@ -41,6 +44,12 @@ const sportSettings = (() => {
 const showPricing = ['golf'].includes(club.club_type);
 const showBooking = ['golf', 'tennis'].includes(club.club_type);
 const showMembership = ['golf', 'tennis'].includes(club.club_type);
+
+const breadcrumbs = [
+  { label: 'Dashboard', href: `/${slug}/admin-portal` },
+  { label: 'Settings', href: `/${slug}/admin-portal/settings` },
+  { label: 'Club Identity' },
+];
 ---
 
 <AdminLayout
@@ -50,29 +59,23 @@ const showMembership = ['golf', 'tennis'].includes(club.club_type);
   member={member}
   currentPage="settings"
 >
-  <div class="max-w-4xl space-y-6">
-    <header class="flex items-start gap-3">
-      <a href={`/${slug}/admin-portal/settings`} class="p-2 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
-        </svg>
-      </a>
-      <div>
-        <p class="text-sm text-slate-500">Club Settings</p>
-        <h1 class="text-3xl font-semibold text-slate-900 admin-display">Brand kit & club profile</h1>
-        <p class="text-slate-600 mt-2">Everything that shapes how your club looks and appears across web and app.</p>
-      </div>
-    </header>
-
+  <AdminPageTemplate
+    title="Brand kit & club profile"
+    subtitle="Everything that shapes how your club looks and appears across web and app."
+    breadcrumbs={breadcrumbs}
+  >
     {!canEdit && (
-      <div class="admin-panel-soft p-4 text-sm text-amber-700">
-        You don't have permission to edit club settings.
+      <div class="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-xl text-sm text-amber-700">
+        <div class="flex items-center gap-2">
+          <Icon name="alert-triangle" size="md" />
+          You don't have permission to edit club settings.
+        </div>
       </div>
     )}
 
     <form id="club-form" class="space-y-6">
-      <section class="admin-panel p-6">
-        <h2 class="text-lg font-semibold text-slate-900 admin-display">Club identity</h2>
+      <AdminCard>
+        <h2 class="text-lg font-semibold text-slate-900 mb-4">Club identity</h2>
         <div class="grid gap-4 mt-4">
           <div>
             <label for="name" class="admin-label">Club Name</label>
@@ -128,12 +131,12 @@ const showMembership = ['golf', 'tennis'].includes(club.club_type);
             </div>
           </div>
         </div>
-      </section>
+      </AdminCard>
 
-      <section class="admin-panel p-6">
-        <div class="flex items-center justify-between">
+      <AdminCard>
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div>
-            <h2 class="text-lg font-semibold text-slate-900 admin-display">Brand kit</h2>
+            <h2 class="text-lg font-semibold text-slate-900">Brand kit</h2>
             <p class="text-sm text-slate-600 mt-1">Your crest and colour palette for the club website.</p>
           </div>
           <span class="admin-accent-pill">Dashboard accent uses {club.club_type.toUpperCase()}</span>
@@ -238,11 +241,11 @@ const showMembership = ['golf', 'tennis'].includes(club.club_type);
             </div>
           </div>
         </div>
-      </section>
+      </AdminCard>
 
       {(showPricing || showBooking || showMembership) && (
-        <section id="sport-settings" class="admin-panel p-6">
-          <h2 class="text-lg font-semibold text-slate-900 admin-display">{club.club_type.toUpperCase()} settings</h2>
+        <AdminCard>
+          <h2 class="text-lg font-semibold text-slate-900 mb-2">{club.club_type.toUpperCase()} settings</h2>
           <p class="text-sm text-slate-600 mt-2">These fields power sport-specific sections on your club website.</p>
 
           <div class="grid gap-4 mt-4">
@@ -302,11 +305,11 @@ const showMembership = ['golf', 'tennis'].includes(club.club_type);
               </div>
             )}
           </div>
-        </section>
+        </AdminCard>
       )}
 
-      <section class="admin-panel p-6">
-        <h2 class="text-lg font-semibold text-slate-900 admin-display">Contact info</h2>
+      <AdminCard>
+        <h2 class="text-lg font-semibold text-slate-900 mb-4">Contact info</h2>
         <div class="grid gap-4 mt-4">
           <div>
             <label for="contact_email" class="admin-label">Email</label>
@@ -347,10 +350,10 @@ const showMembership = ['golf', 'tennis'].includes(club.club_type);
             />
           </div>
         </div>
-      </section>
+      </AdminCard>
 
-      <section class="admin-panel p-6">
-        <h2 class="text-lg font-semibold text-slate-900 admin-display">Social & website</h2>
+      <AdminCard>
+        <h2 class="text-lg font-semibold text-slate-900 mb-4">Social & website</h2>
         <div class="grid gap-4 mt-4">
           <div>
             <label for="website_url" class="admin-label">Website</label>
@@ -404,22 +407,22 @@ const showMembership = ['golf', 'tennis'].includes(club.club_type);
             />
           </div>
         </div>
-      </section>
+      </AdminCard>
 
       {canEdit && (
         <div class="flex items-center justify-end">
-          <button type="submit" class="admin-btn-primary">Save changes</button>
+          <button type="submit" class="btn-primary">Save changes</button>
         </div>
       )}
     </form>
-  </div>
 
-  <div id="loading" class="hidden fixed inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center z-50">
-    <div class="admin-panel p-6 text-center">
-      <div class="w-8 h-8 border-2 border-slate-300 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
-      <p class="text-slate-700">Saving...</p>
+    <div id="loading" class="hidden fixed inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center z-50">
+      <div class="bg-white rounded-xl p-6 text-center border border-slate-200 shadow-xl">
+        <div class="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin mx-auto mb-3" style="border-color: var(--admin-accent); border-top-color: transparent;"></div>
+        <p class="text-slate-700">Saving...</p>
+      </div>
     </div>
-  </div>
+  </AdminPageTemplate>
 </AdminLayout>
 
 <script define:vars={{ clubId: club.id, slug }}>
