@@ -1,0 +1,36 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Navigation from '../../components/Navigation.astro';
+import Footer from '../../components/Footer.astro';
+import SportHero from '../../components/sports/SportHero.astro';
+import SportFeatures from '../../components/sports/SportFeatures.astro';
+import SportHowItWorks from '../../components/sports/SportHowItWorks.astro';
+import SportUseCases from '../../components/sports/SportUseCases.astro';
+import SportTemplates from '../../components/sports/SportTemplates.astro';
+import SportCTA from '../../components/sports/SportCTA.astro';
+import EarlyAccess from '../../components/sports/EarlyAccess.astro';
+import { getSport } from '../../lib/sports';
+
+const sport = getSport('golf');
+const isReady = sport.status === 'ready';
+---
+
+<Layout title={`${sport.name} Club Websites - Clubify`} description={sport.description}>
+  <Navigation />
+
+  <SportHero sport={sport} />
+
+  <SportFeatures sport={sport} />
+
+  <SportHowItWorks sport={sport} />
+
+  <SportUseCases sport={sport} />
+
+  <SportTemplates sport={sport} />
+
+  <SportCTA sport={sport} />
+
+  {!isReady && <EarlyAccess sport={sport} />}
+
+  <Footer />
+</Layout>

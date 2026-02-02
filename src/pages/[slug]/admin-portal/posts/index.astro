@@ -1,0 +1,191 @@
+---
+import AdminLayout from '../../../../components/admin/AdminLayout.astro';
+import AdminPageTemplate from '../../../../components/admin/AdminPageTemplate.astro';
+import AdminTable from '../../../../components/admin/AdminTable.astro';
+import StatusChip from '../../../../components/admin/StatusChip.astro';
+import Icon from '../../../../components/admin/Icon.astro';
+import Button from '../../../../components/ui/Button.astro';
+import { DatabaseService } from '../../../../lib/db';
+import { getAuthContext } from '../../../../lib/auth';
+
+const { slug } = Astro.params;
+
+if (!Astro.locals.runtime.env.DB) {
+  return Astro.redirect('/admin?error=db_not_configured');
+}
+
+const db = new DatabaseService(Astro.locals.runtime.env.DB);
+const { user } = await getAuthContext(Astro.cookies, db);
+
+if (!user) {
+  return Astro.redirect('/admin/login');
+}
+
+const club = await db.getClubBySlug(slug!);
+if (!club) {
+  return Astro.redirect('/admin');
+}
+
+const member = await db.getClubMember(club.id, user.id);
+if (!member) {
+  return Astro.redirect('/admin');
+}
+
+interface Post {
+  id: string;
+  title: string;
+  summary: string | null;
+  status: string;
+  category: string;
+  published_at: string | null;
+  created_at: string;
+  author_name: string | null;
+  slug: string;
+}
+
+const results = await Astro.locals.runtime.env.DB.prepare(`
+  SELECT p.*, u.name as author_name
+  FROM posts p
+  LEFT JOIN users u ON p.author_id = u.id
+  WHERE p.club_id = ?
+  ORDER BY p.created_at DESC
+`).bind(club.id).all();
+
+const posts = (results.results || []) as Post[];
+
+const publishedCount = posts.filter(p => p.status === 'published').length;
+const draftCount = posts.filter(p => p.status === 'draft').length;
+
+function formatDate(dateStr: string | null): string {
+  if (!dateStr) return '-';
+  return new Date(dateStr).toLocaleDateString('en-IE', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  });
+}
+
+function getCategoryLabel(category: string): string {
+  const labels: Record<string, string> = {
+    news: 'News',
+    'match-report': 'Match Report',
+    fundraiser: 'Fundraiser',
+    notice: 'Notice',
+  };
+  return labels[category] || category;
+}
+
+const breadcrumbs = [
+  { label: 'Dashboard', href: `/${slug}/admin-portal` },
+  { label: 'Posts' },
+];
+---
+
+<AdminLayout
+  title="Posts"
+  club={club}
+  user={user}
+  member={member}
+  currentPage="posts"
+>
+  <Fragment slot="header-actions">
+    <Button href={`/${slug}/admin-portal/posts/new`} variant="primary">
+      <Icon name="plus" size="md" />
+      New post
+    </Button>
+  </Fragment>
+
+  <AdminPageTemplate
+    title="Posts"
+    subtitle="Manage your club's news and updates"
+    breadcrumbs={breadcrumbs}
+    wide
+  >
+    <div slot="actions" class="flex items-center gap-4 text-sm">
+      <span class="text-slate-500">{publishedCount} published</span>
+      <span class="text-slate-300">|</span>
+      <span class="text-slate-500">{draftCount} drafts</span>
+    </div>
+
+    {posts.length > 0 ? (
+      <AdminTable>
+        <thead slot="head">
+          <tr>
+            <th>Title</th>
+            <th class="hidden md:table-cell">Category</th>
+            <th class="hidden lg:table-cell">Author</th>
+            <th>Status</th>
+            <th class="hidden sm:table-cell">Date</th>
+            <th class="w-12"></th>
+          </tr>
+        </thead>
+        <tbody slot="body">
+          {posts.map((post) => (
+            <tr>
+              <td>
+                <a href={`/${slug}/admin-portal/posts/${post.id}`} class="font-medium text-slate-900 hover:text-slate-600 transition-colors">
+                  {post.title}
+                </a>
+                {post.summary && (
+                  <p class="text-sm text-slate-500 mt-0.5 line-clamp-1">{post.summary}</p>
+                )}
+              </td>
+              <td class="hidden md:table-cell">
+                <span class="text-sm text-slate-600">{getCategoryLabel(post.category)}</span>
+              </td>
+              <td class="hidden lg:table-cell">
+                <span class="text-sm text-slate-500">{post.author_name || 'Unknown'}</span>
+              </td>
+              <td>
+                <StatusChip variant={post.status === 'published' ? 'success' : 'neutral'} size="sm">
+                  {post.status}
+                </StatusChip>
+              </td>
+              <td class="hidden sm:table-cell">
+                <span class="text-sm text-slate-500">{formatDate(post.published_at || post.created_at)}</span>
+              </td>
+              <td>
+                <div class="flex items-center justify-end gap-1">
+                  <a
+                    href={`/${slug}/admin-portal/posts/${post.id}`}
+                    class="p-1.5 text-slate-400 hover:text-slate-600 rounded-md hover:bg-slate-100 transition-colors"
+                    title="Edit"
+                  >
+                    <Icon name="edit" size="md" />
+                  </a>
+                  {post.status === 'published' && (
+                    <a
+                      href={`/${slug}/news/${post.slug}`}
+                      target="_blank"
+                      class="p-1.5 text-slate-400 hover:text-slate-600 rounded-md hover:bg-slate-100 transition-colors"
+                      title="View"
+                    >
+                      <Icon name="external-link" size="md" />
+                    </a>
+                  )}
+                </div>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </AdminTable>
+    ) : (
+      <AdminTable
+        emptyTitle="No posts yet"
+        emptyDescription="Create your first post to share news with your club."
+      >
+        <div slot="empty" class="text-center py-8">
+          <div class="w-12 h-12 mx-auto mb-4 rounded-full bg-slate-100 flex items-center justify-center">
+            <Icon name="posts" size="xl" class="text-slate-400" />
+          </div>
+          <h3 class="text-lg font-medium text-slate-900 mb-1">No posts yet</h3>
+          <p class="text-sm text-slate-500 mb-4">Create your first post to share news with your club.</p>
+          <Button href={`/${slug}/admin-portal/posts/new`} variant="primary">
+            <Icon name="plus" size="md" />
+            Create your first post
+          </Button>
+        </div>
+      </AdminTable>
+    )}
+  </AdminPageTemplate>
+</AdminLayout>

@@ -1,0 +1,100 @@
+---
+import { DatabaseService } from '../../../lib/db';
+import { formatDate } from '../../../lib/utils';
+import { renderMarkdown } from '../../../lib/markdown';
+import ClubNavigation from '../../../components/templates/ClubNavigation.astro';
+import ClubFooter from '../../../components/templates/ClubFooter.astro';
+import Sponsors from '../../../components/templates/blocks/Sponsors.astro';
+
+const { slug, postSlug } = Astro.params;
+
+if (!Astro.locals.runtime.env.DB) {
+  return Astro.redirect('/?error=db_not_configured');
+}
+
+const db = new DatabaseService(Astro.locals.runtime.env.DB);
+const club = await db.getClubBySlug(slug!);
+
+if (!club || !club.is_live) {
+  return Astro.redirect('/');
+}
+
+const post = await db.getPostBySlug(club.id, postSlug!);
+
+if (!post || post.status !== 'published') {
+  return Astro.redirect(`/${slug}/news`);
+}
+
+const contentHtml = post.content ? renderMarkdown(post.content) : '';
+const [siteSettingsRecord, sponsors] = await Promise.all([
+  db.getSiteSettings(club.id),
+  db.getSponsorsForPlacement(club.id, 'news'),
+]);
+
+const navItems = siteSettingsRecord?.nav_items ? JSON.parse(siteSettingsRecord.nav_items) : null;
+const headerSettings = siteSettingsRecord?.header_settings ? JSON.parse(siteSettingsRecord.header_settings) : null;
+const footerLinks = siteSettingsRecord?.footer_links ? JSON.parse(siteSettingsRecord.footer_links) : null;
+---
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content={post.summary || post.title} />
+  <title>{post.title} | {club.name}</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+</head>
+<body class="bg-white text-slate-900 antialiased">
+  <ClubNavigation club={club} slug={slug!} currentPath={`/${slug}/news/${post.slug}`} navItems={navItems} headerSettings={headerSettings} />
+
+  <main class="pt-20">
+    <section class="py-10">
+      <div class="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+        <a href={`/${slug}/news`} class="text-sm text-slate-500 hover:text-slate-900 transition-colors">
+          Back to news
+        </a>
+
+        <div class="mt-6">
+          <div class="flex flex-wrap items-center gap-3 text-sm text-slate-500">
+            <span class="uppercase tracking-wide">{post.category.replace('-', ' ')}</span>
+            {post.published_at && <span>{formatDate(post.published_at)}</span>}
+          </div>
+          <h1 class="text-3xl sm:text-4xl font-bold text-slate-900 mt-3">{post.title}</h1>
+          {post.summary && (
+            <p class="text-lg text-slate-600 mt-4">{post.summary}</p>
+          )}
+        </div>
+      </div>
+    </section>
+
+    {post.featured_image && (
+      <section class="pb-12">
+        <div class="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+          <div class="rounded-3xl overflow-hidden border border-slate-200 shadow-xl shadow-slate-200/60">
+            <img src={post.featured_image} alt={post.title} class="w-full h-full object-cover" />
+          </div>
+        </div>
+      </section>
+    )}
+
+    <section class="pb-16">
+      <div class="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+        {contentHtml ? (
+          <article class="markdown" set:html={contentHtml} />
+        ) : (
+          <p class="text-slate-600">This post does not have any content yet.</p>
+        )}
+      </div>
+    </section>
+
+    <Sponsors sponsors={sponsors} primaryColor={club.primary_color} variant="compact" />
+  </main>
+
+  <ClubFooter club={club} slug={slug!} footerLinks={footerLinks} />
+</body>
+</html>
+
+<style is:global>
+  @import "../../../styles/global.css";
+</style>

@@ -1,0 +1,206 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Button from '../../components/Button.astro';
+---
+
+<Layout title="Log In - Clubify">
+  <div class="min-h-screen mesh-gradient-light flex items-center justify-center p-4">
+    <div class="w-full max-w-md">
+      <!-- Logo -->
+      <div class="text-center mb-8">
+        <a href="/" class="inline-flex items-center gap-3">
+          <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center shadow-lg shadow-primary-500/25">
+            <svg class="w-7 h-7 text-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" fill="currentColor" opacity="0.3"/>
+              <path d="M12 6c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6zm0 10c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4z" fill="currentColor"/>
+              <circle cx="12" cy="12" r="2" fill="currentColor"/>
+            </svg>
+          </div>
+          <span class="text-2xl font-bold text-slate-900">Clubify</span>
+        </a>
+      </div>
+
+      <!-- Card -->
+      <div class="glass-light rounded-2xl border border-slate-200 p-8 shadow-xl">
+        <div class="text-center mb-6">
+          <h1 class="text-2xl font-bold text-slate-900 mb-2">Welcome back</h1>
+          <p class="text-slate-600">Sign in to your Clubify account</p>
+        </div>
+
+        <form id="login-form" class="space-y-4">
+          <div>
+            <label for="email" class="block text-sm font-medium text-slate-700 mb-2">Email address</label>
+            <input type="email" id="email" name="email" required
+              class="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              placeholder="john@example.com">
+          </div>
+
+          <div id="magic-link-sent" class="hidden p-4 bg-primary-50 border border-primary-200 rounded-xl">
+            <div class="flex items-start gap-3">
+              <svg class="w-5 h-5 text-primary-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+              </svg>
+              <div>
+                <p class="text-primary-700 font-medium">Check your email</p>
+                <p class="text-primary-700/70 text-sm mt-1">We've sent you a magic link to sign in. Click the link in the email to continue.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Dev mode link (only shown when no email service configured) -->
+          <div id="dev-mode-link" class="hidden p-4 bg-yellow-50 border border-yellow-200 rounded-xl">
+            <div class="flex items-start gap-3">
+              <svg class="w-5 h-5 text-yellow-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
+              </svg>
+              <div class="flex-1">
+                <p class="text-yellow-700 font-medium">Dev Mode</p>
+                <p class="text-yellow-700/80 text-sm mt-1 mb-3">No email service configured. Click below to sign in directly:</p>
+                <a id="dev-link" href="#" class="inline-flex items-center gap-2 px-4 py-2 bg-yellow-500 hover:bg-yellow-400 text-black font-semibold rounded-lg text-sm transition-colors">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+                  </svg>
+                  Click to sign in
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <div id="error-message" class="hidden p-4 bg-red-50 border border-red-200 rounded-xl">
+            <p class="text-red-600 text-sm"></p>
+          </div>
+
+          <button type="submit" id="submit-btn"
+            class="w-full py-3 px-6 bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white font-semibold rounded-xl transition-all shadow-lg shadow-primary-500/25 hover:shadow-primary-500/40 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+            <span>Send magic link</span>
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+            </svg>
+          </button>
+        </form>
+
+        <div class="relative my-6">
+          <div class="absolute inset-0 flex items-center">
+            <div class="w-full border-t border-slate-200"></div>
+          </div>
+          <div class="relative flex justify-center text-sm">
+            <span class="px-4 bg-white/80 text-slate-500">New to Clubify?</span>
+          </div>
+        </div>
+
+        <a href="/admin/signup"
+          class="block w-full py-3 px-6 border border-slate-200 text-center text-slate-700 font-semibold rounded-xl hover:bg-slate-50 transition-colors">
+          Create your club
+        </a>
+      </div>
+
+      <!-- Back link -->
+      <p class="text-center mt-6">
+        <a href="/" class="text-slate-500 hover:text-slate-900 text-sm transition-colors inline-flex items-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+          </svg>
+          Back to homepage
+        </a>
+      </p>
+    </div>
+  </div>
+</Layout>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('login-form');
+    const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement;
+    const magicLinkSent = document.getElementById('magic-link-sent');
+    const devModeLink = document.getElementById('dev-mode-link');
+    const devLink = document.getElementById('dev-link') as HTMLAnchorElement;
+    const errorMessage = document.getElementById('error-message');
+
+    form?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = (document.getElementById('email') as HTMLInputElement).value;
+
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<span>Sending...</span>';
+      errorMessage?.classList.add('hidden');
+      devModeLink?.classList.add('hidden');
+
+      try {
+        const res = await fetch('/api/auth/magic-link', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email })
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+          // Check if we're in dev mode (API returns devModeLink)
+          if (data.devModeLink) {
+            devModeLink?.classList.remove('hidden');
+            if (devLink) {
+              devLink.href = data.devModeLink;
+            }
+            submitBtn.innerHTML = '<span>Dev mode</span>';
+          } else {
+            magicLinkSent?.classList.remove('hidden');
+            submitBtn.innerHTML = '<span>Email sent</span>';
+          }
+
+          // Poll for session (user might click link in another tab)
+          pollForSession();
+        } else {
+          throw new Error(data.error || 'Failed to send magic link');
+        }
+      } catch (error: any) {
+        console.error('Login error:', error);
+        if (errorMessage) {
+          errorMessage.querySelector('p')!.textContent = error.message;
+          errorMessage.classList.remove('hidden');
+        }
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<span>Send magic link</span><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>';
+      }
+    });
+
+    async function pollForSession() {
+      const maxAttempts = 60;
+      let attempts = 0;
+
+      const poll = async () => {
+        attempts++;
+        try {
+          const res = await fetch('/api/auth/session');
+          const data = await res.json();
+
+          if (data.user) {
+            // User is logged in, redirect appropriately
+            if (data.isSuperAdmin) {
+              // Super admin goes to super admin dashboard
+              window.location.href = '/admin/super';
+            } else if (data.clubs && data.clubs.length > 0) {
+              // Regular user with clubs goes to their club
+              window.location.href = `/${data.clubs[0].slug}/admin-portal`;
+            } else {
+              // New user without clubs goes to onboarding
+              window.location.href = '/admin/signup';
+            }
+            return;
+          }
+        } catch (e) {
+          console.error('Poll error:', e);
+        }
+
+        if (attempts < maxAttempts) {
+          setTimeout(poll, 2000);
+        }
+      };
+
+      poll();
+    }
+  });
+</script>
+
+<style>
+  @import "../../styles/global.css";
+</style>

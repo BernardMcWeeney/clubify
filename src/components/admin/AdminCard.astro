@@ -1,0 +1,44 @@
+---
+/**
+ * AdminCard Component - Surface component with standard padding and styling
+ *
+ * Usage:
+ * <AdminCard>Basic card with default padding</AdminCard>
+ * <AdminCard padding="lg" accent>Card with accent border</AdminCard>
+ * <AdminCard hover>Clickable card with hover effect</AdminCard>
+ */
+
+interface Props {
+  /** Padding size: none (0), sm (12px), md (16px), lg (24px) */
+  padding?: 'none' | 'sm' | 'md' | 'lg';
+  /** Show left accent border using sport/admin accent color */
+  accent?: boolean;
+  /** Enable hover shadow effect for clickable cards */
+  hover?: boolean;
+  /** Additional CSS classes */
+  class?: string;
+}
+
+const {
+  padding = 'md',
+  accent = false,
+  hover = false,
+  class: className = '',
+} = Astro.props;
+
+const paddingMap = {
+  none: '',
+  sm: 'p-3',
+  md: 'p-4',
+  lg: 'p-6',
+};
+
+const baseClasses = 'bg-white border border-slate-200 rounded-xl';
+const paddingClasses = paddingMap[padding];
+const accentClasses = accent ? 'border-l-[3px] border-l-[var(--admin-accent,#14b8a6)]' : '';
+const hoverClasses = hover ? 'transition-shadow hover:shadow-md cursor-pointer' : '';
+---
+
+<div class={`${baseClasses} ${paddingClasses} ${accentClasses} ${hoverClasses} ${className}`}>
+  <slot />
+</div>

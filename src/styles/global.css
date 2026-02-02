@@ -1,26 +1,26 @@
 @import "tailwindcss";
+@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap");
 
-/* Custom theme tokens - GAA inspired colors */
+/* ========================================
+   Clubify Design System - Modern SaaS
+   Teal-based, sport-neutral palette
+   ======================================== */
+
 @theme {
-  /* Primary brand colors - Irish green and gold */
-  --color-gaa-green: #006838;
-  --color-gaa-gold: #FFB300;
-  --color-gaa-dark: #004225;
+  /* Primary brand colors - Teal (sport-neutral) */
+  --color-primary-50: #f0fdfa;
+  --color-primary-100: #ccfbf1;
+  --color-primary-200: #99f6e4;
+  --color-primary-300: #5eead4;
+  --color-primary-400: #2dd4bf;
+  --color-primary-500: #14b8a6;
+  --color-primary-600: #0d9488;
+  --color-primary-700: #0f766e;
+  --color-primary-800: #115e59;
+  --color-primary-900: #134e4a;
+  --color-primary-950: #042f2e;
 
-  /* Modern gradient palette */
-  --color-primary-50: #f0fdf4;
-  --color-primary-100: #dcfce7;
-  --color-primary-200: #bbf7d0;
-  --color-primary-300: #86efac;
-  --color-primary-400: #4ade80;
-  --color-primary-500: #22c55e;
-  --color-primary-600: #16a34a;
-  --color-primary-700: #15803d;
-  --color-primary-800: #166534;
-  --color-primary-900: #14532d;
-  --color-primary-950: #052e16;
-
-  /* Accent colors */
+  /* Accent colors - Warm amber for CTAs */
   --color-accent-50: #fffbeb;
   --color-accent-100: #fef3c7;
   --color-accent-200: #fde68a;
@@ -29,7 +29,7 @@
   --color-accent-500: #f59e0b;
   --color-accent-600: #d97706;
 
-  /* Neutral palette */
+  /* Neutral palette - Slate */
   --color-slate-50: #f8fafc;
   --color-slate-100: #f1f5f9;
   --color-slate-200: #e2e8f0;
@@ -42,11 +42,142 @@
   --color-slate-900: #0f172a;
   --color-slate-950: #020617;
 
+  /* Sport-specific colors (for sport pages) */
+  --color-sport-gaa: #006838;
+  --color-sport-football: #1e40af;
+  --color-sport-rugby: #166534;
+  --color-sport-athletics: #dc2626;
+  --color-sport-golf: #15803d;
+  --color-sport-tennis: #ca8a04;
+  --color-sport-cycling: #0891b2;
+
   /* Animation durations */
   --animate-gradient: gradient 15s ease infinite;
   --animate-float: float 6s ease-in-out infinite;
   --animate-fade-in: fadeIn 0.6s ease-out forwards;
   --animate-slide-up: slideUp 0.6s ease-out forwards;
+}
+
+/* ========================================
+   Design System Tokens
+   ======================================== */
+
+:root {
+  /* Typography Scale - Fluid responsive sizing */
+  --text-hero: clamp(2.5rem, 5vw, 4.5rem);
+  --text-h1: clamp(2rem, 4vw, 3.5rem);
+  --text-h2: clamp(1.75rem, 3vw, 2.5rem);
+  --text-h3: clamp(1.25rem, 2vw, 1.5rem);
+  --text-body: 1rem;
+  --text-small: 0.875rem;
+  --text-xs: 0.75rem;
+
+  /* Line heights */
+  --leading-tight: 1.1;
+  --leading-snug: 1.3;
+  --leading-normal: 1.6;
+  --leading-relaxed: 1.75;
+
+  /* High contrast text colors (WCAG AA compliant) */
+  --color-text-primary: #0f172a;    /* 15.9:1 on white */
+  --color-text-secondary: #334155;  /* 8.6:1 on white */
+  --color-text-muted: #64748b;      /* 4.6:1 on white - meets AA */
+
+  /* Spacing Scale */
+  --space-xs: 0.25rem;    /* 4px */
+  --space-sm: 0.5rem;     /* 8px */
+  --space-md: 1rem;       /* 16px */
+  --space-lg: 1.5rem;     /* 24px */
+  --space-xl: 2rem;       /* 32px */
+  --space-2xl: 3rem;      /* 48px */
+  --space-3xl: 4rem;      /* 64px */
+  --space-section: clamp(4rem, 8vw, 8rem);
+
+  /* Border Radius */
+  --radius-sm: 0.375rem;     /* 6px */
+  --radius-md: 0.5rem;       /* 8px */
+  --radius-lg: 0.75rem;      /* 12px */
+  --radius-xl: 1rem;         /* 16px */
+  --radius-2xl: 1.5rem;      /* 24px */
+  --radius-full: 9999px;
+  --radius-card: 1rem;
+  --radius-button: 0.75rem;
+  --radius-input: 0.75rem;
+  --radius-badge: 9999px;
+  --radius-modal: 1rem;
+
+  /* Spacing - Component specific */
+  --spacing-card: 1.5rem;
+  --spacing-section: 2rem;
+  --spacing-button-x: 1rem;
+  --spacing-button-y: 0.75rem;
+  --spacing-input-x: 1rem;
+  --spacing-input-y: 0.75rem;
+  --spacing-grid: 1.5rem;
+
+  /* Shadows - Elevation system (teal-tinted) */
+  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+  --shadow-card: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-card-hover: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-button: 0 10px 15px -3px rgb(20 184 166 / 0.25);
+  --shadow-button-hover: 0 10px 20px -3px rgb(20 184 166 / 0.35);
+  --shadow-modal: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+  --shadow-dropdown: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+
+  /* Typography weights */
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  /* Borders */
+  --border-color: #e2e8f0;
+  --border-color-focus: #14b8a6;
+  --border-width: 1px;
+
+  /* Input backgrounds */
+  --input-bg: #f8fafc;
+  --input-bg-focus: #ffffff;
+
+  /* Transitions */
+  --transition-fast: 150ms ease;
+  --transition-normal: 200ms ease;
+  --transition-slow: 300ms ease;
+  --transition-spring: 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* ========================================
+     Admin Design System Tokens
+     ======================================== */
+
+  /* Admin content widths */
+  --admin-content-max-width: 1280px;
+  --admin-content-wide-max-width: 1600px;
+
+  /* Admin spacing */
+  --admin-page-padding: 24px;
+  --admin-section-gap: 24px;
+  --admin-title-gap: 12px;
+  --admin-card-padding: 16px;
+  --admin-card-padding-lg: 24px;
+
+  /* Icon sizes */
+  --icon-size-sm: 14px;
+  --icon-size-md: 16px;
+  --icon-size-lg: 18px;
+  --icon-size-xl: 20px;
+
+  /* Default admin accent (overridden by sport-specific colors in AdminLayout) */
+  --admin-accent: #14b8a6;
+  --admin-accent-hover: #0d9488;
+  --admin-accent-soft: rgba(20, 184, 166, 0.08);
+  --admin-accent-strong: rgba(20, 184, 166, 0.15);
+  --admin-accent-border: rgba(20, 184, 166, 0.2);
+  --admin-ring: rgba(20, 184, 166, 0.2);
 }
 
 /* Keyframe animations */
@@ -88,38 +219,65 @@
   }
 }
 
-/* Animated gradient background */
+/* Animated gradient background - Teal based */
 .gradient-bg {
   background: linear-gradient(
     -45deg,
-    #006838,
-    #004225,
+    #0f766e,
+    #134e4a,
+    #14b8a6,
+    #2dd4bf,
     #0d9488,
-    #22c55e,
-    #FFB300,
-    #006838
+    #0f766e
   );
   background-size: 400% 400%;
   animation: gradient 15s ease infinite;
 }
 
-/* Mesh gradient for hero */
+/* Mesh gradient for hero (dark - used on auth pages) */
 .mesh-gradient {
   background-color: #0f172a;
   background-image:
-    radial-gradient(at 40% 20%, hsla(152, 100%, 20%, 0.5) 0px, transparent 50%),
-    radial-gradient(at 80% 0%, hsla(45, 100%, 50%, 0.15) 0px, transparent 50%),
-    radial-gradient(at 0% 50%, hsla(152, 100%, 25%, 0.3) 0px, transparent 50%),
-    radial-gradient(at 80% 50%, hsla(170, 80%, 30%, 0.2) 0px, transparent 50%),
-    radial-gradient(at 0% 100%, hsla(152, 100%, 15%, 0.4) 0px, transparent 50%),
-    radial-gradient(at 80% 100%, hsla(45, 100%, 45%, 0.1) 0px, transparent 50%);
+    radial-gradient(at 40% 20%, hsla(174, 80%, 25%, 0.5) 0px, transparent 50%),
+    radial-gradient(at 80% 0%, hsla(174, 60%, 40%, 0.2) 0px, transparent 50%),
+    radial-gradient(at 0% 50%, hsla(174, 80%, 30%, 0.3) 0px, transparent 50%),
+    radial-gradient(at 80% 50%, hsla(174, 70%, 35%, 0.2) 0px, transparent 50%),
+    radial-gradient(at 0% 100%, hsla(174, 80%, 20%, 0.4) 0px, transparent 50%),
+    radial-gradient(at 80% 100%, hsla(174, 60%, 45%, 0.15) 0px, transparent 50%);
 }
 
-/* Glass morphism effect */
+/* Light mesh gradient for marketing hero - Modern SaaS style */
+.mesh-gradient-light {
+  background-color: #fafafa;
+  background-image:
+    radial-gradient(at 0% 0%, hsla(174, 80%, 95%, 0.8) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, hsla(174, 60%, 92%, 0.6) 0px, transparent 50%),
+    radial-gradient(at 50% 50%, hsla(174, 70%, 97%, 0.5) 0px, transparent 60%),
+    radial-gradient(at 0% 100%, hsla(174, 60%, 94%, 0.4) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, hsla(174, 80%, 96%, 0.3) 0px, transparent 50%);
+}
+
+/* Subtle grid pattern for modern SaaS look */
+.grid-pattern {
+  background-image:
+    linear-gradient(rgba(20, 184, 166, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(20, 184, 166, 0.03) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+
+/* Glass morphism effect (dark) */
 .glass {
   background: rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Glass morphism effect (light) */
+.glass-light {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
 }
 
 /* Base styles */
@@ -135,12 +293,843 @@ body {
 
 /* Focus styles for accessibility */
 :focus-visible {
-  outline: 2px solid #22c55e;
+  outline: 2px solid #14b8a6;
   outline-offset: 2px;
 }
 
 /* Selection colors */
 ::selection {
-  background-color: #22c55e;
+  background-color: #14b8a6;
   color: white;
+}
+
+/* Lightweight markdown styling */
+.markdown h1,
+.markdown h2,
+.markdown h3 {
+  color: #0f172a;
+  font-weight: 700;
+  margin: 1.5rem 0 0.75rem;
+}
+
+.markdown h1 {
+  font-size: 2rem;
+}
+
+.markdown h2 {
+  font-size: 1.5rem;
+}
+
+.markdown h3 {
+  font-size: 1.25rem;
+}
+
+.markdown p {
+  color: #475569;
+  line-height: 1.7;
+  margin: 0 0 1rem;
+}
+
+.markdown a {
+  color: #0d9488;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 2px;
+}
+
+.markdown strong {
+  color: #0f172a;
+  font-weight: 700;
+}
+
+.markdown em {
+  font-style: italic;
+}
+
+.markdown-list {
+  color: #475569;
+  margin: 0 0 1rem 1.25rem;
+  list-style: disc;
+  line-height: 1.7;
+}
+
+.markdown-list li {
+  margin-bottom: 0.4rem;
+}
+
+/* ========================================
+   Admin UI Component Classes
+   ======================================== */
+
+/* Admin shell + layout */
+.admin-shell {
+  --admin-accent: #0d9488;
+  --admin-accent-hover: #0b766b;
+  --admin-accent-soft: rgba(13, 148, 136, 0.12);
+  --admin-accent-strong: rgba(13, 148, 136, 0.2);
+  --admin-accent-border: rgba(13, 148, 136, 0.28);
+  --admin-ring: rgba(13, 148, 136, 0.25);
+  --admin-brand-primary: #0d9488;
+  --admin-brand-secondary: #ffffff;
+  --admin-brand-accent: #f59e0b;
+  --admin-font-sans: "Manrope", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --admin-font-display: "Space Grotesk", "Manrope", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --admin-surface: #ffffff;
+  --admin-panel: #ffffff;
+  --admin-panel-alt: #f8fafc;
+  --admin-border: #e2e8f0;
+  --admin-text: #0f172a;
+  --admin-text-muted: #64748b;
+  min-height: 100vh;
+  color: var(--admin-text);
+  font-family: var(--admin-font-sans);
+  background:
+    radial-gradient(900px circle at 5% 0%, rgba(13, 148, 136, 0.08), transparent 55%),
+    radial-gradient(800px circle at 95% 10%, rgba(99, 102, 241, 0.08), transparent 60%),
+    #f6f7fb;
+  position: relative;
+  isolation: isolate;
+}
+
+.admin-shell::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(148, 163, 184, 0.15) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(148, 163, 184, 0.12) 1px, transparent 1px);
+  background-size: 36px 36px;
+  opacity: 0.25;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.admin-shell::after {
+  content: "";
+  position: absolute;
+  top: -20%;
+  right: -10%;
+  width: 520px;
+  height: 520px;
+  background: radial-gradient(circle, var(--admin-accent-soft), transparent 65%);
+  opacity: 0.7;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.admin-display {
+  font-family: var(--admin-font-display);
+  letter-spacing: -0.02em;
+}
+
+.admin-sidebar {
+  background: var(--admin-surface);
+  border-right: 1px solid var(--admin-border);
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.08);
+}
+
+.admin-topbar {
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(18px);
+  border-bottom: 1px solid var(--admin-border);
+}
+
+.admin-panel {
+  background: var(--admin-panel);
+  border: 1px solid var(--admin-border);
+  border-radius: 1.25rem;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+}
+
+.admin-panel-soft {
+  background: var(--admin-panel-alt);
+  border: 1px solid var(--admin-border);
+  border-radius: 1.25rem;
+}
+
+.admin-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 0.9rem;
+  border-radius: 0.95rem;
+  color: var(--admin-text-muted);
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+.admin-nav-item:hover {
+  background: rgba(15, 23, 42, 0.04);
+  color: var(--admin-text);
+}
+
+.admin-nav-item.is-active {
+  background: var(--admin-accent-soft);
+  color: var(--admin-accent);
+  box-shadow: inset 0 0 0 1px var(--admin-accent-border);
+}
+
+.admin-nav-item.is-disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.admin-nav-badge {
+  margin-left: auto;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.2rem 0.5rem;
+  border-radius: 9999px;
+  background: rgba(148, 163, 184, 0.15);
+  color: #64748b;
+}
+
+.admin-accent-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--admin-accent);
+  background: var(--admin-accent-soft);
+  border: 1px solid var(--admin-accent-border);
+}
+
+.admin-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: var(--spacing-button-y) var(--spacing-button-x);
+  background-color: var(--admin-accent);
+  color: white;
+  font-weight: var(--font-weight-semibold);
+  border-radius: var(--radius-button);
+  box-shadow: 0 12px 24px -14px var(--admin-accent);
+  transition: background-color var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.admin-btn-primary:hover {
+  background-color: var(--admin-accent-hover);
+  box-shadow: 0 16px 32px -16px var(--admin-accent);
+}
+
+.admin-btn-primary:active {
+  transform: scale(0.98);
+}
+
+.admin-btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: var(--spacing-button-y) var(--spacing-button-x);
+  background-color: rgba(148, 163, 184, 0.12);
+  color: var(--admin-text);
+  font-weight: var(--font-weight-semibold);
+  border-radius: var(--radius-button);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  transition: background-color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.admin-btn-secondary:hover {
+  background-color: rgba(148, 163, 184, 0.2);
+  border-color: rgba(148, 163, 184, 0.3);
+}
+
+.admin-input:focus {
+  outline: none;
+  background-color: var(--input-bg-focus);
+  border-color: var(--admin-accent);
+  box-shadow: 0 0 0 3px var(--admin-ring);
+}
+
+.admin-select:focus {
+  outline: none;
+  background-color: var(--input-bg-focus);
+  border-color: var(--admin-accent);
+  box-shadow: 0 0 0 3px var(--admin-ring);
+}
+
+/* Card - Consistent admin card styling */
+.admin-card {
+  background: white;
+  border-radius: var(--radius-card);
+  border: var(--border-width) solid var(--border-color);
+  padding: var(--spacing-card);
+  box-shadow: var(--shadow-card);
+  transition: box-shadow var(--transition-normal);
+}
+
+.admin-card:hover {
+  box-shadow: var(--shadow-card-hover);
+}
+
+/* Card without hover effect */
+.admin-card-static {
+  background: white;
+  border-radius: var(--radius-card);
+  border: var(--border-width) solid var(--border-color);
+  padding: var(--spacing-card);
+  box-shadow: var(--shadow-card);
+}
+
+/* Button - Primary action */
+.admin-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: var(--spacing-button-y) var(--spacing-button-x);
+  background-color: var(--admin-accent);
+  color: white;
+  font-weight: var(--font-weight-semibold);
+  border-radius: var(--radius-button);
+  box-shadow: 0 12px 24px -14px var(--admin-accent);
+  transition: background-color var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.admin-btn-primary:hover {
+  background-color: var(--admin-accent-hover);
+  box-shadow: 0 16px 32px -16px var(--admin-accent);
+}
+
+.admin-btn-primary:active {
+  transform: scale(0.98);
+}
+
+/* Button - Secondary action */
+.admin-btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: var(--spacing-button-y) var(--spacing-button-x);
+  background-color: rgba(148, 163, 184, 0.12);
+  color: var(--admin-text);
+  font-weight: var(--font-weight-semibold);
+  border-radius: var(--radius-button);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  transition: background-color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.admin-btn-secondary:hover {
+  background-color: rgba(148, 163, 184, 0.2);
+  border-color: rgba(148, 163, 184, 0.3);
+}
+
+/* Button - Danger action */
+.admin-btn-danger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: var(--spacing-button-y) var(--spacing-button-x);
+  background-color: #fee2e2;
+  color: #dc2626;
+  font-weight: var(--font-weight-medium);
+  border-radius: var(--radius-button);
+  transition: background-color var(--transition-fast);
+}
+
+.admin-btn-danger:hover {
+  background-color: #fecaca;
+}
+
+/* Input - Standard form input */
+.admin-input {
+  width: 100%;
+  padding: var(--spacing-input-y) var(--spacing-input-x);
+  background-color: var(--input-bg);
+  border: var(--border-width) solid #cbd5e1;
+  border-radius: var(--radius-input);
+  color: #0f172a;
+  transition: border-color var(--transition-fast), background-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.admin-input::placeholder {
+  color: #94a3b8;
+}
+
+.admin-input:focus {
+  outline: none;
+  background-color: var(--input-bg-focus);
+  border-color: var(--admin-accent);
+  box-shadow: 0 0 0 3px var(--admin-ring);
+}
+
+.admin-input:disabled {
+  background-color: #f1f5f9;
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Select - Standard dropdown */
+.admin-select {
+  width: 100%;
+  padding: var(--spacing-input-y) var(--spacing-input-x);
+  padding-right: 2.5rem;
+  background-color: var(--input-bg);
+  border: var(--border-width) solid #cbd5e1;
+  border-radius: var(--radius-input);
+  color: #0f172a;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2394a3b8' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 0.75rem center;
+  background-repeat: no-repeat;
+  background-size: 1.25rem;
+  transition: border-color var(--transition-fast), background-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.admin-select:focus {
+  outline: none;
+  background-color: var(--input-bg-focus);
+  border-color: var(--admin-accent);
+  box-shadow: 0 0 0 3px var(--admin-ring);
+}
+
+/* Label - Form labels */
+.admin-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: var(--font-weight-medium);
+  color: #334155;
+  margin-bottom: 0.5rem;
+}
+
+/* Badge - Status indicators */
+.admin-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: var(--font-weight-medium);
+  border-radius: var(--radius-badge);
+}
+
+.admin-badge-success {
+  background-color: #dcfce7;
+  color: #15803d;
+}
+
+.admin-badge-warning {
+  background-color: #fef3c7;
+  color: #b45309;
+}
+
+.admin-badge-error {
+  background-color: #fee2e2;
+  color: #dc2626;
+}
+
+.admin-badge-info {
+  background-color: #e0f2fe;
+  color: #0369a1;
+}
+
+.admin-badge-neutral {
+  background-color: #f1f5f9;
+  color: #475569;
+}
+
+/* Empty state */
+.admin-empty-state {
+  border-radius: var(--radius-card);
+  border: var(--border-width) solid var(--border-color);
+  padding: 3rem;
+  text-align: center;
+  box-shadow: var(--shadow-card);
+}
+
+/* Modal backdrop */
+.admin-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  z-index: 50;
+}
+
+/* Modal container */
+.admin-modal {
+  background: white;
+  border-radius: var(--radius-modal);
+  box-shadow: var(--shadow-modal);
+  border: var(--border-width) solid var(--border-color);
+  max-width: 32rem;
+  width: 100%;
+  margin: 1rem;
+}
+
+/* Section header */
+.admin-section-header {
+  font-size: 1.125rem;
+  font-weight: var(--font-weight-semibold);
+  color: #0f172a;
+  margin-bottom: 1rem;
+}
+
+/* Page header */
+.admin-page-header {
+  font-size: 1.875rem;
+  font-weight: var(--font-weight-bold);
+  color: #0f172a;
+}
+
+/* ========================================
+   Marketing Animation Utilities
+   ======================================== */
+
+/* Animation delay utilities - replaces inline styles */
+.animate-delay-100 { animation-delay: 0.1s; }
+.animate-delay-200 { animation-delay: 0.2s; }
+.animate-delay-300 { animation-delay: 0.3s; }
+.animate-delay-400 { animation-delay: 0.4s; }
+.animate-delay-500 { animation-delay: 0.5s; }
+.animate-delay-600 { animation-delay: 0.6s; }
+
+/* Animation on scroll base class */
+.animate-on-scroll {
+  opacity: 0;
+  animation-fill-mode: forwards;
+}
+
+/* ========================================
+   Marketing Section Utilities
+   ======================================== */
+
+/* Section badge - uppercase label above titles */
+.section-badge {
+  display: inline-block;
+  color: #0d9488;
+  font-weight: 600;
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 1rem;
+}
+
+/* Section badge with background - modern SaaS style */
+.section-badge-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.375rem 1rem;
+  background-color: #f0fdfa;
+  color: #0d9488;
+  font-weight: 500;
+  font-size: 0.875rem;
+  border-radius: 9999px;
+  border: 1px solid #99f6e4;
+}
+
+/* Section title - large headings */
+.section-title {
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 1.5rem;
+}
+
+@media (min-width: 640px) {
+  .section-title {
+    font-size: 2.25rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .section-title {
+    font-size: 3rem;
+  }
+}
+
+/* Section subtitle - supporting text */
+.section-subtitle {
+  font-size: 1.125rem;
+  color: #475569;
+  max-width: 42rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+@media (min-width: 768px) {
+  .section-subtitle {
+    font-size: 1.25rem;
+  }
+}
+
+/* ========================================
+   Marketing Card Utilities
+   ======================================== */
+
+/* Feature card with hover effect */
+.marketing-card {
+  background: white;
+  border-radius: 1rem;
+  border: 1px solid #e2e8f0;
+  padding: 2rem;
+  transition: all 0.3s ease;
+}
+
+.marketing-card:hover {
+  border-color: #99f6e4;
+  box-shadow: 0 10px 25px -5px rgba(20, 184, 166, 0.1), 0 8px 10px -6px rgba(20, 184, 166, 0.05);
+  transform: translateY(-2px);
+}
+
+/* Icon container for feature cards */
+.icon-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  background: linear-gradient(135deg, #f0fdfa 0%, #ccfbf1 100%);
+  border-radius: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.icon-container svg {
+  width: 1.75rem;
+  height: 1.75rem;
+  color: #0d9488;
+}
+
+/* Modern bento grid card - for features page */
+.bento-card {
+  background: white;
+  border-radius: 1.5rem;
+  border: 1px solid #e2e8f0;
+  padding: 2rem;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.bento-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #14b8a6, #2dd4bf);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.bento-card:hover {
+  border-color: #99f6e4;
+  box-shadow: 0 20px 40px -10px rgba(20, 184, 166, 0.15);
+  transform: translateY(-4px);
+}
+
+.bento-card:hover::before {
+  opacity: 1;
+}
+
+/* Glass card for premium/highlighted content */
+.glass-card {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(20px);
+  border-radius: 1.5rem;
+  border: 1px solid rgba(20, 184, 166, 0.1);
+  padding: 2rem;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
+}
+
+/* ========================================
+   Sport-Themed Utility Classes
+   Uses CSS variables set by AdminLayout
+   ======================================== */
+
+/* Text colors using sport accent */
+.sport-text {
+  color: var(--admin-accent);
+}
+
+.sport-text-hover:hover {
+  color: var(--admin-accent-hover);
+}
+
+/* Background colors using sport accent */
+.sport-bg {
+  background-color: var(--admin-accent);
+}
+
+.sport-bg-soft {
+  background-color: var(--admin-accent-soft);
+}
+
+.sport-bg-strong {
+  background-color: var(--admin-accent-strong);
+}
+
+.sport-bg-hover:hover {
+  background-color: var(--admin-accent-hover);
+}
+
+/* Border colors using sport accent */
+.sport-border {
+  border-color: var(--admin-accent-border);
+}
+
+.sport-border-solid {
+  border-color: var(--admin-accent);
+}
+
+/* Focus ring using sport accent */
+.sport-ring:focus,
+.sport-ring:focus-visible {
+  box-shadow: 0 0 0 3px var(--admin-ring);
+  outline: none;
+}
+
+/* Gradient backgrounds with sport colors */
+.sport-gradient {
+  background: linear-gradient(135deg, var(--admin-accent), var(--admin-accent-hover));
+}
+
+.sport-gradient-soft {
+  background: linear-gradient(135deg, var(--admin-accent-soft), var(--admin-accent-strong));
+}
+
+/* Sport-themed button - primary */
+.sport-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: var(--spacing-button-y) var(--spacing-button-x);
+  background-color: var(--admin-accent);
+  color: white;
+  font-weight: var(--font-weight-semibold);
+  border-radius: var(--radius-button);
+  box-shadow: 0 12px 24px -14px var(--admin-accent);
+  transition: background-color var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.sport-btn-primary:hover {
+  background-color: var(--admin-accent-hover);
+  box-shadow: 0 16px 32px -16px var(--admin-accent);
+}
+
+.sport-btn-primary:active {
+  transform: scale(0.98);
+}
+
+/* Sport-themed button - secondary */
+.sport-btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: var(--spacing-button-y) var(--spacing-button-x);
+  background-color: var(--admin-accent-soft);
+  color: var(--admin-accent);
+  font-weight: var(--font-weight-semibold);
+  border-radius: var(--radius-button);
+  border: 1px solid var(--admin-accent-border);
+  transition: background-color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.sport-btn-secondary:hover {
+  background-color: var(--admin-accent-strong);
+  border-color: var(--admin-accent);
+}
+
+/* Sport-themed badge/pill */
+.sport-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--admin-accent);
+  background-color: var(--admin-accent-soft);
+  border: 1px solid var(--admin-accent-border);
+}
+
+/* Sport-themed card header accent */
+.sport-card-accent {
+  position: relative;
+}
+
+.sport-card-accent::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--admin-accent), var(--admin-accent-hover));
+  border-radius: var(--radius-card) var(--radius-card) 0 0;
+}
+
+/* Sport-themed link */
+.sport-link {
+  color: var(--admin-accent);
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 2px;
+  transition: color var(--transition-fast);
+}
+
+.sport-link:hover {
+  color: var(--admin-accent-hover);
+}
+
+/* Sport-themed input focus */
+.sport-input:focus {
+  outline: none;
+  border-color: var(--admin-accent);
+  box-shadow: 0 0 0 3px var(--admin-ring);
+}
+
+/* Sport-themed progress bar */
+.sport-progress {
+  background-color: var(--admin-accent-soft);
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.sport-progress-bar {
+  background-color: var(--admin-accent);
+  height: 100%;
+  border-radius: 9999px;
+  transition: width 0.3s ease;
+}
+
+/* Sport-themed checkbox/toggle */
+.sport-toggle:checked {
+  background-color: var(--admin-accent);
+  border-color: var(--admin-accent);
+}
+
+/* Sport-themed icon container */
+.sport-icon-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  background: var(--admin-accent-soft);
+  color: var(--admin-accent);
+  border-radius: 0.75rem;
+}
+
+.sport-icon-container-lg {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 1rem;
 }

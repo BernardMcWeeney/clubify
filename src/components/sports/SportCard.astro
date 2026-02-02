@@ -1,0 +1,72 @@
+---
+import type { SportConfig } from '../../lib/sports';
+
+interface Props {
+  sport: SportConfig;
+  size?: 'sm' | 'md' | 'lg';
+}
+
+const { sport, size = 'md' } = Astro.props;
+const isReady = sport.status === 'ready';
+
+const sizeClasses = {
+  sm: 'p-4',
+  md: 'p-6',
+  lg: 'p-8',
+};
+
+const iconSizeClasses = {
+  sm: 'w-10 h-10',
+  md: 'w-12 h-12',
+  lg: 'w-16 h-16',
+};
+
+const titleClasses = {
+  sm: 'text-lg',
+  md: 'text-xl',
+  lg: 'text-2xl',
+};
+---
+
+<a
+  href={`/sports/${sport.slug}`}
+  class={`group relative block rounded-2xl border border-slate-200 bg-white overflow-hidden hover:shadow-xl hover:border-slate-300 transition-all duration-300 ${sizeClasses[size]}`}
+>
+  <!-- Status badge -->
+  <div class="absolute top-4 right-4">
+    {isReady ? (
+      <span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">
+        Available
+      </span>
+    ) : (
+      <span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-700">
+        Coming Soon
+      </span>
+    )}
+  </div>
+
+  <!-- Icon -->
+  <div
+    class={`${iconSizeClasses[size]} rounded-xl flex items-center justify-center text-white mb-4 group-hover:scale-110 transition-transform duration-300`}
+    style={`background-color: ${sport.primaryColor}`}
+  >
+    <span class="font-bold text-lg">{sport.name.charAt(0)}</span>
+  </div>
+
+  <!-- Content -->
+  <h3 class={`${titleClasses[size]} font-bold text-slate-900 mb-2 group-hover:text-primary-600 transition-colors`}>
+    {sport.name}
+  </h3>
+
+  <p class="text-slate-600 mb-4">
+    {sport.description}
+  </p>
+
+  <!-- Arrow -->
+  <div class="flex items-center text-sm font-medium" style={`color: ${sport.primaryColor}`}>
+    <span>{isReady ? 'Get started' : 'Learn more'}</span>
+    <svg class="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+    </svg>
+  </div>
+</a>

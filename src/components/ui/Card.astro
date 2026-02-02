@@ -1,0 +1,26 @@
+---
+interface Props {
+  /** Additional CSS classes */
+  class?: string;
+  /** Whether to show hover effect */
+  hover?: boolean;
+  /** Padding size */
+  padding?: 'none' | 'sm' | 'md' | 'lg';
+}
+
+const { class: className = '', hover = false, padding = 'md' } = Astro.props;
+
+const paddingClasses = {
+  none: '',
+  sm: 'p-4',
+  md: 'p-6',
+  lg: 'p-8',
+};
+
+const baseClasses = 'bg-white rounded-2xl border border-slate-200 shadow-sm';
+const hoverClasses = hover ? 'transition-shadow hover:shadow-md' : '';
+---
+
+<div class:list={[baseClasses, paddingClasses[padding], hoverClasses, className]}>
+  <slot />
+</div>

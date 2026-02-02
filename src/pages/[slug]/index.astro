@@ -1,0 +1,101 @@
+---
+import { DatabaseService } from '../../lib/db';
+import ClubNavigation from '../../components/templates/ClubNavigation.astro';
+import ClubFooter from '../../components/templates/ClubFooter.astro';
+import TemplateRenderer from '../../components/templates/TemplateRenderer.astro';
+
+const { slug } = Astro.params;
+
+// Check if database is configured
+if (!Astro.locals.runtime.env.DB) {
+  return Astro.redirect('/?error=db_not_configured');
+}
+
+// Get club data
+const db = new DatabaseService(Astro.locals.runtime.env.DB);
+const club = await db.getClubBySlug(slug!);
+
+if (!club) {
+  return Astro.redirect('/');
+}
+
+// Check if site is live
+if (!club.is_live) {
+  return Astro.redirect('/');
+}
+
+// Fetch content for the template
+const [posts, upcomingFixtures, playedFixtures, homepageConfigRecord, siteSettingsRecord, sponsors] = await Promise.all([
+  db.getPublishedPosts(club.id, 6),
+  db.getUpcomingFixtures(club.id, 5),
+  db.getPlayedFixtures(club.id, 5),
+  db.getHomepageConfig(club.id),
+  db.getSiteSettings(club.id),
+  db.getSponsorsForPlacement(club.id, 'home'),
+]);
+
+// Parse homepage config if it exists
+const homepageConfig = homepageConfigRecord
+  ? JSON.parse(homepageConfigRecord.config)
+  : null;
+
+const navItems = siteSettingsRecord?.nav_items ? JSON.parse(siteSettingsRecord.nav_items) : null;
+const headerSettings = siteSettingsRecord?.header_settings ? JSON.parse(siteSettingsRecord.header_settings) : null;
+const footerLinks = siteSettingsRecord?.footer_links ? JSON.parse(siteSettingsRecord.footer_links) : null;
+
+// Get the next upcoming fixture
+const nextFixture = upcomingFixtures[0] || null;
+
+// Get the latest result
+const latestResult = playedFixtures[0] || null;
+
+// Filter notices from posts
+const notices = posts.filter((p) => p.category === 'notice');
+const newsPosts = posts.filter((p) => p.category !== 'notice');
+---
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content={club.tagline || `Welcome to ${club.name} - ${club.county} GAA Club`} />
+  <meta name="theme-color" content={club.primary_color} />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <title>{club.name} - {club.county} GAA</title>
+  <style define:vars={{
+    primaryColor: club.primary_color,
+    secondaryColor: club.secondary_color,
+    accentColor: club.accent_color
+  }}>
+    :root {
+      --club-primary: var(--primaryColor);
+      --club-secondary: var(--secondaryColor);
+      --club-accent: var(--accentColor);
+    }
+  </style>
+</head>
+<body class="bg-white text-slate-900 antialiased">
+  <ClubNavigation club={club} slug={slug!} currentPath={`/${slug}`} navItems={navItems} headerSettings={headerSettings} />
+
+  <main class="pt-16">
+    <TemplateRenderer
+      club={club}
+      slug={slug!}
+      nextFixture={nextFixture}
+      latestResult={latestResult}
+      recentResults={playedFixtures}
+      posts={newsPosts}
+      notices={notices}
+      sponsors={sponsors}
+      homepageConfig={homepageConfig}
+    />
+  </main>
+
+  <ClubFooter club={club} slug={slug!} footerLinks={footerLinks} />
+</body>
+</html>
+
+<style is:global>
+  @import "../../styles/global.css";
+</style>

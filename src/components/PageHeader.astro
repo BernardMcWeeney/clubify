@@ -1,0 +1,33 @@
+---
+interface Props {
+  title: string;
+  description?: string;
+  badge?: string;
+}
+
+const { title, description, badge } = Astro.props;
+---
+
+<section class="relative pt-32 pb-16 bg-gradient-to-b from-slate-50 to-white overflow-hidden">
+  <!-- Background decoration -->
+  <div class="absolute inset-0 overflow-hidden">
+    <div class="absolute top-0 left-1/4 w-96 h-96 bg-primary-100 rounded-full blur-3xl opacity-30"></div>
+    <div class="absolute bottom-0 right-1/4 w-96 h-96 bg-accent-100 rounded-full blur-3xl opacity-30"></div>
+  </div>
+
+  <div class="relative mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 text-center">
+    {badge && (
+      <span class="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold bg-primary-50 text-primary-600 mb-4">
+        {badge}
+      </span>
+    )}
+    <h1 class="text-4xl sm:text-5xl font-bold text-slate-900 mb-4">
+      {title}
+    </h1>
+    {description && (
+      <p class="text-xl text-slate-600 max-w-2xl mx-auto">
+        {description}
+      </p>
+    )}
+  </div>
+</section>

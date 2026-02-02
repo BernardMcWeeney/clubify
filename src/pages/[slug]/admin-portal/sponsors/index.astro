@@ -1,0 +1,460 @@
+---
+import AdminLayout from '../../../../components/admin/AdminLayout.astro';
+import AdminPageTemplate from '../../../../components/admin/AdminPageTemplate.astro';
+import AdminCard from '../../../../components/admin/AdminCard.astro';
+import StatusChip from '../../../../components/admin/StatusChip.astro';
+import Icon from '../../../../components/admin/Icon.astro';
+import { DatabaseService } from '../../../../lib/db';
+import { getAuthContext } from '../../../../lib/auth';
+
+const { slug } = Astro.params;
+
+if (!Astro.locals.runtime.env.DB) {
+  return Astro.redirect('/admin?error=db_not_configured');
+}
+
+const db = new DatabaseService(Astro.locals.runtime.env.DB);
+const { user } = await getAuthContext(Astro.cookies, db);
+
+if (!user) {
+  return Astro.redirect('/admin/login');
+}
+
+const club = await db.getClubBySlug(slug!);
+if (!club) {
+  return Astro.redirect('/admin');
+}
+
+const member = await db.getClubMember(club.id, user.id);
+if (!member) {
+  return Astro.redirect('/admin');
+}
+
+const sponsors = await db.getSponsors(club.id);
+const sponsorRows = sponsors.map((s) => ({
+  ...s,
+  placements: s.placements ? JSON.parse(s.placements) : ['home'],
+}));
+
+const placementOptions = [
+  { id: 'home', label: 'Home', hint: 'Homepage and hero sections' },
+  { id: 'news', label: 'News', hint: 'News listing and posts' },
+  { id: 'fixtures', label: 'Fixtures', hint: 'Fixture pages and results' },
+  { id: 'about', label: 'About', hint: 'About page' },
+  { id: 'contact', label: 'Contact', hint: 'Contact page' },
+  { id: 'page', label: 'Pages', hint: 'Custom pages' },
+  { id: 'forms', label: 'Forms', hint: 'Public forms pages' },
+  { id: 'all', label: 'All pages', hint: 'Show everywhere' },
+];
+
+const tiers = ['main', 'gold', 'silver', 'bronze'];
+const canManage = ['admin', 'pro'].includes(member.role);
+
+const sponsorsByTier = {
+  main: sponsorRows.filter(s => s.tier === 'main'),
+  gold: sponsorRows.filter(s => s.tier === 'gold'),
+  silver: sponsorRows.filter(s => s.tier === 'silver'),
+  bronze: sponsorRows.filter(s => s.tier === 'bronze'),
+};
+
+const tierConfig = {
+  main: { label: 'Main Partners', color: 'amber' },
+  gold: { label: 'Gold Tier', color: 'yellow' },
+  silver: { label: 'Silver Tier', color: 'slate' },
+  bronze: { label: 'Bronze Tier', color: 'orange' },
+};
+
+const breadcrumbs = [
+  { label: 'Dashboard', href: `/${slug}/admin-portal` },
+  { label: 'Sponsors' },
+];
+---
+
+<AdminLayout
+  title="Sponsors"
+  club={club}
+  user={user}
+  member={member}
+  currentPage="sponsors"
+>
+  <Fragment slot="header-actions">
+    {canManage && (
+      <button id="new-sponsor" class="btn-primary">
+        <Icon name="plus" size="md" />
+        New Sponsor
+      </button>
+    )}
+  </Fragment>
+
+  <AdminPageTemplate
+    title="Sponsors"
+    subtitle="Manage your club partners and showcase them across your website"
+    breadcrumbs={breadcrumbs}
+  >
+    <div id="sponsors-page" data-club-id={club.id}>
+      <!-- Stats -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+        <div class="stat-card stat-card-accent">
+          <p class="stat-card-label">Total</p>
+          <p class="stat-card-value">{sponsorRows.length}</p>
+        </div>
+        <div class="stat-card">
+          <div class="flex items-center gap-2 mb-1">
+            <div class="w-3 h-3 rounded-full bg-amber-500"></div>
+            <p class="stat-card-label">Main</p>
+          </div>
+          <p class="stat-card-value">{sponsorsByTier.main.length}</p>
+        </div>
+        <div class="stat-card">
+          <div class="flex items-center gap-2 mb-1">
+            <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+            <p class="stat-card-label">Gold</p>
+          </div>
+          <p class="stat-card-value">{sponsorsByTier.gold.length}</p>
+        </div>
+        <div class="stat-card">
+          <div class="flex items-center gap-2 mb-1">
+            <div class="w-3 h-3 rounded-full bg-slate-400"></div>
+            <p class="stat-card-label">Silver/Bronze</p>
+          </div>
+          <p class="stat-card-value">{sponsorsByTier.silver.length + sponsorsByTier.bronze.length}</p>
+        </div>
+      </div>
+
+      {sponsorRows.length > 0 ? (
+        <div class="space-y-6">
+          {Object.entries(sponsorsByTier).map(([tier, tierSponsors]) => tierSponsors.length > 0 && (
+            <AdminCard padding="none">
+              <div class="p-5 border-b border-slate-100 flex items-center gap-3">
+                <div class:list={[
+                  "w-10 h-10 rounded-lg flex items-center justify-center",
+                  tier === 'main' ? 'bg-amber-500' : tier === 'gold' ? 'bg-yellow-500' : tier === 'silver' ? 'bg-slate-400' : 'bg-orange-500'
+                ]}>
+                  <Icon name="star" size="lg" class="text-white" />
+                </div>
+                <div>
+                  <h2 class="text-lg font-semibold text-slate-900">{tierConfig[tier as keyof typeof tierConfig].label}</h2>
+                  <p class="text-sm text-slate-500">{tierSponsors.length} sponsor{tierSponsors.length !== 1 ? 's' : ''}</p>
+                </div>
+              </div>
+              <div class:list={[
+                "p-5 grid gap-4",
+                tier === 'main' ? 'sm:grid-cols-2' : tier === 'gold' ? 'sm:grid-cols-3' : 'sm:grid-cols-4'
+              ]}>
+                {tierSponsors.map((sponsor: any) => (
+                  <button
+                    type="button"
+                    class="sponsor-card group text-left p-4 rounded-xl border border-slate-200 hover:border-slate-300 hover:shadow-md transition-all bg-white"
+                    data-sponsor={JSON.stringify(sponsor)}
+                  >
+                    <div class:list={[
+                      "aspect-video bg-slate-50 rounded-lg flex items-center justify-center mb-3 overflow-hidden border border-slate-100",
+                      tier === 'main' || tier === 'gold' ? '' : 'aspect-square'
+                    ]}>
+                      {sponsor.logo_url ? (
+                        <img src={sponsor.logo_url} alt={sponsor.name} class="w-full h-full object-contain p-3" />
+                      ) : (
+                        <div class="text-2xl font-bold text-slate-300">
+                          {sponsor.name.slice(0, 2).toUpperCase()}
+                        </div>
+                      )}
+                    </div>
+                    <h3 class="font-semibold text-slate-900 mb-1 group-hover:text-slate-700 transition-colors truncate">{sponsor.name}</h3>
+                    {tier === 'main' && sponsor.sponsoring && (
+                      <p class="text-sm text-slate-500 line-clamp-1 mb-2">{sponsor.sponsoring}</p>
+                    )}
+                    <StatusChip variant={sponsor.is_active ? 'success' : 'neutral'} size="sm">
+                      {sponsor.is_active ? 'Active' : 'Hidden'}
+                    </StatusChip>
+                  </button>
+                ))}
+              </div>
+            </AdminCard>
+          ))}
+        </div>
+      ) : (
+        <AdminCard>
+          <div class="py-12 text-center">
+            <div class="w-12 h-12 mx-auto mb-4 rounded-full bg-slate-100 flex items-center justify-center">
+              <Icon name="star" size="xl" class="text-slate-400" />
+            </div>
+            <h3 class="text-lg font-medium text-slate-900 mb-1">No sponsors yet</h3>
+            <p class="text-sm text-slate-500 mb-4">Add your club partners and showcase them across your website.</p>
+            {canManage && (
+              <button id="empty-new" class="btn-primary">
+                <Icon name="plus" size="md" />
+                Add your first sponsor
+              </button>
+            )}
+          </div>
+        </AdminCard>
+      )}
+    </div>
+  </AdminPageTemplate>
+
+  <!-- Edit Modal -->
+  <div id="edit-modal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto border border-slate-200">
+      <div class="sticky top-0 bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between rounded-t-xl">
+        <div>
+          <h2 class="text-lg font-semibold text-slate-900">Sponsor Details</h2>
+          <p class="text-sm text-slate-500" id="form-mode">New sponsor</p>
+        </div>
+        <button id="close-modal" class="p-1.5 text-slate-400 hover:text-slate-600 rounded-md hover:bg-slate-100 transition-colors">
+          <Icon name="x" size="lg" />
+        </button>
+      </div>
+
+      <form id="sponsor-form" class="p-6 space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-2">Sponsor name *</label>
+          <input id="sponsor-name" type="text" class="input-themed w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white transition-colors" placeholder="Greenfield Builders" required />
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-2">Logo URL</label>
+          <input id="sponsor-logo" type="text" class="input-themed w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white transition-colors" placeholder="https://example.com/logo.png" />
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-2">Website</label>
+          <input id="sponsor-website" type="text" class="input-themed w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white transition-colors" placeholder="https://example.com" />
+        </div>
+
+        <div class="grid gap-4 sm:grid-cols-2">
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-2">Tier</label>
+            <select id="sponsor-tier" class="input-themed w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:bg-white transition-colors">
+              {tiers.map((tier) => (
+                <option value={tier}>{tier.charAt(0).toUpperCase() + tier.slice(1)}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-2">Sort order</label>
+            <input id="sponsor-order" type="number" class="input-themed w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:bg-white transition-colors" value="0" />
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-2">Sponsoring / Notes</label>
+          <textarea id="sponsor-notes" rows="2" class="input-themed w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white transition-colors resize-none" placeholder="Main kit sponsor, U14s jersey..."></textarea>
+        </div>
+
+        <div class="grid gap-4 sm:grid-cols-2">
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-2">Start date</label>
+            <input id="sponsor-start" type="date" class="input-themed w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:bg-white transition-colors" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-2">End date</label>
+            <input id="sponsor-end" type="date" class="input-themed w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:bg-white transition-colors" />
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-2">Placements</label>
+          <div class="grid gap-2 sm:grid-cols-2">
+            {placementOptions.map((option) => (
+              <label class="flex items-center gap-3 p-3 rounded-xl border border-slate-200 text-sm hover:bg-slate-50 transition-colors cursor-pointer">
+                <input type="checkbox" class="placement-checkbox rounded border-slate-300 accent-[var(--admin-accent)]" value={option.id} />
+                <div>
+                  <p class="font-medium text-slate-800">{option.label}</p>
+                  <p class="text-xs text-slate-500">{option.hint}</p>
+                </div>
+              </label>
+            ))}
+          </div>
+        </div>
+
+        <label class="flex items-center gap-3 p-4 rounded-xl border-2 border-emerald-200 bg-emerald-50 cursor-pointer">
+          <input id="sponsor-active" type="checkbox" class="rounded border-slate-300 text-emerald-600" checked />
+          <span class="text-sm font-medium text-emerald-900">Sponsor is active</span>
+        </label>
+
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-4 border-t border-slate-200">
+          <button id="delete-sponsor" type="button" class="text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 px-4 py-2 rounded-lg transition-colors" disabled={!canManage}>
+            Delete
+          </button>
+          <div class="flex gap-3 w-full sm:w-auto">
+            <button type="button" id="cancel-btn" class="btn-secondary flex-1 sm:flex-none">Cancel</button>
+            <button type="submit" class="btn-primary flex-1 sm:flex-none" disabled={!canManage}>Save Sponsor</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</AdminLayout>
+
+<style>
+  .input-themed:focus {
+    border-color: var(--admin-accent, #14b8a6);
+    box-shadow: 0 0 0 2px var(--admin-ring, rgba(20, 184, 166, 0.2));
+  }
+</style>
+
+<script>
+  const page = document.getElementById('sponsors-page');
+  const clubId = page?.dataset.clubId;
+  const modal = document.getElementById('edit-modal') as HTMLElement;
+  const form = document.getElementById('sponsor-form') as HTMLFormElement;
+  const formMode = document.getElementById('form-mode') as HTMLElement;
+  const deleteBtn = document.getElementById('delete-sponsor') as HTMLButtonElement;
+  const closeModalBtn = document.getElementById('close-modal') as HTMLButtonElement;
+  const cancelBtn = document.getElementById('cancel-btn') as HTMLButtonElement;
+
+  const fields = {
+    name: document.getElementById('sponsor-name') as HTMLInputElement,
+    logo: document.getElementById('sponsor-logo') as HTMLInputElement,
+    website: document.getElementById('sponsor-website') as HTMLInputElement,
+    tier: document.getElementById('sponsor-tier') as HTMLSelectElement,
+    order: document.getElementById('sponsor-order') as HTMLInputElement,
+    notes: document.getElementById('sponsor-notes') as HTMLTextAreaElement,
+    start: document.getElementById('sponsor-start') as HTMLInputElement,
+    end: document.getElementById('sponsor-end') as HTMLInputElement,
+    active: document.getElementById('sponsor-active') as HTMLInputElement,
+  };
+
+  let currentId: number | null = null;
+
+  function showModal() {
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function hideModal() {
+    modal.classList.add('hidden');
+    document.body.style.overflow = '';
+  }
+
+  function clearForm() {
+    currentId = null;
+    formMode.textContent = 'New sponsor';
+    fields.name.value = '';
+    fields.logo.value = '';
+    fields.website.value = '';
+    fields.tier.value = 'main';
+    fields.order.value = '0';
+    fields.notes.value = '';
+    fields.start.value = '';
+    fields.end.value = '';
+    fields.active.checked = true;
+    document.querySelectorAll('.placement-checkbox').forEach((el) => {
+      (el as HTMLInputElement).checked = false;
+    });
+    deleteBtn.style.display = 'none';
+  }
+
+  function fillForm(data: any) {
+    currentId = data.id;
+    formMode.textContent = 'Editing ' + data.name;
+    fields.name.value = data.name || '';
+    fields.logo.value = data.logo_url || '';
+    fields.website.value = data.website_url || '';
+    fields.tier.value = data.tier || 'main';
+    fields.order.value = data.sort_order ?? 0;
+    fields.notes.value = data.sponsoring || '';
+    fields.start.value = data.start_date || '';
+    fields.end.value = data.end_date || '';
+    fields.active.checked = data.is_active === 1;
+
+    const placements = data.placements || ['home'];
+    document.querySelectorAll('.placement-checkbox').forEach((el) => {
+      (el as HTMLInputElement).checked = placements.includes((el as HTMLInputElement).value);
+    });
+    deleteBtn.style.display = 'block';
+  }
+
+  document.getElementById('new-sponsor')?.addEventListener('click', () => {
+    clearForm();
+    showModal();
+  });
+
+  document.getElementById('empty-new')?.addEventListener('click', () => {
+    clearForm();
+    showModal();
+  });
+
+  closeModalBtn?.addEventListener('click', hideModal);
+  cancelBtn?.addEventListener('click', hideModal);
+
+  modal?.addEventListener('click', (e) => {
+    if (e.target === modal) hideModal();
+  });
+
+  document.querySelectorAll('.sponsor-card').forEach((card) => {
+    card.addEventListener('click', () => {
+      const data = JSON.parse((card as HTMLElement).dataset.sponsor || '{}');
+      fillForm(data);
+      showModal();
+    });
+  });
+
+  deleteBtn?.addEventListener('click', async () => {
+    if (!currentId) return;
+    if (!confirm('Delete this sponsor?')) return;
+
+    const res = await fetch(`/api/clubs/${clubId}/sponsors/${currentId}`, {
+      method: 'DELETE',
+    });
+
+    if (res.ok) {
+      window.location.reload();
+    } else {
+      const data = await res.json();
+      alert(data.error || 'Failed to delete sponsor');
+    }
+  });
+
+  form?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    if (!clubId) return;
+
+    const submitBtn = form.querySelector('button[type="submit"]') as HTMLButtonElement;
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Saving...';
+
+    const placements = Array.from(document.querySelectorAll('.placement-checkbox'))
+      .filter((el) => (el as HTMLInputElement).checked)
+      .map((el) => (el as HTMLInputElement).value);
+
+    const payload = {
+      name: fields.name.value.trim(),
+      logo_url: fields.logo.value.trim() || null,
+      website_url: fields.website.value.trim() || null,
+      tier: fields.tier.value,
+      sort_order: parseInt(fields.order.value || '0', 10),
+      sponsoring: fields.notes.value.trim() || null,
+      start_date: fields.start.value || null,
+      end_date: fields.end.value || null,
+      placements: placements.length ? placements : ['home'],
+      is_active: fields.active.checked ? 1 : 0,
+    };
+
+    const endpoint = currentId
+      ? `/api/clubs/${clubId}/sponsors/${currentId}`
+      : `/api/clubs/${clubId}/sponsors`;
+
+    try {
+      const res = await fetch(endpoint, {
+        method: currentId ? 'PATCH' : 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (res.ok) {
+        window.location.reload();
+      } else {
+        const data = await res.json();
+        alert(data.error || 'Failed to save sponsor');
+      }
+    } catch (error) {
+      alert('Failed to save sponsor');
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Save Sponsor';
+    }
+  });
+
+  clearForm();
+</script>

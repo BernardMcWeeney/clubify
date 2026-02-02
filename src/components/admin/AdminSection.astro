@@ -1,0 +1,49 @@
+---
+/**
+ * AdminSection Component - Content grouping within admin pages
+ *
+ * Usage:
+ * <AdminSection title="General Settings" description="Configure basic club information">
+ *   <form>...</form>
+ * </AdminSection>
+ *
+ * With actions:
+ * <AdminSection title="Team Members">
+ *   <Button slot="actions">Add Member</Button>
+ *   <table>...</table>
+ * </AdminSection>
+ */
+
+interface Props {
+  /** Section title */
+  title?: string;
+  /** Section description */
+  description?: string;
+  /** Additional CSS classes */
+  class?: string;
+}
+
+const { title, description, class: className = '' } = Astro.props;
+const hasActions = Astro.slots.has('actions');
+---
+
+<section class={`${className}`}>
+  {(title || hasActions) && (
+    <div class={`flex items-start justify-between gap-4 ${title ? 'mb-3' : ''}`}>
+      {title && (
+        <div class="min-w-0 flex-1">
+          <h2 class="text-lg font-semibold text-slate-900">{title}</h2>
+          {description && (
+            <p class="text-sm text-slate-500 mt-1">{description}</p>
+          )}
+        </div>
+      )}
+      {hasActions && (
+        <div class="flex items-center gap-2 flex-shrink-0">
+          <slot name="actions" />
+        </div>
+      )}
+    </div>
+  )}
+  <slot />
+</section>

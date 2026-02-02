@@ -1,0 +1,139 @@
+---
+interface Props {
+  club: {
+    name: string;
+    crest_url?: string | null;
+    primary_color: string;
+  };
+  slug: string;
+  currentPath?: string;
+  navItems?: Array<{ label: string; href: string }>;
+  headerSettings?: {
+    show_cta?: boolean;
+    cta_label?: string;
+    cta_url?: string;
+  };
+}
+
+const { club, slug, currentPath = '', navItems, headerSettings } = Astro.props;
+
+const defaultNavLinks = [
+  { href: `/${slug}`, label: 'Home' },
+  { href: `/${slug}/news`, label: 'News' },
+  { href: `/${slug}/fixtures`, label: 'Fixtures' },
+  { href: `/${slug}/about`, label: 'About' },
+  { href: `/${slug}/contact`, label: 'Contact' },
+];
+
+const navLinks = navItems && navItems.length > 0 ? navItems : defaultNavLinks;
+const header = {
+  show_cta: true,
+  cta_label: 'Join the Club',
+  cta_url: `/${slug}/contact`,
+  ...headerSettings,
+};
+
+function isActive(href: string): boolean {
+  if (href === `/${slug}`) {
+    return currentPath === `/${slug}` || currentPath === `/${slug}/`;
+  }
+  return currentPath.startsWith(href);
+}
+---
+
+<nav class="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-xl border-b border-slate-200 shadow-sm">
+  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <div class="flex h-16 items-center justify-between">
+      <a href={`/${slug}`} class="flex items-center gap-3 group">
+        {club.crest_url ? (
+          <img src={club.crest_url} alt={club.name} class="w-10 h-10 object-contain drop-shadow-sm" />
+        ) : (
+          <div
+            class="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-lg"
+            style={`background-color: ${club.primary_color}`}
+          >
+            {club.name.charAt(0)}
+          </div>
+        )}
+        <span class="text-lg font-bold text-slate-900 group-hover:text-slate-700 transition-colors font-display">{club.name}</span>
+      </a>
+
+      <!-- Desktop Navigation -->
+      <div class="hidden md:flex items-center gap-1">
+        {navLinks.map((link) => (
+          <a
+            href={link.href}
+            class={`px-4 py-2 rounded-lg font-medium transition-all ${
+              isActive(link.href)
+                ? 'text-slate-900 bg-slate-100'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+            }`}
+          >
+            {link.label}
+          </a>
+        ))}
+        {header.show_cta && (
+          <a
+            href={header.cta_url}
+            class="ml-2 inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-900 text-white text-sm font-semibold hover:bg-slate-800"
+          >
+            {header.cta_label}
+          </a>
+        )}
+      </div>
+
+      <!-- Mobile menu button -->
+      <button
+        type="button"
+        class="md:hidden inline-flex items-center justify-center p-2 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-slate-300"
+        aria-controls="mobile-menu"
+        aria-expanded="false"
+        id="mobile-menu-button"
+      >
+        <span class="sr-only">Open main menu</span>
+        <svg class="block h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Mobile menu -->
+  <div class="hidden md:hidden bg-white border-t border-slate-200" id="mobile-menu">
+    <div class="space-y-1 px-4 py-3">
+      {navLinks.map((link) => (
+        <a
+          href={link.href}
+          class={`block py-2.5 px-3 rounded-lg font-medium transition-colors ${
+            isActive(link.href)
+              ? 'text-slate-900 bg-slate-100'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+          }`}
+        >
+          {link.label}
+        </a>
+      ))}
+      {header.show_cta && (
+        <a
+          href={header.cta_url}
+          class="mt-2 block w-full text-center px-4 py-2 rounded-lg bg-slate-900 text-white text-sm font-semibold hover:bg-slate-800"
+        >
+          {header.cta_label}
+        </a>
+      )}
+    </div>
+  </div>
+</nav>
+
+<script>
+  const button = document.getElementById('mobile-menu-button');
+  const menu = document.getElementById('mobile-menu');
+
+  if (button && menu) {
+    button.addEventListener('click', () => {
+      const expanded = button.getAttribute('aria-expanded') === 'true';
+      button.setAttribute('aria-expanded', (!expanded).toString());
+      menu.classList.toggle('hidden');
+    });
+  }
+</script>

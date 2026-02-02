@@ -1,0 +1,849 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { DatabaseService } from '../../lib/db';
+import { getSport } from '../../lib/sports';
+import Icon from './Icon.astro';
+
+interface Props {
+  title: string;
+  club: {
+    id: string;
+    name: string;
+    slug: string;
+    county: string;
+    crest_url: string | null;
+    primary_color: string;
+    secondary_color: string;
+    accent_color: string;
+    club_type: string;
+  };
+  user: {
+    name: string;
+  };
+  member: {
+    role: string;
+  };
+  currentPage?: string;
+}
+
+const { title, club, user, member, currentPage = 'dashboard' } = Astro.props;
+const slug = club.slug;
+const sport = getSport(club.club_type || 'gaa');
+
+function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
+  if (!hex) return null;
+  let clean = hex.replace('#', '');
+  if (clean.length === 3) {
+    clean = clean.split('').map((c) => c + c).join('');
+  }
+  if (clean.length !== 6) return null;
+  const num = Number.parseInt(clean, 16);
+  if (Number.isNaN(num)) return null;
+  return {
+    r: (num >> 16) & 255,
+    g: (num >> 8) & 255,
+    b: num & 255,
+  };
+}
+
+function rgbToHex(r: number, g: number, b: number): string {
+  const toHex = (value: number) => value.toString(16).padStart(2, '0');
+  return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+}
+
+function mixHex(base: string, mix: string, weight = 0.15): string {
+  const baseRgb = hexToRgb(base);
+  const mixRgb = hexToRgb(mix);
+  if (!baseRgb || !mixRgb) return base;
+  const blend = (a: number, b: number) => Math.round(a + (b - a) * weight);
+  return rgbToHex(
+    blend(baseRgb.r, mixRgb.r),
+    blend(baseRgb.g, mixRgb.g),
+    blend(baseRgb.b, mixRgb.b)
+  );
+}
+
+const accentColor = sport?.primaryColor || club.accent_color || club.primary_color || '#2563eb';
+const accentRgb = hexToRgb(accentColor);
+const accentSoft = accentRgb ? `rgba(${accentRgb.r}, ${accentRgb.g}, ${accentRgb.b}, 0.08)` : 'rgba(37, 99, 235, 0.08)';
+const accentStrong = accentRgb ? `rgba(${accentRgb.r}, ${accentRgb.g}, ${accentRgb.b}, 0.15)` : 'rgba(37, 99, 235, 0.15)';
+const accentBorder = accentRgb ? `rgba(${accentRgb.r}, ${accentRgb.g}, ${accentRgb.b}, 0.2)` : 'rgba(37, 99, 235, 0.2)';
+const accentRing = accentRgb ? `rgba(${accentRgb.r}, ${accentRgb.g}, ${accentRgb.b}, 0.2)` : 'rgba(37, 99, 235, 0.2)';
+const accentHover = mixHex(accentColor, '#000000', 0.12);
+
+// Check for impersonation
+let isImpersonating = false;
+let impersonationData: { clubName?: string; superAdminEmail?: string } | null = null;
+
+const impersonationCookie = Astro.cookies.get('clubify_impersonate')?.value;
+if (impersonationCookie) {
+  try {
+    const parsed = JSON.parse(impersonationCookie);
+    if (parsed.clubId === club.id) {
+      isImpersonating = true;
+      impersonationData = {
+        clubName: parsed.clubName,
+        superAdminEmail: parsed.superAdminEmail,
+      };
+    }
+  } catch {
+    // Invalid cookie, ignore
+  }
+}
+
+// Get module configuration
+const db = new DatabaseService(Astro.locals.runtime.env.DB);
+const moduleConfig = await db.getModuleConfig(club.id);
+
+interface NavItem {
+  id: string;
+  label: string;
+  href: string;
+  icon: string;
+  module: string | null;
+  badge?: string;
+  disabled?: boolean;
+}
+
+const coreNavItems: NavItem[] = [
+  { id: 'dashboard', label: 'Dashboard', href: `/${slug}/admin-portal`, icon: 'home', module: null },
+  { id: 'website', label: 'Website', href: `/${slug}/admin-portal/website`, icon: 'layout', module: null },
+  { id: 'posts', label: 'Posts', href: `/${slug}/admin-portal/posts`, icon: 'posts', module: 'posts' },
+  { id: 'pages', label: 'Pages', href: `/${slug}/admin-portal/pages`, icon: 'pages', module: null },
+  { id: 'fixtures', label: 'Fixtures', href: `/${slug}/admin-portal/fixtures`, icon: 'calendar', module: 'fixtures' },
+  { id: 'media', label: 'Media', href: `/${slug}/admin-portal/media`, icon: 'media', module: 'media' },
+  { id: 'sponsors', label: 'Sponsors', href: `/${slug}/admin-portal/sponsors`, icon: 'badge', module: 'sponsors' },
+  { id: 'forms', label: 'Forms', href: `/${slug}/admin-portal/forms`, icon: 'form', module: 'forms' },
+  { id: 'inbox', label: 'Inbox', href: `/${slug}/admin-portal/inbox`, icon: 'inbox', module: 'inbox' },
+];
+
+const adminNavItems: NavItem[] = [
+  { id: 'team', label: 'Team', href: `/${slug}/admin-portal/team`, icon: 'users', module: null },
+  { id: 'settings', label: 'Settings', href: `/${slug}/admin-portal/settings`, icon: 'settings', module: null },
+  { id: 'audit', label: 'Activity', href: `/${slug}/admin-portal/audit`, icon: 'audit', module: null },
+];
+
+const moduleNavItems: NavItem[] = [
+  { id: 'membership', label: 'Membership', href: '#', icon: 'membership', module: null, badge: 'Soon', disabled: true },
+  { id: 'fundraising', label: 'Fundraising', href: '#', icon: 'fundraising', module: null, badge: 'Soon', disabled: true },
+  { id: 'payments', label: 'Payments', href: '#', icon: 'payments', module: null, badge: 'Soon', disabled: true },
+];
+
+const filterByModule = (item: { module: string | null }) => {
+  if (!item.module) return true;
+  return moduleConfig[item.module] !== false;
+};
+
+const navSections = [
+  { id: 'core', label: null, items: coreNavItems.filter(filterByModule) },
+  { id: 'admin', label: 'Settings', items: adminNavItems },
+  { id: 'modules', label: 'Coming Soon', items: moduleNavItems },
+];
+
+const icons: Record<string, string> = {
+  home: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>',
+  posts: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/>',
+  pages: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>',
+  calendar: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>',
+  media: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>',
+  layout: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/>',
+  badge: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l.7 2.154a1 1 0 00.95.69h2.264c.969 0 1.371 1.24.588 1.81l-1.833 1.332a1 1 0 00-.364 1.118l.7 2.154c.3.922-.755 1.688-1.538 1.118l-1.833-1.332a1 1 0 00-1.176 0l-1.833 1.332c-.783.57-1.838-.196-1.539-1.118l.7-2.154a1 1 0 00-.363-1.118L6.497 7.58c-.783-.57-.38-1.81.588-1.81h2.264a1 1 0 00.95-.69l.7-2.154z"/>',
+  form: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>',
+  inbox: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 13V7a2 2 0 00-2-2H6a2 2 0 00-2 2v6m16 0l-3 5H7l-3-5m16 0H4"/>',
+  users: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>',
+  settings: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>',
+  audit: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>',
+  membership: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>',
+  fundraising: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V6m0 2v8m0 0v2m0-2c-1.11 0-2.08-.402-2.599-1"/>',
+  payments: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 10h18M7 15h2m4 0h4m-9 4h12a2 2 0 002-2V8a2 2 0 00-2-2H6a2 2 0 00-2 2v9a2 2 0 002 2z"/>',
+};
+---
+
+<Layout title={title}>
+  {isImpersonating && impersonationData && (
+    <div class="fixed top-0 left-0 right-0 z-[100] bg-amber-50 border-b border-amber-200">
+      <div class="max-w-7xl mx-auto px-4 py-2 flex items-center justify-between">
+        <div class="flex items-center gap-2 text-sm">
+          <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+          </svg>
+          <span class="text-amber-800">
+            Viewing <strong>{impersonationData.clubName}</strong>
+            <span class="text-amber-600 hidden sm:inline"> ({impersonationData.superAdminEmail})</span>
+          </span>
+        </div>
+        <button
+          id="exit-impersonation-btn"
+          class="text-xs font-medium text-amber-700 hover:text-amber-900 px-3 py-1 rounded-md hover:bg-amber-100 transition-colors"
+        >
+          Exit
+        </button>
+      </div>
+    </div>
+  )}
+
+  <div
+    class:list={["admin-shell-v2", isImpersonating && "pt-10"]}
+    style={`--admin-accent: ${accentColor}; --admin-accent-hover: ${accentHover}; --admin-accent-soft: ${accentSoft}; --admin-accent-strong: ${accentStrong}; --admin-accent-border: ${accentBorder}; --admin-ring: ${accentRing};`}
+    data-sport={sport?.id}
+  >
+    <div class="flex min-h-screen">
+      <!-- Sidebar -->
+      <aside class="admin-sidebar-v2 fixed inset-y-0 left-0 w-64 hidden lg:flex flex-col z-40 border-r border-slate-200 bg-white">
+        <!-- Logo -->
+        <div class="h-16 px-5 flex items-center border-b border-slate-100">
+          <a href="/" class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold text-sm" style={`background: ${accentColor}`}>
+              C
+            </div>
+            <span class="text-slate-900 font-semibold">Clubify</span>
+          </a>
+        </div>
+
+        <!-- Club Switcher -->
+        <div class="px-3 py-3 border-b border-slate-100">
+          <button class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-50 transition-colors text-left">
+            {club.crest_url ? (
+              <img src={club.crest_url} alt={club.name} class="w-8 h-8 rounded-lg object-contain bg-slate-50 border border-slate-200"/>
+            ) : (
+              <div class="w-8 h-8 rounded-lg flex items-center justify-center text-white font-semibold text-xs" style={`background-color: ${club.primary_color}`}>
+                {club.name.charAt(0)}
+              </div>
+            )}
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-medium text-slate-900 truncate">{club.name}</p>
+              <p class="text-xs text-slate-500 truncate">{slug}.clubify.ie</p>
+            </div>
+            <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Navigation -->
+        <nav class="flex-1 px-3 py-4 space-y-6 overflow-y-auto">
+          {navSections.map((section) => (
+            <div>
+              {section.label && (
+                <p class="px-3 mb-2 text-[11px] font-medium uppercase tracking-wider text-slate-400">{section.label}</p>
+              )}
+              <div class="space-y-0.5">
+                {section.items.map((item) => (
+                  <a
+                    href={item.href}
+                    aria-disabled={item.disabled ? 'true' : undefined}
+                    tabindex={item.disabled ? -1 : undefined}
+                    class:list={[
+                      'nav-item-v2 group flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all',
+                      currentPage === item.id ? 'bg-slate-900 text-white' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50',
+                      item.disabled && 'opacity-40 pointer-events-none'
+                    ]}
+                  >
+                    <Icon name={item.icon} size="lg" class={`flex-shrink-0 ${currentPage === item.id ? 'text-white' : 'text-slate-400 group-hover:text-slate-600'}`} />
+                    <span>{item.label}</span>
+                    {item.badge && (
+                      <span class="ml-auto text-[10px] font-medium uppercase tracking-wide px-1.5 py-0.5 rounded bg-slate-100 text-slate-500">{item.badge}</span>
+                    )}
+                  </a>
+                ))}
+              </div>
+            </div>
+          ))}
+        </nav>
+
+        <!-- User -->
+        <div class="p-3 border-t border-slate-100">
+          <div class="flex items-center gap-3 px-3 py-2">
+            <div class="w-8 h-8 rounded-full bg-slate-900 flex items-center justify-center text-white font-medium text-sm">
+              {user.name.charAt(0).toUpperCase()}
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-medium text-slate-900 truncate">{user.name}</p>
+              <p class="text-xs text-slate-500 capitalize">{member.role}</p>
+            </div>
+            <button id="logout-btn" class="p-1.5 text-slate-400 hover:text-slate-600 rounded-md hover:bg-slate-100 transition-colors" title="Sign out">
+              <Icon name="logout" size="md" />
+            </button>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Mobile sidebar overlay -->
+      <div id="mobile-overlay" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-40 hidden lg:hidden transition-opacity"></div>
+
+      <!-- Mobile sidebar -->
+      <aside id="mobile-sidebar" class="admin-sidebar-v2 fixed inset-y-0 left-0 w-72 z-50 transform -translate-x-full transition-transform lg:hidden bg-white shadow-2xl">
+        <div class="flex flex-col h-full">
+          <div class="h-16 px-5 flex items-center justify-between border-b border-slate-100">
+            <div class="flex items-center gap-2.5">
+              <div class="w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold text-sm" style={`background: ${accentColor}`}>
+                C
+              </div>
+              <span class="text-slate-900 font-semibold">Clubify</span>
+            </div>
+            <button id="close-mobile-menu" class="p-2 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 transition-colors">
+              <Icon name="close" size="xl" />
+            </button>
+          </div>
+
+          <!-- Mobile Club Info -->
+          <div class="px-3 py-3 border-b border-slate-100">
+            <div class="flex items-center gap-3 px-3 py-2">
+              {club.crest_url ? (
+                <img src={club.crest_url} alt={club.name} class="w-10 h-10 rounded-lg object-contain bg-slate-50 border border-slate-200"/>
+              ) : (
+                <div class="w-10 h-10 rounded-lg flex items-center justify-center text-white font-semibold" style={`background-color: ${club.primary_color}`}>
+                  {club.name.charAt(0)}
+                </div>
+              )}
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium text-slate-900 truncate">{club.name}</p>
+                <p class="text-xs text-slate-500">{club.county}</p>
+              </div>
+            </div>
+          </div>
+
+          <nav class="flex-1 px-3 py-4 space-y-6 overflow-y-auto">
+            {navSections.map((section) => (
+              <div>
+                {section.label && (
+                  <p class="px-3 mb-2 text-[11px] font-medium uppercase tracking-wider text-slate-400">{section.label}</p>
+                )}
+                <div class="space-y-0.5">
+                  {section.items.map((item) => (
+                    <a
+                      href={item.href}
+                      aria-disabled={item.disabled ? 'true' : undefined}
+                      tabindex={item.disabled ? -1 : undefined}
+                      class:list={[
+                        'nav-item-v2 group flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all',
+                        currentPage === item.id ? 'bg-slate-900 text-white' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50',
+                        item.disabled && 'opacity-40 pointer-events-none'
+                      ]}
+                    >
+                      <Icon name={item.icon} size="xl" class={`flex-shrink-0 ${currentPage === item.id ? 'text-white' : 'text-slate-400 group-hover:text-slate-600'}`} />
+                      <span>{item.label}</span>
+                      {item.badge && (
+                        <span class="ml-auto text-[10px] font-medium uppercase tracking-wide px-1.5 py-0.5 rounded bg-slate-100 text-slate-500">{item.badge}</span>
+                      )}
+                    </a>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </nav>
+
+          <!-- Mobile User -->
+          <div class="p-3 border-t border-slate-100">
+            <div class="flex items-center gap-3 px-3 py-2">
+              <div class="w-9 h-9 rounded-full bg-slate-900 flex items-center justify-center text-white font-medium">
+                {user.name.charAt(0).toUpperCase()}
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium text-slate-900 truncate">{user.name}</p>
+                <p class="text-xs text-slate-500 capitalize">{member.role}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Main content -->
+      <main class="lg:ml-64 flex-1 min-w-0">
+        <!-- Header -->
+        <header class="sticky top-0 z-30 bg-white/80 backdrop-blur-xl border-b border-slate-200">
+          <div class="flex items-center justify-between h-16 px-4 sm:px-6">
+            <div class="flex items-center gap-4">
+              <button id="mobile-menu-btn" class="lg:hidden p-2 -ml-2 text-slate-500 hover:text-slate-900 rounded-lg hover:bg-slate-100 transition-colors">
+                <Icon name="menu" size="xl" />
+              </button>
+              <slot name="header-left">
+                <h1 class="text-lg font-semibold text-slate-900">{title}</h1>
+              </slot>
+            </div>
+
+            <div class="flex items-center gap-2 sm:gap-3">
+              <a
+                href={`/${slug}`}
+                target="_blank"
+                class="hidden sm:inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-slate-600 hover:text-slate-900 rounded-lg hover:bg-slate-100 transition-colors"
+              >
+                <Icon name="external-link" size="md" />
+                View site
+              </a>
+              <slot name="header-actions" />
+            </div>
+          </div>
+        </header>
+
+        <!-- Page content -->
+        <div class="p-4 sm:p-6 lg:p-8">
+          <slot />
+        </div>
+      </main>
+    </div>
+  </div>
+</Layout>
+
+<style is:global>
+  .admin-shell-v2 {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 50%, #e2e8f0 100%);
+    background-attachment: fixed;
+  }
+
+  /* Primary button - uses accent color */
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background-color: var(--admin-accent, #2563eb);
+    color: white;
+    font-size: 0.875rem;
+    font-weight: 500;
+    border-radius: 0.5rem;
+    transition: all 0.15s ease;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  }
+
+  .btn-primary:hover {
+    background-color: var(--admin-accent-hover, #1d4ed8);
+    box-shadow: 0 4px 12px var(--admin-ring, rgba(37, 99, 235, 0.3));
+    transform: translateY(-1px);
+  }
+
+  /* Secondary button */
+  .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background-color: white;
+    color: #374151;
+    font-size: 0.875rem;
+    font-weight: 500;
+    border-radius: 0.5rem;
+    border: 1px solid #e5e7eb;
+    transition: all 0.15s ease;
+  }
+
+  .btn-secondary:hover {
+    background-color: #f9fafb;
+    border-color: var(--admin-accent-border, #d1d5db);
+  }
+
+  /* Card with subtle accent */
+  .card {
+    background: white;
+    border-radius: 0.75rem;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  }
+
+  .card:hover {
+    border-color: var(--admin-accent-border, #e5e7eb);
+  }
+
+  .card-padded {
+    padding: 1.5rem;
+  }
+
+  /* Card with accent stripe */
+  .card-accent {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card-accent::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--admin-accent, #2563eb), var(--admin-accent-hover, #1d4ed8));
+  }
+
+  /* Table */
+  .table-container {
+    background: white;
+    border-radius: 0.75rem;
+    border: 1px solid #e5e7eb;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  }
+
+  .table-container table {
+    width: 100%;
+  }
+
+  .table-container th {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #6b7280;
+    background-color: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  .table-container td {
+    padding: 1rem;
+    border-bottom: 1px solid #f3f4f6;
+  }
+
+  .table-container tr:last-child td {
+    border-bottom: none;
+  }
+
+  .table-container tr:hover td {
+    background-color: var(--admin-accent-soft, #f9fafb);
+  }
+
+  /* Stat card with gradient */
+  .stat-card {
+    background: white;
+    border-radius: 0.75rem;
+    border: 1px solid #e5e7eb;
+    padding: 1.25rem;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.2s ease;
+  }
+
+  .stat-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--admin-accent, #2563eb), transparent);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+
+  .stat-card:hover::after {
+    opacity: 1;
+  }
+
+  .stat-card-label {
+    font-size: 0.875rem;
+    color: #6b7280;
+    margin-bottom: 0.25rem;
+  }
+
+  .stat-card-value {
+    font-size: 1.875rem;
+    font-weight: 600;
+    color: #111827;
+  }
+
+  /* Colored stat card variant */
+  .stat-card-accent {
+    background: linear-gradient(135deg, var(--admin-accent-soft, #eff6ff), white);
+    border-color: var(--admin-accent-border, #dbeafe);
+  }
+
+  .stat-card-accent .stat-card-label {
+    color: var(--admin-accent, #2563eb);
+  }
+
+  /* Badge */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.125rem 0.625rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    border-radius: 9999px;
+  }
+
+  .badge-success {
+    background-color: #dcfce7;
+    color: #166534;
+  }
+
+  .badge-warning {
+    background-color: #fef3c7;
+    color: #92400e;
+  }
+
+  .badge-gray {
+    background-color: #f3f4f6;
+    color: #4b5563;
+  }
+
+  .badge-blue {
+    background-color: #dbeafe;
+    color: #1e40af;
+  }
+
+  .badge-accent {
+    background-color: var(--admin-accent-soft, #dbeafe);
+    color: var(--admin-accent, #2563eb);
+  }
+
+  /* Empty state with accent */
+  .empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: linear-gradient(180deg, var(--admin-accent-soft, #f8fafc) 0%, white 100%);
+    border-radius: 0.75rem;
+  }
+
+  .empty-state-icon {
+    width: 3rem;
+    height: 3rem;
+    margin: 0 auto 1rem;
+    color: var(--admin-accent, #9ca3af);
+    opacity: 0.6;
+  }
+
+  .empty-state-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 0.5rem;
+  }
+
+  .empty-state-description {
+    font-size: 0.875rem;
+    color: #6b7280;
+    max-width: 24rem;
+    margin: 0 auto 1.5rem;
+  }
+
+  /* Input with accent focus */
+  .input {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.5rem;
+    background-color: white;
+    transition: all 0.15s ease;
+  }
+
+  .input:focus {
+    outline: none;
+    border-color: var(--admin-accent, #2563eb);
+    box-shadow: 0 0 0 3px var(--admin-ring, rgba(37, 99, 235, 0.2));
+  }
+
+  .input::placeholder {
+    color: #9ca3af;
+  }
+
+  /* Label */
+  .label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #374151;
+    margin-bottom: 0.375rem;
+  }
+
+  /* Page header */
+  .page-header {
+    margin-bottom: 1.5rem;
+  }
+
+  .page-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 0.25rem;
+  }
+
+  .page-description {
+    font-size: 0.875rem;
+    color: #6b7280;
+  }
+
+  /* Section */
+  .section-header {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 1rem;
+  }
+
+  /* Link with accent */
+  .link {
+    color: var(--admin-accent, #2563eb);
+    font-weight: 500;
+    transition: all 0.15s ease;
+  }
+
+  .link:hover {
+    text-decoration: underline;
+    opacity: 0.8;
+  }
+
+  /* Tabs with accent */
+  .tabs {
+    display: flex;
+    gap: 0.25rem;
+    border-bottom: 1px solid #e5e7eb;
+    margin-bottom: 1.5rem;
+  }
+
+  .tab {
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #6b7280;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition: all 0.15s ease;
+  }
+
+  .tab:hover {
+    color: var(--admin-accent, #2563eb);
+  }
+
+  .tab.active {
+    color: var(--admin-accent, #2563eb);
+    border-bottom-color: var(--admin-accent, #2563eb);
+  }
+
+  /* Icon button with accent hover */
+  .icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    color: #6b7280;
+    border-radius: 0.375rem;
+    transition: all 0.15s ease;
+  }
+
+  .icon-btn:hover {
+    color: var(--admin-accent, #2563eb);
+    background-color: var(--admin-accent-soft, #f3f4f6);
+  }
+
+  .icon-btn svg {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  /* Alert/Notice boxes */
+  .alert {
+    padding: 1rem;
+    border-radius: 0.5rem;
+    display: flex;
+    align-items: start;
+    gap: 0.75rem;
+  }
+
+  .alert-info {
+    background-color: var(--admin-accent-soft, #eff6ff);
+    border: 1px solid var(--admin-accent-border, #dbeafe);
+  }
+
+  .alert-info .alert-icon {
+    color: var(--admin-accent, #2563eb);
+  }
+
+  /* Quick action card */
+  .action-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    border: 1px solid #e5e7eb;
+    background: white;
+    text-align: center;
+    transition: all 0.2s ease;
+  }
+
+  .action-card:hover {
+    border-color: var(--admin-accent, #2563eb);
+    background: var(--admin-accent-soft, #f8fafc);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px var(--admin-ring, rgba(0, 0, 0, 0.1));
+  }
+
+  .action-card svg {
+    color: var(--admin-accent, #6b7280);
+    opacity: 0.7;
+  }
+
+  .action-card:hover svg {
+    opacity: 1;
+  }
+
+  /* Responsive utilities */
+  @media (max-width: 640px) {
+    .hide-mobile {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  // Logout
+  document.getElementById('logout-btn')?.addEventListener('click', async () => {
+    await fetch('/api/auth/logout', { method: 'POST' });
+    window.location.href = '/admin';
+  });
+
+  // Mobile menu
+  const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+  const mobileSidebar = document.getElementById('mobile-sidebar');
+  const mobileOverlay = document.getElementById('mobile-overlay');
+  const closeMobileMenu = document.getElementById('close-mobile-menu');
+
+  function openMobileMenu() {
+    mobileSidebar?.classList.remove('-translate-x-full');
+    mobileOverlay?.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeMobileMenuFn() {
+    mobileSidebar?.classList.add('-translate-x-full');
+    mobileOverlay?.classList.add('hidden');
+    document.body.style.overflow = '';
+  }
+
+  mobileMenuBtn?.addEventListener('click', openMobileMenu);
+  closeMobileMenu?.addEventListener('click', closeMobileMenuFn);
+  mobileOverlay?.addEventListener('click', closeMobileMenuFn);
+
+  // Exit impersonation
+  document.getElementById('exit-impersonation-btn')?.addEventListener('click', async () => {
+    const btn = document.getElementById('exit-impersonation-btn') as HTMLButtonElement;
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = 'Exiting...';
+    }
+
+    try {
+      const response = await fetch('/api/super-admin/impersonate', { method: 'DELETE' });
+      const result = await response.json();
+
+      if (response.ok && result.redirectUrl) {
+        window.location.href = result.redirectUrl;
+      } else {
+        throw new Error(result.error || 'Failed to exit impersonation');
+      }
+    } catch (error: any) {
+      alert(error.message || 'Failed to exit impersonation');
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = 'Exit';
+      }
+    }
+  });
+</script>

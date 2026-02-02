@@ -1,0 +1,145 @@
+---
+import { DatabaseService } from '../../../lib/db';
+import { formatDate } from '../../../lib/utils';
+import ClubNavigation from '../../../components/templates/ClubNavigation.astro';
+import ClubFooter from '../../../components/templates/ClubFooter.astro';
+import Sponsors from '../../../components/templates/blocks/Sponsors.astro';
+
+const { slug } = Astro.params;
+
+if (!Astro.locals.runtime.env.DB) {
+  return Astro.redirect('/?error=db_not_configured');
+}
+
+const db = new DatabaseService(Astro.locals.runtime.env.DB);
+const club = await db.getClubBySlug(slug!);
+
+if (!club || !club.is_live) {
+  return Astro.redirect('/');
+}
+
+const [upcomingFixtures, playedFixtures, siteSettingsRecord, sponsors] = await Promise.all([
+  db.getUpcomingFixtures(club.id, 20),
+  db.getPlayedFixtures(club.id, 20),
+  db.getSiteSettings(club.id),
+  db.getSponsorsForPlacement(club.id, 'fixtures'),
+]);
+
+const navItems = siteSettingsRecord?.nav_items ? JSON.parse(siteSettingsRecord.nav_items) : null;
+const headerSettings = siteSettingsRecord?.header_settings ? JSON.parse(siteSettingsRecord.header_settings) : null;
+const footerLinks = siteSettingsRecord?.footer_links ? JSON.parse(siteSettingsRecord.footer_links) : null;
+
+function formatTime(timeStr?: string | null): string | null {
+  if (!timeStr) return null;
+  const [hours, minutes] = timeStr.split(':');
+  const hour = parseInt(hours, 10);
+  const ampm = hour >= 12 ? 'PM' : 'AM';
+  const hour12 = hour % 12 || 12;
+  return `${hour12}:${minutes} ${ampm}`;
+}
+---
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content={`Fixtures and results for ${club.name}`} />
+  <title>{club.name} Fixtures</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+</head>
+<body class="bg-white text-slate-900 antialiased">
+  <ClubNavigation club={club} slug={slug!} currentPath={`/${slug}/fixtures`} navItems={navItems} headerSettings={headerSettings} />
+
+  <main class="pt-20">
+    <section class="py-16 bg-slate-50 border-b border-slate-200">
+      <div class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+        <p class="text-sm uppercase tracking-wider text-slate-500">Fixtures</p>
+        <h1 class="text-3xl sm:text-4xl font-bold text-slate-900 mt-2">{club.name} Fixtures</h1>
+        <p class="text-slate-600 mt-3 max-w-2xl">
+          Upcoming matches, kickoff times, and recent results.
+        </p>
+      </div>
+    </section>
+
+    <section class="py-12">
+      <div class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+        <h2 class="text-2xl font-bold text-slate-900 mb-6">Upcoming Fixtures</h2>
+        {upcomingFixtures.length > 0 ? (
+          <div class="space-y-4">
+            {upcomingFixtures.map((fixture) => (
+              <div class="bg-white rounded-2xl border border-slate-200 p-5 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                <div>
+                  <p class="text-sm text-slate-500">{fixture.competition || 'Fixture'}</p>
+                  <p class="text-lg font-semibold text-slate-900 mt-1">
+                    {fixture.home_team} vs {fixture.away_team}
+                  </p>
+                  {fixture.venue && (
+                    <p class="text-sm text-slate-500 mt-1">{fixture.venue}</p>
+                  )}
+                </div>
+                <div class="flex flex-wrap gap-3 text-sm text-slate-600">
+                  <span class="inline-flex items-center gap-2 bg-slate-100 px-3 py-1.5 rounded-full">
+                    {formatDate(fixture.match_date)}
+                  </span>
+                  {fixture.match_time && (
+                    <span class="inline-flex items-center gap-2 bg-slate-100 px-3 py-1.5 rounded-full">
+                      {formatTime(fixture.match_time)}
+                    </span>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div class="bg-slate-50 border border-slate-200 rounded-2xl p-8 text-center">
+            <p class="text-slate-700 font-medium">No upcoming fixtures</p>
+            <p class="text-slate-500 text-sm mt-2">Check back soon for match dates.</p>
+          </div>
+        )}
+      </div>
+    </section>
+
+    <section class="py-12 bg-slate-50 border-t border-slate-200">
+      <div class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+        <h2 class="text-2xl font-bold text-slate-900 mb-6">Recent Results</h2>
+        {playedFixtures.length > 0 ? (
+          <div class="space-y-4">
+            {playedFixtures.map((fixture) => (
+              <div class="bg-white rounded-2xl border border-slate-200 p-5 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                <div>
+                  <p class="text-sm text-slate-500">{fixture.competition || 'Result'}</p>
+                  <p class="text-lg font-semibold text-slate-900 mt-1">
+                    {fixture.home_team} {fixture.home_score} - {fixture.away_score} {fixture.away_team}
+                  </p>
+                  {fixture.venue && (
+                    <p class="text-sm text-slate-500 mt-1">{fixture.venue}</p>
+                  )}
+                </div>
+                <div class="flex flex-wrap gap-3 text-sm text-slate-600">
+                  <span class="inline-flex items-center gap-2 bg-slate-100 px-3 py-1.5 rounded-full">
+                    {formatDate(fixture.match_date)}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div class="bg-white border border-slate-200 rounded-2xl p-8 text-center">
+            <p class="text-slate-700 font-medium">No results yet</p>
+            <p class="text-slate-500 text-sm mt-2">Results will appear after matches are played.</p>
+          </div>
+        )}
+      </div>
+    </section>
+
+    <Sponsors sponsors={sponsors} primaryColor={club.primary_color} variant="compact" />
+  </main>
+
+  <ClubFooter club={club} slug={slug!} footerLinks={footerLinks} />
+</body>
+</html>
+
+<style is:global>
+  @import "../../../styles/global.css";
+</style>

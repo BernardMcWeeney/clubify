@@ -1,0 +1,133 @@
+---
+/**
+ * Pricing - Simple, clean pricing section
+ */
+---
+
+<section id="pricing" class="py-20 md:py-32 bg-slate-50">
+  <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+    <!-- Header -->
+    <div class="text-center mb-12">
+      <span class="inline-block text-primary-600 font-semibold text-sm uppercase tracking-wide mb-3">Pricing</span>
+      <h2 class="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
+        Simple, transparent pricing
+      </h2>
+      <p class="text-lg text-slate-600">
+        One plan. Everything included. No surprises.
+      </p>
+    </div>
+
+    <!-- Pricing Card -->
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden max-w-lg mx-auto">
+      <div class="p-8">
+        <!-- Toggle -->
+        <div class="flex items-center justify-center gap-4 mb-8">
+          <button id="monthly-btn" class="text-sm font-medium text-slate-400 transition-colors">Monthly</button>
+          <button id="toggle-btn" class="w-12 h-6 bg-primary-500 rounded-full relative">
+            <span id="toggle-dot" class="absolute right-1 top-1 w-4 h-4 bg-white rounded-full shadow transition-all"></span>
+          </button>
+          <button id="annual-btn" class="text-sm font-medium text-slate-900">Annual <span class="text-primary-600 font-semibold">-17%</span></button>
+        </div>
+
+        <!-- Price -->
+        <div class="text-center mb-8">
+          <div class="flex items-baseline justify-center gap-1">
+            <span class="text-5xl font-bold text-slate-900" id="price">€499</span>
+            <span class="text-xl text-slate-500" id="period">/year</span>
+          </div>
+          <p class="text-slate-500 mt-2" id="note">That's just €41.58/month</p>
+        </div>
+
+        <!-- Features -->
+        <ul class="space-y-3 mb-8">
+          <li class="flex items-center gap-3 text-slate-700">
+            <svg class="w-5 h-5 text-primary-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+            Club website + mobile app
+          </li>
+          <li class="flex items-center gap-3 text-slate-700">
+            <svg class="w-5 h-5 text-primary-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+            Fixtures, results & league tables
+          </li>
+          <li class="flex items-center gap-3 text-slate-700">
+            <svg class="w-5 h-5 text-primary-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+            News & social media publishing
+          </li>
+          <li class="flex items-center gap-3 text-slate-700">
+            <svg class="w-5 h-5 text-primary-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+            Unlimited team members
+          </li>
+          <li class="flex items-center gap-3 text-slate-700">
+            <svg class="w-5 h-5 text-primary-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+            Custom domain + priority support
+          </li>
+        </ul>
+
+        <!-- CTA -->
+        <a href="/admin/signup" class="block w-full py-3.5 bg-primary-500 hover:bg-primary-600 text-white text-center font-semibold rounded-xl transition-colors">
+          Start free trial
+        </a>
+        <p class="text-center text-sm text-slate-500 mt-3">7-day free trial · No credit card required</p>
+      </div>
+    </div>
+
+    <!-- Trust -->
+    <div class="flex flex-wrap items-center justify-center gap-6 mt-10 text-sm text-slate-500">
+      <span class="flex items-center gap-1.5">
+        <svg class="w-4 h-4 text-primary-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+        GDPR compliant
+      </span>
+      <span class="flex items-center gap-1.5">
+        <svg class="w-4 h-4 text-primary-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+        Cancel anytime
+      </span>
+      <span class="flex items-center gap-1.5">
+        <svg class="w-4 h-4 text-primary-500" fill="currentColor" viewBox="0 0 20 20"><path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"/></svg>
+        Irish support
+      </span>
+    </div>
+  </div>
+</section>
+
+<script>
+  const toggle = document.getElementById('toggle-btn');
+  const dot = document.getElementById('toggle-dot');
+  const monthlyBtn = document.getElementById('monthly-btn');
+  const annualBtn = document.getElementById('annual-btn');
+  const price = document.getElementById('price');
+  const period = document.getElementById('period');
+  const note = document.getElementById('note');
+
+  let isAnnual = true;
+
+  function update() {
+    if (isAnnual) {
+      dot?.classList.remove('left-1');
+      dot?.classList.add('right-1');
+      toggle?.classList.add('bg-primary-500');
+      toggle?.classList.remove('bg-slate-300');
+      monthlyBtn?.classList.remove('text-slate-900');
+      monthlyBtn?.classList.add('text-slate-400');
+      annualBtn?.classList.add('text-slate-900');
+      annualBtn?.classList.remove('text-slate-500');
+      if (price) price.textContent = '€499';
+      if (period) period.textContent = '/year';
+      if (note) note.textContent = "That's just €41.58/month";
+    } else {
+      dot?.classList.add('left-1');
+      dot?.classList.remove('right-1');
+      toggle?.classList.remove('bg-primary-500');
+      toggle?.classList.add('bg-slate-300');
+      monthlyBtn?.classList.add('text-slate-900');
+      monthlyBtn?.classList.remove('text-slate-400');
+      annualBtn?.classList.remove('text-slate-900');
+      annualBtn?.classList.add('text-slate-400');
+      if (price) price.textContent = '€50';
+      if (period) period.textContent = '/month';
+      if (note) note.textContent = 'Flexible monthly billing';
+    }
+  }
+
+  toggle?.addEventListener('click', () => { isAnnual = !isAnnual; update(); });
+  monthlyBtn?.addEventListener('click', () => { isAnnual = false; update(); });
+  annualBtn?.addEventListener('click', () => { isAnnual = true; update(); });
+</script>

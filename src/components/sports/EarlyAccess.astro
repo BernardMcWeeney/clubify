@@ -1,0 +1,105 @@
+---
+/**
+ * EarlyAccess - Subtle footer email capture for coming soon sports
+ * Only shown on coming soon sport pages, positioned at the bottom
+ * Replaces the prominent WaitlistForm with a subtle, non-intrusive design
+ */
+import type { SportConfig } from '../../lib/sports';
+
+interface Props {
+  sport: SportConfig;
+}
+
+const { sport } = Astro.props;
+const sportNameLower = sport.name === 'GAA' ? 'GAA' : sport.name.toLowerCase();
+---
+
+<div class="bg-slate-50 border-t border-slate-200" style={`--sport-primary: ${sport.primaryColor};`}>
+  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+      <div>
+        <p class="text-slate-900 font-medium">
+          Get notified when {sport.name} launches
+        </p>
+        <p class="text-sm text-slate-500 mt-1">
+          Be the first to know when we're ready for {sportNameLower} clubs.
+        </p>
+      </div>
+
+      <form
+        id="early-access-form"
+        class="flex flex-col sm:flex-row gap-3 sm:items-center"
+        data-sport={sport.id}
+      >
+        <input
+          type="email"
+          name="email"
+          placeholder="your@email.com"
+          required
+          class="px-4 py-2.5 rounded-lg border border-slate-300 bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[color:var(--sport-primary)] focus:border-transparent w-full sm:w-64"
+        />
+        <button
+          type="submit"
+          class="px-6 py-2.5 rounded-lg font-medium text-white transition-colors whitespace-nowrap"
+          style={`background-color: ${sport.primaryColor}`}
+        >
+          Notify me
+        </button>
+      </form>
+    </div>
+
+    <!-- Success/Error message -->
+    <div id="early-access-message" class="hidden mt-4">
+      <p class="text-sm"></p>
+    </div>
+  </div>
+</div>
+
+<script>
+  const form = document.getElementById('early-access-form') as HTMLFormElement;
+  const messageDiv = document.getElementById('early-access-message');
+  const messageText = messageDiv?.querySelector('p');
+
+  if (form && messageDiv && messageText) {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const formData = new FormData(form);
+      const email = formData.get('email') as string;
+      const sport = form.dataset.sport;
+
+      const submitBtn = form.querySelector('button[type="submit"]') as HTMLButtonElement;
+      const originalText = submitBtn.textContent;
+      submitBtn.textContent = 'Sending...';
+      submitBtn.disabled = true;
+
+      try {
+        const response = await fetch('/api/waitlist', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, sport })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          messageDiv.classList.remove('hidden');
+          messageText.textContent = data.message || "You're on the list! We'll be in touch.";
+          messageText.className = 'text-sm text-green-600';
+          form.reset();
+        } else {
+          messageDiv.classList.remove('hidden');
+          messageText.textContent = data.error || 'Something went wrong. Please try again.';
+          messageText.className = 'text-sm text-red-600';
+        }
+      } catch (error) {
+        messageDiv.classList.remove('hidden');
+        messageText.textContent = 'Something went wrong. Please try again.';
+        messageText.className = 'text-sm text-red-600';
+      } finally {
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
+      }
+    });
+  }
+</script>

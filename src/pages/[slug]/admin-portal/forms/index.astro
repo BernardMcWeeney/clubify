@@ -1,0 +1,310 @@
+---
+import AdminLayout from '../../../../components/admin/AdminLayout.astro';
+import AdminPageTemplate from '../../../../components/admin/AdminPageTemplate.astro';
+import AdminCard from '../../../../components/admin/AdminCard.astro';
+import StatusChip from '../../../../components/admin/StatusChip.astro';
+import Icon from '../../../../components/admin/Icon.astro';
+import { DatabaseService } from '../../../../lib/db';
+import { getAuthContext } from '../../../../lib/auth';
+
+const { slug } = Astro.params;
+
+if (!Astro.locals.runtime.env.DB) {
+  return Astro.redirect('/admin?error=db_not_configured');
+}
+
+const db = new DatabaseService(Astro.locals.runtime.env.DB);
+const { user } = await getAuthContext(Astro.cookies, db);
+
+if (!user) {
+  return Astro.redirect('/admin/login');
+}
+
+const club = await db.getClubBySlug(slug!);
+if (!club) {
+  return Astro.redirect('/admin');
+}
+
+const member = await db.getClubMember(club.id, user.id);
+if (!member) {
+  return Astro.redirect('/admin');
+}
+
+interface Form {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  is_active: number;
+  created_at: string;
+}
+
+const forms = await db.getForms(club.id) as Form[];
+
+const submissionCountsResult = await Astro.locals.runtime.env.DB.prepare(`
+  SELECT form_id, COUNT(*) as count
+  FROM form_submissions
+  WHERE club_id = ?
+  GROUP BY form_id
+`).bind(club.id).all();
+
+const submissionCounts = new Map((submissionCountsResult.results || []).map((row: any) => [row.form_id, row.count]));
+const canManage = ['admin', 'pro'].includes(member.role);
+
+const activeForms = forms.filter(f => f.is_active);
+const totalSubmissions = Array.from(submissionCounts.values()).reduce((sum, count) => (sum as number) + (count as number), 0) as number;
+
+const breadcrumbs = [
+  { label: 'Dashboard', href: `/${slug}/admin-portal` },
+  { label: 'Forms' },
+];
+---
+
+<AdminLayout
+  title="Forms"
+  club={club}
+  user={user}
+  member={member}
+  currentPage="forms"
+>
+  <Fragment slot="header-actions">
+    {canManage && (
+      <button id="new-form-btn" class="btn-primary">
+        <Icon name="plus" size="md" />
+        New form
+      </button>
+    )}
+  </Fragment>
+
+  <AdminPageTemplate
+    title="Forms"
+    subtitle="Create custom forms for registrations and enquiries"
+    breadcrumbs={breadcrumbs}
+  >
+    <div id="forms-page" data-club-id={club.id} data-slug={slug}>
+      <!-- Stats -->
+      <div class="grid grid-cols-3 gap-4 mb-6">
+        <div class="stat-card stat-card-accent">
+          <p class="stat-card-label">Total Forms</p>
+          <p class="stat-card-value">{forms.length}</p>
+        </div>
+        <div class="stat-card">
+          <p class="stat-card-label">Active</p>
+          <p class="stat-card-value">{activeForms.length}</p>
+        </div>
+        <div class="stat-card">
+          <p class="stat-card-label">Submissions</p>
+          <p class="stat-card-value">{totalSubmissions}</p>
+        </div>
+      </div>
+
+      {forms.length > 0 ? (
+        <AdminCard padding="none">
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Form</th>
+                  <th class="hidden sm:table-cell">URL</th>
+                  <th>Submissions</th>
+                  <th>Status</th>
+                  <th class="w-12"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {forms.map((form) => (
+                  <tr>
+                    <td>
+                      <a href={`/${slug}/admin-portal/forms/${form.id}`} class="font-medium text-slate-900 hover:text-slate-600 transition-colors">
+                        {form.name}
+                      </a>
+                      {form.description && (
+                        <p class="text-sm text-slate-500 mt-0.5 line-clamp-1">{form.description}</p>
+                      )}
+                    </td>
+                    <td class="hidden sm:table-cell">
+                      <span class="text-sm text-slate-500 font-mono">/{slug}/forms/{form.slug}</span>
+                    </td>
+                    <td>
+                      <span class="font-medium text-slate-900">{submissionCounts.get(form.id) || 0}</span>
+                    </td>
+                    <td>
+                      <StatusChip variant={form.is_active ? 'success' : 'neutral'} size="sm">
+                        {form.is_active ? 'Active' : 'Paused'}
+                      </StatusChip>
+                    </td>
+                    <td>
+                      <a
+                        href={`/${slug}/admin-portal/forms/${form.id}`}
+                        class="p-1.5 text-slate-400 hover:text-slate-600 rounded-md hover:bg-slate-100 transition-colors inline-flex"
+                        title="Manage"
+                      >
+                        <Icon name="chevron-right" size="md" />
+                      </a>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </AdminCard>
+      ) : (
+        <AdminCard>
+          <div class="py-12 text-center">
+            <div class="w-12 h-12 mx-auto mb-4 rounded-full bg-slate-100 flex items-center justify-center">
+              <Icon name="clipboard" size="xl" class="text-slate-400" />
+            </div>
+            <h3 class="text-lg font-medium text-slate-900 mb-1">No forms yet</h3>
+            <p class="text-sm text-slate-500 mb-4">Create custom forms for registrations, volunteer sign-ups, and more.</p>
+            {canManage && (
+              <button id="empty-new-btn" class="btn-primary">
+                <Icon name="plus" size="md" />
+                Create your first form
+              </button>
+            )}
+          </div>
+        </AdminCard>
+      )}
+
+      <!-- Link to Inbox -->
+      <AdminCard>
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center">
+              <Icon name="inbox" size="lg" class="text-slate-600" />
+            </div>
+            <div>
+              <p class="font-medium text-slate-900">View all submissions</p>
+              <p class="text-sm text-slate-500">See form responses in your inbox</p>
+            </div>
+          </div>
+          <a href={`/${slug}/admin-portal/inbox`} class="btn-secondary w-full sm:w-auto text-center">View inbox</a>
+        </div>
+      </AdminCard>
+    </div>
+  </AdminPageTemplate>
+
+  <!-- Create Form Modal -->
+  <div id="create-modal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-xl max-w-md w-full border border-slate-200">
+      <div class="px-6 py-4 border-b border-slate-200">
+        <h2 class="text-lg font-semibold text-slate-900">Create new form</h2>
+      </div>
+
+      <form id="create-form" class="p-6 space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-2">Form name</label>
+          <input id="form-name" type="text" class="input-themed w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white transition-colors" placeholder="e.g. Volunteer Sign-up" required />
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-2">URL slug</label>
+          <div class="flex items-center gap-2">
+            <span class="text-sm text-slate-500 whitespace-nowrap">/{slug}/forms/</span>
+            <input id="form-slug" type="text" class="input-themed flex-1 px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white transition-colors" placeholder="volunteer-signup" required />
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-2">Description (optional)</label>
+          <textarea id="form-description" rows="2" class="input-themed w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white transition-colors resize-none" placeholder="Brief description..."></textarea>
+        </div>
+
+        <label class="flex items-center gap-3 cursor-pointer p-3 rounded-xl border border-slate-200 hover:bg-slate-50 transition-colors">
+          <input id="form-active" type="checkbox" class="rounded border-slate-300 accent-[var(--admin-accent)]" checked />
+          <span class="text-sm text-slate-700">Make form active (visible to public)</span>
+        </label>
+
+        <div class="flex flex-col sm:flex-row justify-end gap-3 pt-4">
+          <button type="button" id="cancel-btn" class="btn-secondary">Cancel</button>
+          <button type="submit" class="btn-primary">Create form</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</AdminLayout>
+
+<style>
+  .input-themed:focus {
+    border-color: var(--admin-accent, #14b8a6);
+    box-shadow: 0 0 0 2px var(--admin-ring, rgba(20, 184, 166, 0.2));
+  }
+</style>
+
+<script>
+  const page = document.getElementById('forms-page');
+  const clubId = page?.dataset.clubId;
+  const slugParam = page?.dataset.slug;
+  const modal = document.getElementById('create-modal') as HTMLElement;
+  const formName = document.getElementById('form-name') as HTMLInputElement;
+  const formSlug = document.getElementById('form-slug') as HTMLInputElement;
+
+  function slugify(text: string): string {
+    return text.toLowerCase().trim().replace(/[^\w\s-]/g, '').replace(/[\s_-]+/g, '-').replace(/^-+|-+$/g, '');
+  }
+
+  function showModal() {
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+    formName.focus();
+  }
+
+  function hideModal() {
+    modal.classList.add('hidden');
+    document.body.style.overflow = '';
+    formName.value = '';
+    formSlug.value = '';
+  }
+
+  document.getElementById('new-form-btn')?.addEventListener('click', showModal);
+  document.getElementById('empty-new-btn')?.addEventListener('click', showModal);
+  document.getElementById('cancel-btn')?.addEventListener('click', hideModal);
+
+  modal?.addEventListener('click', (e) => {
+    if (e.target === modal) hideModal();
+  });
+
+  formName?.addEventListener('input', () => {
+    if (!(formSlug as any).dataset?.manual) {
+      formSlug.value = slugify(formName.value);
+    }
+  });
+
+  formSlug?.addEventListener('input', () => {
+    (formSlug as any).dataset.manual = 'true';
+    formSlug.value = slugify(formSlug.value);
+  });
+
+  document.getElementById('create-form')?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    if (!clubId) return;
+
+    const submitBtn = (event.target as HTMLFormElement).querySelector('button[type="submit"]') as HTMLButtonElement;
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Creating...';
+
+    const payload = {
+      name: formName.value.trim(),
+      slug: formSlug.value.trim(),
+      description: (document.getElementById('form-description') as HTMLTextAreaElement)?.value?.trim() || null,
+      is_active: (document.getElementById('form-active') as HTMLInputElement)?.checked ? 1 : 0,
+    };
+
+    try {
+      const res = await fetch(`/api/clubs/${clubId}/forms`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to create form');
+
+      window.location.href = `/${slugParam}/admin-portal/forms/${data.form.id}`;
+    } catch (error: any) {
+      alert(error.message || 'Failed to create form');
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Create form';
+    }
+  });
+</script>

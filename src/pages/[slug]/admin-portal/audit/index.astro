@@ -1,0 +1,254 @@
+---
+import AdminLayout from '../../../../components/admin/AdminLayout.astro';
+import AdminPageTemplate from '../../../../components/admin/AdminPageTemplate.astro';
+import AdminCard from '../../../../components/admin/AdminCard.astro';
+import Icon from '../../../../components/admin/Icon.astro';
+import { DatabaseService } from '../../../../lib/db';
+import { getAuthContext } from '../../../../lib/auth';
+import { hasPermission, type Role } from '../../../../lib/permissions';
+
+const { slug } = Astro.params;
+
+if (!Astro.locals.runtime.env.DB) {
+  return Astro.redirect('/admin?error=db_not_configured');
+}
+
+const db = new DatabaseService(Astro.locals.runtime.env.DB);
+const { user } = await getAuthContext(Astro.cookies, db);
+
+if (!user) {
+  return Astro.redirect('/admin/login');
+}
+
+const club = await db.getClubBySlug(slug!);
+if (!club) {
+  return Astro.redirect('/admin');
+}
+
+const member = await db.getClubMember(club.id, user.id);
+if (!member) {
+  return Astro.redirect('/admin');
+}
+
+// Check permission
+if (!hasPermission(member.role as Role, 'audit.view')) {
+  return Astro.redirect(`/${slug}/admin-portal`);
+}
+
+const breadcrumbs = [
+  { label: 'Dashboard', href: `/${slug}/admin-portal` },
+  { label: 'Settings', href: `/${slug}/admin-portal/settings` },
+  { label: 'Audit Log' },
+];
+
+// Pagination
+const page = parseInt(Astro.url.searchParams.get('page') || '1');
+const limit = 25;
+const offset = (page - 1) * limit;
+
+// Get audit logs
+const [logs, totalCount] = await Promise.all([
+  db.getAuditLogs(club.id, limit, offset),
+  db.getAuditLogCount(club.id),
+]);
+
+const totalPages = Math.ceil(totalCount / limit);
+
+// Action labels for display
+const actionLabels: Record<string, { label: string; color: string }> = {
+  // Auth
+  'user_login': { label: 'User logged in', color: 'blue' },
+  'user_logout': { label: 'User logged out', color: 'slate' },
+
+  // Posts
+  'post_created': { label: 'Post created', color: 'green' },
+  'post_updated': { label: 'Post updated', color: 'amber' },
+  'post_deleted': { label: 'Post deleted', color: 'red' },
+  'post_published': { label: 'Post published', color: 'green' },
+
+  // Pages
+  'page_created': { label: 'Page created', color: 'green' },
+  'page_updated': { label: 'Page updated', color: 'amber' },
+  'page_deleted': { label: 'Page deleted', color: 'red' },
+
+  // Fixtures
+  'fixture_created': { label: 'Fixture created', color: 'green' },
+  'fixture_updated': { label: 'Fixture updated', color: 'amber' },
+  'fixture_deleted': { label: 'Fixture deleted', color: 'red' },
+  'fixture_result_added': { label: 'Result added', color: 'blue' },
+
+  // Publishing
+  'content_published': { label: 'Content published', color: 'purple' },
+
+  // Team
+  'member_invited': { label: 'Member invited', color: 'blue' },
+  'member_removed': { label: 'Member removed', color: 'red' },
+  'member_role_changed': { label: 'Role changed', color: 'amber' },
+
+  // Settings
+  'club_updated': { label: 'Club settings updated', color: 'amber' },
+  'homepage_config_updated': { label: 'Homepage updated', color: 'amber' },
+  'homepage_config_reset': { label: 'Homepage reset', color: 'slate' },
+
+  // Social
+  'social_connected': { label: 'Social connected', color: 'green' },
+  'social_disconnected': { label: 'Social disconnected', color: 'red' },
+};
+
+function getActionInfo(action: string) {
+  return actionLabels[action] || { label: action.replace(/_/g, ' '), color: 'slate' };
+}
+
+function formatDate(date: string) {
+  return new Date(date).toLocaleString('en-IE', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
+
+function formatRelativeTime(date: string) {
+  const now = new Date();
+  const then = new Date(date);
+  const diff = now.getTime() - then.getTime();
+  const minutes = Math.floor(diff / 60000);
+  const hours = Math.floor(minutes / 60);
+  const days = Math.floor(hours / 24);
+
+  if (minutes < 1) return 'just now';
+  if (minutes < 60) return `${minutes}m ago`;
+  if (hours < 24) return `${hours}h ago`;
+  if (days < 7) return `${days}d ago`;
+  return formatDate(date);
+}
+---
+
+<AdminLayout
+  title="Audit Log"
+  club={club}
+  user={user}
+  member={member}
+  currentPage="settings"
+>
+  <AdminPageTemplate
+    title="Audit Log"
+    subtitle="Track all changes and actions in your club's admin portal"
+    breadcrumbs={breadcrumbs}
+    wide
+  >
+
+    {logs.length === 0 ? (
+      <AdminCard class="p-12 text-center">
+        <div class="w-12 h-12 mx-auto mb-4 rounded-full bg-slate-100 flex items-center justify-center">
+          <Icon name="file-text" size="xl" class="text-slate-400" />
+        </div>
+        <h3 class="text-lg font-medium text-slate-900 mb-2">No activity yet</h3>
+        <p class="text-slate-500 text-sm">Activity will appear here as you use the admin portal.</p>
+      </AdminCard>
+    ) : (
+      <>
+        <!-- Logs table -->
+        <div class="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+          <div class="overflow-x-auto">
+            <table class="w-full">
+              <thead>
+                <tr class="border-b border-slate-200 bg-slate-50">
+                  <th class="text-left text-slate-600 text-xs font-semibold uppercase tracking-wider px-4 py-3">Action</th>
+                  <th class="text-left text-slate-600 text-xs font-semibold uppercase tracking-wider px-4 py-3">User</th>
+                  <th class="text-left text-slate-600 text-xs font-semibold uppercase tracking-wider px-4 py-3">Details</th>
+                  <th class="text-right text-slate-600 text-xs font-semibold uppercase tracking-wider px-4 py-3">Time</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100">
+                {logs.map((log) => {
+                  const info = getActionInfo(log.action);
+                  let details = '';
+                  if (log.details) {
+                    try {
+                      const parsed = JSON.parse(log.details);
+                      if (parsed.email) details = parsed.email;
+                      else if (parsed.title) details = parsed.title;
+                      else if (parsed.newRole) details = `to ${parsed.newRole}`;
+                      else if (parsed.platforms) details = parsed.platforms.join(', ');
+                    } catch {
+                      details = log.details;
+                    }
+                  }
+
+                  return (
+                    <tr class="hover:bg-slate-50 transition-colors">
+                      <td class="px-4 py-3">
+                        <span class={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          info.color === 'green' ? 'bg-green-100 text-green-700' :
+                          info.color === 'red' ? 'bg-red-100 text-red-700' :
+                          info.color === 'amber' ? 'bg-amber-100 text-amber-700' :
+                          info.color === 'blue' ? 'bg-blue-100 text-blue-700' :
+                          info.color === 'purple' ? 'bg-purple-100 text-purple-700' :
+                          'bg-slate-100 text-slate-600'
+                        }`}>
+                          {info.label}
+                        </span>
+                      </td>
+                      <td class="px-4 py-3">
+                        {log.user_name ? (
+                          <div>
+                            <p class="text-slate-900 text-sm">{log.user_name}</p>
+                            <p class="text-slate-500 text-xs">{log.user_email}</p>
+                          </div>
+                        ) : (
+                          <span class="text-slate-500 text-sm">System</span>
+                        )}
+                      </td>
+                      <td class="px-4 py-3">
+                        <span class="text-slate-500 text-sm truncate max-w-xs block" title={details}>
+                          {details || '-'}
+                        </span>
+                      </td>
+                      <td class="px-4 py-3 text-right">
+                        <span class="text-slate-500 text-sm" title={formatDate(log.created_at)}>
+                          {formatRelativeTime(log.created_at)}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Pagination -->
+        {totalPages > 1 && (
+          <div class="flex items-center justify-between mt-6">
+            <p class="text-slate-500 text-sm">
+              Showing {offset + 1} - {Math.min(offset + limit, totalCount)} of {totalCount} entries
+            </p>
+            <div class="flex items-center gap-2">
+              {page > 1 && (
+                <a
+                  href={`/${slug}/admin-portal/audit?page=${page - 1}`}
+                  class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm transition-colors"
+                >
+                  Previous
+                </a>
+              )}
+              <span class="text-slate-500 text-sm">
+                Page {page} of {totalPages}
+              </span>
+              {page < totalPages && (
+                <a
+                  href={`/${slug}/admin-portal/audit?page=${page + 1}`}
+                  class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm transition-colors"
+                >
+                  Next
+                </a>
+              )}
+            </div>
+          </div>
+        )}
+      </>
+    )}
+  </AdminPageTemplate>
+</AdminLayout>

@@ -1,0 +1,105 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Navigation from '../../components/Navigation.astro';
+import Footer from '../../components/Footer.astro';
+import SportHero from '../../components/sports/SportHero.astro';
+import SportFeatures from '../../components/sports/SportFeatures.astro';
+import SportHowItWorks from '../../components/sports/SportHowItWorks.astro';
+import SportUseCases from '../../components/sports/SportUseCases.astro';
+import SportTemplates from '../../components/sports/SportTemplates.astro';
+import SportCTA from '../../components/sports/SportCTA.astro';
+import Section from '../../components/Section.astro';
+import { getSport } from '../../lib/sports';
+
+const sport = getSport('gaa');
+---
+
+<Layout title={`${sport.name} Club Websites - Clubify`} description={sport.description}>
+  <Navigation />
+
+  <SportHero sport={sport} />
+
+  <SportFeatures sport={sport} />
+
+  <SportHowItWorks sport={sport} />
+
+  <SportUseCases sport={sport} />
+
+  <!-- GAA-specific scoring showcase -->
+  <Section size="md" class="bg-slate-50">
+    <div class="grid lg:grid-cols-2 gap-12 items-center">
+      <div>
+        <span class="section-badge" style={`color: ${sport.primaryColor}`}>Built for GAA</span>
+        <h2 class="text-3xl sm:text-4xl font-bold text-slate-900 mb-6">
+          GAA-specific scoring and terminology
+        </h2>
+        <p class="text-lg text-slate-600 mb-6">
+          Unlike generic sports platforms, Clubify understands GAA. Our fixture and result system supports goals and points (e.g., 2-14 to 1-11), championship vs league formats, and all the terminology your members expect.
+        </p>
+        <ul class="space-y-3">
+          <li class="flex items-start gap-3">
+            <svg class="w-6 h-6 flex-shrink-0 mt-0.5" style={`color: ${sport.primaryColor}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+            <span class="text-slate-700">Goals and points scoring (not just goals)</span>
+          </li>
+          <li class="flex items-start gap-3">
+            <svg class="w-6 h-6 flex-shrink-0 mt-0.5" style={`color: ${sport.primaryColor}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+            <span class="text-slate-700">Support for all codes: Football, Hurling, Camogie, Ladies</span>
+          </li>
+          <li class="flex items-start gap-3">
+            <svg class="w-6 h-6 flex-shrink-0 mt-0.5" style={`color: ${sport.primaryColor}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+            <span class="text-slate-700">Age group management from U6 to Senior</span>
+          </li>
+          <li class="flex items-start gap-3">
+            <svg class="w-6 h-6 flex-shrink-0 mt-0.5" style={`color: ${sport.primaryColor}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+            <span class="text-slate-700">County selection and local context</span>
+          </li>
+        </ul>
+      </div>
+      <div class="relative">
+        <div class="rounded-2xl p-8 text-white" style={`background: linear-gradient(135deg, ${sport.primaryColor}, ${sport.primaryColor}cc)`}>
+          <div class="text-center mb-6">
+            <p class="text-white/60 text-sm mb-1">Senior Football Championship</p>
+            <p class="text-lg font-semibold">Semi-Final Result</p>
+          </div>
+          <div class="flex items-center justify-between">
+            <div class="text-center">
+              <div class="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center mb-2 mx-auto">
+                <span class="text-2xl font-bold">C</span>
+              </div>
+              <p class="font-semibold">Castlebar</p>
+            </div>
+            <div class="text-center">
+              <p class="text-4xl font-bold">2-14</p>
+              <p class="text-white/60 text-sm">22 pts</p>
+            </div>
+            <div class="text-sm text-white/60">v</div>
+            <div class="text-center">
+              <p class="text-4xl font-bold">1-11</p>
+              <p class="text-white/60 text-sm">14 pts</p>
+            </div>
+            <div class="text-center">
+              <div class="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center mb-2 mx-auto">
+                <span class="text-2xl font-bold">B</span>
+              </div>
+              <p class="font-semibold">Ballina</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </Section>
+
+  <SportTemplates sport={sport} />
+
+  <SportCTA sport={sport} />
+
+  <Footer />
+</Layout>

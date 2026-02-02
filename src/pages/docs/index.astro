@@ -1,0 +1,176 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Navigation from '../../components/Navigation.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import Footer from '../../components/Footer.astro';
+
+const guides = [
+  {
+    title: "Getting Started",
+    description: "Set up your club's website in 15 minutes",
+    icon: "rocket",
+    articles: [
+      { title: "Creating your account", href: "#" },
+      { title: "Choosing a template", href: "#" },
+      { title: "Customising your colours", href: "#" },
+      { title: "Adding your club crest", href: "#" },
+      { title: "Going live", href: "#" }
+    ]
+  },
+  {
+    title: "Content Management",
+    description: "Learn to create and manage your club's content",
+    icon: "document",
+    articles: [
+      { title: "Writing your first post", href: "#" },
+      { title: "Adding fixtures", href: "#" },
+      { title: "Recording results", href: "#" },
+      { title: "Creating pages", href: "#" },
+      { title: "Using the media library", href: "#" }
+    ]
+  },
+  {
+    title: "Team Management",
+    description: "Invite members and manage access",
+    icon: "users",
+    articles: [
+      { title: "Inviting team members", href: "#" },
+      { title: "Understanding roles", href: "#" },
+      { title: "Managing permissions", href: "#" },
+      { title: "Removing members", href: "#" }
+    ]
+  },
+  {
+    title: "Social Media",
+    description: "Connect and publish to social platforms",
+    icon: "share",
+    articles: [
+      { title: "Connecting Facebook", href: "#" },
+      { title: "Connecting Twitter/X", href: "#" },
+      { title: "Connecting Instagram", href: "#" },
+      { title: "Auto-publishing posts", href: "#" }
+    ]
+  }
+];
+
+function getIcon(name: string) {
+  const icons: Record<string, string> = {
+    rocket: "M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z",
+    document: "M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z",
+    users: "M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z",
+    share: "M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
+  };
+  return icons[name] || icons.document;
+}
+---
+
+<Layout title="Documentation - Clubify">
+  <Navigation />
+  <PageHeader
+    title="Documentation"
+    description="Everything you need to get the most out of Clubify"
+    badge="Docs"
+  />
+
+  <section class="py-16 bg-white">
+    <div class="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+      <!-- Quick Start Banner -->
+      <div class="bg-gradient-to-r from-primary-500 to-primary-600 rounded-2xl p-6 md:p-8 mb-12 text-white">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <h2 class="text-xl font-bold mb-2">New to Clubify?</h2>
+            <p class="text-primary-100">
+              Follow our quick start guide to set up your club's website in under 15 minutes.
+            </p>
+          </div>
+          <a
+            href="#getting-started"
+            class="inline-flex items-center gap-2 px-5 py-2.5 bg-white text-primary-600 font-semibold rounded-xl hover:bg-primary-50 transition-colors whitespace-nowrap"
+          >
+            Get Started
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+            </svg>
+          </a>
+        </div>
+      </div>
+
+      <!-- Documentation Sections -->
+      <div class="grid md:grid-cols-2 gap-8">
+        {guides.map((guide) => (
+          <div id={guide.title.toLowerCase().replace(/\s+/g, '-')} class="bg-slate-50 rounded-2xl border border-slate-200 overflow-hidden">
+            <div class="p-6 border-b border-slate-200">
+              <div class="flex items-center gap-3 mb-2">
+                <div class="w-10 h-10 bg-primary-100 rounded-xl flex items-center justify-center">
+                  <svg class="w-5 h-5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d={getIcon(guide.icon)}/>
+                  </svg>
+                </div>
+                <h2 class="text-lg font-bold text-slate-900">{guide.title}</h2>
+              </div>
+              <p class="text-sm text-slate-600">{guide.description}</p>
+            </div>
+            <ul class="divide-y divide-slate-200">
+              {guide.articles.map((article) => (
+                <li>
+                  <a
+                    href={article.href}
+                    class="flex items-center justify-between px-6 py-3 hover:bg-white transition-colors group"
+                  >
+                    <span class="text-slate-700 group-hover:text-primary-600">{article.title}</span>
+                    <svg class="w-4 h-4 text-slate-400 group-hover:text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                    </svg>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+
+      <!-- Video Tutorials Coming Soon -->
+      <div class="mt-12 bg-slate-50 rounded-2xl border border-slate-200 p-8 text-center">
+        <div class="w-16 h-16 bg-slate-200 rounded-full flex items-center justify-center mx-auto mb-4">
+          <svg class="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+        <h3 class="text-lg font-bold text-slate-900 mb-2">Video Tutorials Coming Soon</h3>
+        <p class="text-slate-600 max-w-md mx-auto">
+          We're working on step-by-step video tutorials to help you get the most out of Clubify.
+        </p>
+      </div>
+
+      <!-- Help CTA -->
+      <div class="mt-12 text-center">
+        <p class="text-slate-600 mb-4">
+          Can't find what you're looking for?
+        </p>
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+          <a
+            href="/help"
+            class="inline-flex items-center gap-2 px-5 py-2.5 bg-slate-900 text-white font-semibold rounded-xl hover:bg-slate-800 transition-colors"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            Help Centre
+          </a>
+          <a
+            href="/contact"
+            class="inline-flex items-center gap-2 px-5 py-2.5 border border-slate-300 text-slate-700 font-semibold rounded-xl hover:bg-slate-50 transition-colors"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+            </svg>
+            Contact Support
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <Footer />
+</Layout>

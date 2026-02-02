@@ -1,0 +1,166 @@
+---
+import AdminLayout from '../../../../components/admin/AdminLayout.astro';
+import AdminPageTemplate from '../../../../components/admin/AdminPageTemplate.astro';
+import AdminCard from '../../../../components/admin/AdminCard.astro';
+import StatusChip from '../../../../components/admin/StatusChip.astro';
+import Icon from '../../../../components/admin/Icon.astro';
+import { DatabaseService } from '../../../../lib/db';
+import { getAuthContext } from '../../../../lib/auth';
+import { hasPermission, type Role } from '../../../../lib/permissions';
+
+const { slug } = Astro.params;
+
+if (!Astro.locals.runtime.env.DB) {
+  return Astro.redirect('/admin?error=db_not_configured');
+}
+
+const db = new DatabaseService(Astro.locals.runtime.env.DB);
+const { user } = await getAuthContext(Astro.cookies, db);
+
+if (!user) {
+  return Astro.redirect('/admin/login');
+}
+
+const club = await db.getClubBySlug(slug!);
+if (!club) {
+  return Astro.redirect('/admin');
+}
+
+const member = await db.getClubMember(club.id, user.id);
+if (!member) {
+  return Astro.redirect('/admin');
+}
+
+const canEdit = hasPermission(member.role as Role, 'homepage.edit');
+const templateId = club.template as 'classic' | 'matchday' | 'community';
+
+const homepageConfig = await db.getHomepageConfig(club.id) as any;
+const siteSettings = await db.getSiteSettings(club.id);
+const navItems = siteSettings?.nav_items ? JSON.parse(siteSettings.nav_items) : [];
+const blockCount = homepageConfig?.layout ? JSON.parse(homepageConfig.layout).length : 0;
+
+const sections = [
+  {
+    id: 'template',
+    title: 'Template',
+    description: 'Choose your site design',
+    href: `/${slug}/admin-portal/website/template`,
+    iconName: 'layout',
+    badge: templateId.charAt(0).toUpperCase() + templateId.slice(1),
+  },
+  {
+    id: 'layout',
+    title: 'Homepage',
+    description: 'Arrange your homepage blocks',
+    href: `/${slug}/admin-portal/website/layout`,
+    iconName: 'grid',
+    badge: `${blockCount} blocks`,
+  },
+  {
+    id: 'navigation',
+    title: 'Navigation',
+    description: 'Manage menus and links',
+    href: `/${slug}/admin-portal/website/navigation`,
+    iconName: 'menu',
+    badge: `${navItems.length} items`,
+  },
+  {
+    id: 'contact',
+    title: 'Contact Form',
+    description: 'Configure form and GDPR settings',
+    href: `/${slug}/admin-portal/website/contact-form`,
+    iconName: 'mail',
+    badge: 'GDPR',
+  },
+];
+
+const breadcrumbs = [
+  { label: 'Dashboard', href: `/${slug}/admin-portal` },
+  { label: 'Website' },
+];
+---
+
+<AdminLayout
+  title="Website"
+  club={club}
+  user={user}
+  member={member}
+  currentPage="website"
+>
+  <Fragment slot="header-actions">
+    <a href={`/${slug}`} target="_blank" class="btn-secondary inline-flex items-center gap-2">
+      <Icon name="external-link" size="md" />
+      Preview
+    </a>
+  </Fragment>
+
+  <AdminPageTemplate
+    title="Website"
+    subtitle="Customize your club's website appearance and content"
+    breadcrumbs={breadcrumbs}
+  >
+    {!canEdit && (
+      <div class="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-xl">
+        <div class="flex items-center gap-2">
+          <Icon name="alert-triangle" size="md" class="text-amber-600" />
+          <p class="text-sm text-amber-800">You need Admin or PRO role to edit the website.</p>
+        </div>
+      </div>
+    )}
+
+    <!-- Stats -->
+    <div class="grid grid-cols-3 gap-4 mb-6">
+      <div class="stat-card stat-card-accent">
+        <p class="stat-card-label">Template</p>
+        <p class="text-xl font-semibold text-slate-900 mt-1">{templateId.charAt(0).toUpperCase() + templateId.slice(1)}</p>
+      </div>
+      <div class="stat-card">
+        <p class="stat-card-label">Menu Items</p>
+        <p class="text-xl font-semibold text-slate-900 mt-1">{navItems.length}</p>
+      </div>
+      <div class="stat-card">
+        <p class="stat-card-label">Homepage Blocks</p>
+        <p class="text-xl font-semibold text-slate-900 mt-1">{blockCount}</p>
+      </div>
+    </div>
+
+    <!-- Sections Grid -->
+    <div class="grid gap-4 sm:grid-cols-2 mb-6">
+      {sections.map((section) => (
+        <a href={section.href} class="block bg-white rounded-xl border border-slate-200 p-5 group hover:border-slate-300 hover:shadow-md transition-all">
+          <div class="flex items-start gap-4">
+            <div class="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center group-hover:bg-slate-200 transition-colors">
+              <Icon name={section.iconName} size="lg" class="text-slate-600" />
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex flex-wrap items-center justify-between gap-2">
+                <h3 class="font-semibold text-slate-900">{section.title}</h3>
+                <StatusChip variant="neutral" size="sm">{section.badge}</StatusChip>
+              </div>
+              <p class="text-sm text-slate-500 mt-1">{section.description}</p>
+            </div>
+          </div>
+        </a>
+      ))}
+    </div>
+
+    <!-- Tips -->
+    <AdminCard class="bg-slate-50">
+      <h3 class="font-semibold text-slate-900 mb-3">Getting started</h3>
+      <ul class="text-sm text-slate-600 space-y-2">
+        <li class="flex items-start gap-2">
+          <Icon name="check" size="md" class="text-slate-400 mt-0.5 flex-shrink-0" />
+          Choose a template that fits your club's style
+        </li>
+        <li class="flex items-start gap-2">
+          <Icon name="check" size="md" class="text-slate-400 mt-0.5 flex-shrink-0" />
+          Customize your homepage with drag-and-drop blocks
+        </li>
+        <li class="flex items-start gap-2">
+          <Icon name="check" size="md" class="text-slate-400 mt-0.5 flex-shrink-0" />
+          Set up your navigation menu for easy access
+        </li>
+      </ul>
+    </AdminCard>
+  </AdminPageTemplate>
+</AdminLayout>

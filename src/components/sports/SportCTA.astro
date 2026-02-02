@@ -1,0 +1,93 @@
+---
+import Button from '../Button.astro';
+import type { SportConfig } from '../../lib/sports';
+
+interface Props {
+  sport: SportConfig;
+}
+
+const { sport } = Astro.props;
+const isReady = sport.status === 'ready';
+const sportNameLower = sport.name === 'GAA' ? 'GAA' : sport.name.toLowerCase();
+---
+
+<section class="py-20 bg-white">
+  <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+    <div
+      class="relative rounded-3xl p-8 md:p-12 text-center overflow-hidden"
+      style={`background: linear-gradient(135deg, ${sport.primaryColor}, ${sport.primaryColor}dd)`}
+    >
+      <!-- Pattern overlay -->
+      <div class="absolute inset-0 opacity-10">
+        <svg class="w-full h-full" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <pattern id="sport-cta-pattern" x="0" y="0" width="32" height="32" patternUnits="userSpaceOnUse">
+              <circle cx="16" cy="16" r="1.5" fill="white"/>
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#sport-cta-pattern)"/>
+        </svg>
+      </div>
+
+      <!-- Decorative blobs -->
+      <div class="absolute -top-20 -right-20 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
+      <div class="absolute -bottom-20 -left-20 w-64 h-64 bg-white/5 rounded-full blur-3xl"></div>
+
+      <div class="relative">
+        <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-4">
+          Ready to transform your {sportNameLower} club?
+        </h2>
+
+        <p class="text-lg text-white/80 max-w-xl mx-auto mb-8">
+          Join clubs across Ireland who use Clubify to connect with their members and build stronger communities.
+        </p>
+
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8">
+          <Button
+            href="/admin/signup"
+            variant="dark"
+            size="lg"
+            class="bg-white text-slate-900 hover:bg-white/90"
+          >
+            {isReady ? `Create your ${sportNameLower} club` : "Get early access"}
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+            </svg>
+          </Button>
+          {isReady && (
+            <Button
+              href="/pricing"
+              variant="ghost"
+              size="lg"
+              class="text-white hover:text-white border-white/60 bg-black/20 hover:bg-black/30"
+            >
+              View pricing
+            </Button>
+          )}
+        </div>
+
+        <!-- Trust indicators -->
+        <div class="flex flex-wrap items-center justify-center gap-6 text-sm text-white/70">
+          <div class="flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+            <span>7-day free trial</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+            <span>No credit card required</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+            <span>Cancel anytime</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

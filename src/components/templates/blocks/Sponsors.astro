@@ -1,0 +1,234 @@
+---
+interface Sponsor {
+  id: string;
+  name: string;
+  logo_url?: string | null;
+  website_url?: string | null;
+  tier?: 'main' | 'gold' | 'silver' | 'bronze';
+}
+
+interface Props {
+  sponsors?: Sponsor[];
+  primaryColor: string;
+  template?: 'classic' | 'matchday' | 'community';
+}
+
+const { sponsors = [], primaryColor, template = 'classic' } = Astro.props;
+
+// Template-specific accent colors
+const templateAccents = {
+  classic: '#c9a227',
+  matchday: '#dc2626',
+  community: '#0d9488',
+};
+const accentColor = templateAccents[template];
+
+// Sort sponsors by tier
+const tierOrder = { main: 0, gold: 1, silver: 2, bronze: 3 };
+const sortedSponsors = [...sponsors].sort((a, b) => {
+  const aTier = tierOrder[a.tier || 'bronze'] ?? 3;
+  const bTier = tierOrder[b.tier || 'bronze'] ?? 3;
+  return aTier - bTier;
+});
+
+// Get tier-based sizing
+function getTierSize(tier?: string): { height: string; containerClass: string } {
+  switch (tier) {
+    case 'main':
+      return { height: 'h-20 md:h-24', containerClass: 'px-8 py-6' };
+    case 'gold':
+      return { height: 'h-16 md:h-20', containerClass: 'px-6 py-5' };
+    case 'silver':
+      return { height: 'h-14 md:h-16', containerClass: 'px-5 py-4' };
+    default:
+      return { height: 'h-12 md:h-14', containerClass: 'px-4 py-3' };
+  }
+}
+
+function getTierBadge(tier?: string): string | null {
+  switch (tier) {
+    case 'main':
+      return 'Main Sponsor';
+    case 'gold':
+      return 'Gold Partner';
+    case 'silver':
+      return 'Silver Partner';
+    default:
+      return null;
+  }
+}
+---
+
+<section class="py-20 relative overflow-hidden">
+  <!-- Subtle background -->
+  <div class="absolute inset-0 bg-gradient-to-b from-slate-50 via-white to-slate-50"></div>
+
+  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative">
+    {sponsors.length > 0 ? (
+      <>
+        <!-- Section header -->
+        <div class="text-center mb-14 sponsors-fade-in">
+          <span
+            class="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold mb-4"
+            style={`background: ${primaryColor}15; color: ${primaryColor}`}
+          >
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"/>
+            </svg>
+            Proudly Supported By
+          </span>
+          <h2 class="text-3xl md:text-4xl font-bold text-slate-900">Our Sponsors</h2>
+        </div>
+
+        <!-- Sponsors grid -->
+        <div class="flex flex-wrap items-center justify-center gap-6 md:gap-10">
+          {sortedSponsors.map((sponsor, index) => {
+            const tierSize = getTierSize(sponsor.tier);
+            const tierBadge = getTierBadge(sponsor.tier);
+
+            return (
+              <div
+                class="sponsor-item relative group"
+                style={`animation-delay: ${index * 0.05}s`}
+              >
+                {sponsor.website_url ? (
+                  <a
+                    href={sponsor.website_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class={`relative flex items-center justify-center rounded-2xl bg-white border border-slate-200/80 transition-all duration-500 hover:border-transparent hover:shadow-2xl hover:shadow-slate-200/50 ${tierSize.containerClass}`}
+                    title={sponsor.name}
+                  >
+                    <!-- Hover gradient background -->
+                    <div
+                      class="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                      style={`background: linear-gradient(135deg, ${primaryColor}08, ${accentColor}08)`}
+                    ></div>
+
+                    {sponsor.logo_url ? (
+                      <img
+                        src={sponsor.logo_url}
+                        alt={sponsor.name}
+                        class={`${tierSize.height} w-auto object-contain relative z-10 transition-all duration-500 grayscale group-hover:grayscale-0 opacity-60 group-hover:opacity-100`}
+                      />
+                    ) : (
+                      <span class="text-lg font-semibold text-slate-400 group-hover:text-slate-700 transition-colors relative z-10">
+                        {sponsor.name}
+                      </span>
+                    )}
+
+                    <!-- Tier badge -->
+                    {tierBadge && (
+                      <span
+                        class="absolute -top-2 -right-2 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide rounded-full text-white shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                        style={`background: linear-gradient(135deg, ${primaryColor}, ${accentColor})`}
+                      >
+                        {tierBadge}
+                      </span>
+                    )}
+                  </a>
+                ) : (
+                  <div
+                    class={`relative flex items-center justify-center rounded-2xl bg-white border border-slate-200/80 ${tierSize.containerClass}`}
+                    title={sponsor.name}
+                  >
+                    {sponsor.logo_url ? (
+                      <img
+                        src={sponsor.logo_url}
+                        alt={sponsor.name}
+                        class={`${tierSize.height} w-auto object-contain grayscale opacity-50`}
+                      />
+                    ) : (
+                      <span class="text-lg font-semibold text-slate-400">
+                        {sponsor.name}
+                      </span>
+                    )}
+
+                    {tierBadge && (
+                      <span
+                        class="absolute -top-2 -right-2 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide rounded-full text-white shadow-lg"
+                        style={`background: linear-gradient(135deg, ${primaryColor}, ${accentColor})`}
+                      >
+                        {tierBadge}
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        <!-- Sponsor CTA -->
+        <div class="text-center mt-14 sponsors-fade-in" style="animation-delay: 0.4s">
+          <p class="text-slate-500 mb-4">Interested in partnering with us?</p>
+          <a
+            href="#contact"
+            class="inline-flex items-center gap-2 px-6 py-3 rounded-full font-semibold text-white transition-all duration-300 hover:shadow-xl hover:gap-3"
+            style={`background: linear-gradient(135deg, ${primaryColor}, ${accentColor}); box-shadow: 0 4px 14px ${primaryColor}40`}
+          >
+            Become a Sponsor
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+            </svg>
+          </a>
+        </div>
+      </>
+    ) : (
+      <div class="text-center py-12 sponsors-fade-in">
+        <div class="inline-flex items-center gap-3 px-6 py-4 rounded-2xl bg-slate-50 border border-slate-200">
+          <div class="w-12 h-12 rounded-xl flex items-center justify-center" style={`background: ${primaryColor}15`}>
+            <svg class="w-6 h-6" style={`color: ${primaryColor}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
+            </svg>
+          </div>
+          <div class="text-left">
+            <p class="font-semibold text-slate-700">Become a Sponsor</p>
+            <p class="text-sm text-slate-500">Partner with our club today</p>
+          </div>
+          <svg class="w-5 h-5 text-slate-400 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+          </svg>
+        </div>
+      </div>
+    )}
+  </div>
+</section>
+
+<style>
+  .sponsors-fade-in {
+    animation: sponsorsFadeIn 0.8s ease-out forwards;
+    opacity: 0;
+  }
+
+  .sponsor-item {
+    animation: sponsorSlideUp 0.5s ease-out forwards;
+    opacity: 0;
+  }
+
+  .sponsor-item:hover {
+    transform: translateY(-4px) scale(1.02);
+  }
+
+  @keyframes sponsorsFadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes sponsorSlideUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+</style>

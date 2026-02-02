@@ -1,0 +1,94 @@
+---
+interface Props {
+  /** Button variant */
+  variant?: 'primary' | 'secondary' | 'danger' | 'ghost';
+  /** Button size */
+  size?: 'sm' | 'md' | 'lg';
+  /** Button type */
+  type?: 'button' | 'submit' | 'reset';
+  /** Button name (for form submission) */
+  name?: string;
+  /** Button value (for form submission) */
+  value?: string;
+  /** Disabled state */
+  disabled?: boolean;
+  /** Full width */
+  fullWidth?: boolean;
+  /** Loading state */
+  loading?: boolean;
+  /** Link href (renders as <a> instead of <button>) */
+  href?: string;
+  /** Additional CSS classes */
+  class?: string;
+}
+
+const {
+  variant = 'primary',
+  size = 'md',
+  type = 'button',
+  name,
+  value,
+  disabled = false,
+  fullWidth = false,
+  loading = false,
+  href,
+  class: className = '',
+} = Astro.props;
+
+const baseClasses = 'inline-flex items-center justify-center gap-2 font-medium rounded-xl transition-all';
+
+const variantClasses = {
+  primary: 'btn-primary-themed text-white shadow-lg active:scale-[0.98]',
+  secondary: 'bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200',
+  danger: 'bg-red-50 hover:bg-red-100 text-red-600 border border-red-200',
+  ghost: 'hover:bg-slate-100 text-slate-600',
+};
+
+const sizeClasses = {
+  sm: 'px-3 py-2 text-sm',
+  md: 'px-4 py-3 text-sm',
+  lg: 'px-6 py-3.5 text-base',
+};
+
+const disabledClasses = disabled || loading ? 'opacity-60 cursor-not-allowed pointer-events-none' : '';
+const widthClasses = fullWidth ? 'w-full' : '';
+
+const allClasses = [
+  baseClasses,
+  variantClasses[variant],
+  sizeClasses[size],
+  disabledClasses,
+  widthClasses,
+  className,
+].join(' ');
+
+const Tag = href ? 'a' : 'button';
+---
+
+<Tag
+  href={href}
+  type={!href ? type : undefined}
+  name={!href ? name : undefined}
+  value={!href ? value : undefined}
+  disabled={!href && (disabled || loading)}
+  class={allClasses}
+>
+  {loading && (
+    <svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+    </svg>
+  )}
+  <slot />
+</Tag>
+
+<style>
+  /* Primary button uses admin accent color with fallback to teal */
+  .btn-primary-themed {
+    background-color: var(--admin-accent, #14b8a6);
+    box-shadow: 0 10px 15px -3px color-mix(in srgb, var(--admin-accent, #14b8a6) 25%, transparent);
+  }
+  .btn-primary-themed:hover {
+    background-color: var(--admin-accent-hover, #0d9488);
+  }
+</style>

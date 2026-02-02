@@ -1,0 +1,201 @@
+---
+import { DatabaseService } from '../../lib/db';
+import { renderMarkdown } from '../../lib/markdown';
+import ClubNavigation from '../../components/templates/ClubNavigation.astro';
+import ClubFooter from '../../components/templates/ClubFooter.astro';
+import Sponsors from '../../components/templates/blocks/Sponsors.astro';
+
+const { slug, page } = Astro.params;
+
+if (!Astro.locals.runtime.env.DB) {
+  return Astro.redirect('/?error=db_not_configured');
+}
+
+const db = new DatabaseService(Astro.locals.runtime.env.DB);
+const club = await db.getClubBySlug(slug!);
+
+if (!club || !club.is_live) {
+  return Astro.redirect('/');
+}
+
+const pageSlug = page!;
+const pageRecord = await db.getPageBySlug(club.id, pageSlug);
+const isPublished = pageRecord && pageRecord.is_published === 1;
+
+const isAbout = pageSlug === 'about';
+const isContact = pageSlug === 'contact';
+
+if (!isPublished && !isAbout && !isContact) {
+  return Astro.redirect(`/${slug}`);
+}
+
+const title = pageRecord?.title || (isAbout ? `About ${club.name}` : isContact ? `Contact ${club.name}` : pageSlug);
+const contentHtml = pageRecord?.content ? renderMarkdown(pageRecord.content) : '';
+
+const placement = isContact ? 'contact' : isAbout ? 'about' : 'page';
+const [siteSettingsRecord, sponsors, contactSettings] = await Promise.all([
+  db.getSiteSettings(club.id),
+  db.getSponsorsForPlacement(club.id, placement),
+  db.getContactSettings(club.id),
+]);
+
+const navItems = siteSettingsRecord?.nav_items ? JSON.parse(siteSettingsRecord.nav_items) : null;
+const headerSettings = siteSettingsRecord?.header_settings ? JSON.parse(siteSettingsRecord.header_settings) : null;
+const footerLinks = siteSettingsRecord?.footer_links ? JSON.parse(siteSettingsRecord.footer_links) : null;
+
+const contactFormSettings = {
+  is_enabled: contactSettings?.is_enabled ?? 1,
+  retention_days: contactSettings?.retention_days ?? 30,
+  form_title: contactSettings?.form_title || `Contact ${club.name}`,
+  form_intro: contactSettings?.form_intro || `Have a question for ${club.name}? Send us a message and we will get back to you soon.`,
+  success_message: contactSettings?.success_message || 'Thanks! We will get back to you shortly.'
+};
+---
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content={title} />
+  <title>{title} | {club.name}</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+</head>
+<body class="bg-white text-slate-900 antialiased">
+  <ClubNavigation club={club} slug={slug!} currentPath={`/${slug}/${pageSlug}`} navItems={navItems} headerSettings={headerSettings} />
+
+  <main class="pt-20">
+    <section class="py-12 bg-slate-50 border-b border-slate-200">
+      <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+        <h1 class="text-3xl sm:text-4xl font-bold text-slate-900">{title}</h1>
+        {pageRecord?.meta_description && (
+          <p class="text-slate-600 mt-3">{pageRecord.meta_description}</p>
+        )}
+      </div>
+    </section>
+
+    <section class="py-12">
+      <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+        {isContact ? (
+          <div class="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+            <div class="space-y-4">
+              <div class="grid gap-4 md:grid-cols-2">
+                {club.contact_email && (
+                  <div class="rounded-2xl border border-slate-200 p-5 bg-white">
+                    <p class="text-sm text-slate-500">Email</p>
+                    <p class="text-lg font-semibold text-slate-900 mt-2">
+                      <a href={`mailto:${club.contact_email}`} class="text-primary-600 hover:text-primary-700">
+                        {club.contact_email}
+                      </a>
+                    </p>
+                  </div>
+                )}
+                {club.contact_phone && (
+                  <div class="rounded-2xl border border-slate-200 p-5 bg-white">
+                    <p class="text-sm text-slate-500">Phone</p>
+                    <p class="text-lg font-semibold text-slate-900 mt-2">
+                      <a href={`tel:${club.contact_phone}`} class="text-primary-600 hover:text-primary-700">
+                        {club.contact_phone}
+                      </a>
+                    </p>
+                  </div>
+                )}
+                {club.address && (
+                  <div class="rounded-2xl border border-slate-200 p-5 bg-white md:col-span-2">
+                    <p class="text-sm text-slate-500">Address</p>
+                    <p class="text-lg font-semibold text-slate-900 mt-2">{club.address}</p>
+                  </div>
+                )}
+                {!club.contact_email && !club.contact_phone && !club.address && (
+                  <div class="rounded-2xl border border-slate-200 p-6 text-slate-600">
+                    Contact details will appear here once the club updates their profile.
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+              <h2 class="text-xl font-semibold text-slate-900">{contactFormSettings.form_title}</h2>
+              <p class="text-sm text-slate-500 mt-2">{contactFormSettings.form_intro}</p>
+
+              {contactFormSettings.is_enabled ? (
+                <form id="contact-form" class="mt-6 space-y-4" data-club-id={club.id}>
+                  <input type="text" name="name" placeholder="Your name" class="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm" />
+                  <input type="email" name="email" placeholder="Email address" class="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm" />
+                  <input type="text" name="phone" placeholder="Phone (optional)" class="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm" />
+                  <textarea name="message" rows="4" placeholder="How can we help?" class="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm" required></textarea>
+                  <label class="flex items-start gap-2 text-xs text-slate-500">
+                    <input type="checkbox" name="consent" class="mt-1 rounded border-slate-300 text-green-600" required />
+                    <span>I consent to {club.name} storing this message for {contactFormSettings.retention_days} days to respond.</span>
+                  </label>
+                  <button type="submit" class="w-full px-4 py-2 rounded-lg bg-green-500 text-white text-sm font-semibold hover:bg-green-600">Send message</button>
+                  <p id="contact-success" class="hidden text-sm text-green-600"></p>
+                  <p id="contact-error" class="hidden text-sm text-red-600"></p>
+                </form>
+              ) : (
+                <div class="mt-6 rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">
+                  The contact form is currently disabled. Please reach out via email or phone.
+                </div>
+              )}
+            </div>
+          </div>
+        ) : contentHtml ? (
+          <article class="markdown" set:html={contentHtml} />
+        ) : (
+          <div class="rounded-2xl border border-slate-200 p-6 text-slate-600">
+            {club.description || 'This page will be updated soon.'}
+          </div>
+        )}
+      </div>
+    </section>
+
+    <Sponsors sponsors={sponsors} primaryColor={club.primary_color} variant="compact" />
+  </main>
+
+  <ClubFooter club={club} slug={slug!} footerLinks={footerLinks} />
+</body>
+</html>
+
+<script>
+  const form = document.getElementById('contact-form');
+  if (form) {
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const payload = {
+        name: form.querySelector('[name="name"]').value,
+        email: form.querySelector('[name="email"]').value,
+        phone: form.querySelector('[name="phone"]').value,
+        message: form.querySelector('[name="message"]').value,
+        consent: form.querySelector('[name="consent"]').checked ? 1 : 0,
+      };
+
+      const clubId = form.dataset.clubId;
+      const successEl = document.getElementById('contact-success');
+      const errorEl = document.getElementById('contact-error');
+
+      successEl.classList.add('hidden');
+      errorEl.classList.add('hidden');
+
+      const res = await fetch(`/api/clubs/${clubId}/contact/submit`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        errorEl.textContent = data.error || 'Failed to submit message.';
+        errorEl.classList.remove('hidden');
+        return;
+      }
+
+      successEl.textContent = data.message || 'Thanks! We will get back to you shortly.';
+      successEl.classList.remove('hidden');
+      form.reset();
+    });
+  }
+</script>
+
+<style is:global>
+  @import "../../styles/global.css";
+</style>

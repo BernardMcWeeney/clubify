@@ -1,0 +1,144 @@
+---
+import AdminLayout from '../../../../../components/admin/AdminLayout.astro';
+import AdminPageTemplate from '../../../../../components/admin/AdminPageTemplate.astro';
+import AdminCard from '../../../../../components/admin/AdminCard.astro';
+import Icon from '../../../../../components/admin/Icon.astro';
+import { DatabaseService } from '../../../../../lib/db';
+import { getAuthContext } from '../../../../../lib/auth';
+
+const { slug } = Astro.params;
+
+if (!Astro.locals.runtime.env.DB) {
+  return Astro.redirect('/admin?error=db_not_configured');
+}
+
+const db = new DatabaseService(Astro.locals.runtime.env.DB);
+const { user } = await getAuthContext(Astro.cookies, db);
+
+if (!user) {
+  return Astro.redirect('/admin/login');
+}
+
+const club = await db.getClubBySlug(slug!);
+if (!club) {
+  return Astro.redirect('/admin');
+}
+
+const member = await db.getClubMember(club.id, user.id);
+if (!member || member.role !== 'admin') {
+  return Astro.redirect(`/${slug}/admin-portal/settings/social`);
+}
+
+// Get pages from URL params
+const pagesParam = Astro.url.searchParams.get('pages');
+let pages: Array<{ id: string; name: string; token: string }> = [];
+
+if (pagesParam) {
+  try {
+    pages = JSON.parse(atob(pagesParam));
+  } catch {
+    return Astro.redirect(`/${slug}/admin-portal/settings/social?error=invalid_pages`);
+  }
+}
+
+if (pages.length === 0) {
+  return Astro.redirect(`/${slug}/admin-portal/settings/social?error=no_pages_found`);
+}
+
+const breadcrumbs = [
+  { label: 'Dashboard', href: `/${slug}/admin-portal` },
+  { label: 'Settings', href: `/${slug}/admin-portal/settings` },
+  { label: 'Social', href: `/${slug}/admin-portal/settings/social` },
+  { label: 'Select Page' },
+];
+---
+
+<AdminLayout
+  title="Select Facebook Page"
+  club={club}
+  user={user}
+  member={member}
+  currentPage="settings"
+>
+  <AdminPageTemplate
+    title="Select Facebook Page"
+    subtitle={`You manage multiple Facebook Pages. Select the page you want to connect to ${club.name}.`}
+    breadcrumbs={breadcrumbs}
+  >
+    <div class="max-w-2xl">
+      <div class="space-y-4">
+        {pages.map((page) => (
+          <button
+            class="page-option w-full flex items-center gap-4 p-4 bg-white hover:bg-slate-50 rounded-xl border border-slate-200 hover:border-slate-300 transition-colors text-left shadow-sm"
+            data-page-id={page.id}
+            data-page-name={page.name}
+            data-page-token={page.token}
+          >
+            <div class="w-12 h-12 rounded-xl bg-[#1877F2] flex items-center justify-center">
+              <Icon name="facebook" size="xl" class="text-white" />
+            </div>
+            <div class="flex-1">
+              <h3 class="text-lg font-semibold text-slate-900">{page.name}</h3>
+              <p class="text-slate-500 text-sm">Page ID: {page.id}</p>
+            </div>
+            <Icon name="chevron-right" size="lg" class="text-slate-400" />
+          </button>
+        ))}
+      </div>
+
+      <div class="mt-6 text-center">
+        <a href={`/${slug}/admin-portal/settings/social`} class="text-slate-500 hover:text-slate-900 text-sm">
+          Cancel and go back
+        </a>
+      </div>
+
+      <!-- Loading overlay -->
+      <div id="loading" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50">
+        <AdminCard class="p-6 text-center">
+          <div class="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin mx-auto mb-3" style="border-color: var(--admin-accent); border-top-color: transparent;"></div>
+          <p class="text-slate-700">Connecting page...</p>
+        </AdminCard>
+      </div>
+    </div>
+  </AdminPageTemplate>
+</AdminLayout>
+
+<script define:vars={{ clubId: club.id, slug }}>
+  const buttons = document.querySelectorAll('.page-option');
+  const loading = document.getElementById('loading');
+
+  buttons.forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const pageId = btn.getAttribute('data-page-id');
+      const pageName = btn.getAttribute('data-page-name');
+      const pageToken = btn.getAttribute('data-page-token');
+
+      if (!pageId || !pageToken) return;
+
+      loading?.classList.remove('hidden');
+
+      try {
+        const response = await fetch(`/api/clubs/${clubId}/social/select-page`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            pageId,
+            pageName,
+            accessToken: pageToken,
+          }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Failed to connect page');
+        }
+
+        window.location.href = `/${slug}/admin-portal/settings/social?success=facebook_connected`;
+      } catch (error) {
+        alert(error.message || 'Failed to connect page');
+        loading?.classList.add('hidden');
+      }
+    });
+  });
+</script>

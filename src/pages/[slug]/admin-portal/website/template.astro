@@ -1,0 +1,193 @@
+---
+import AdminLayout from '../../../../components/admin/AdminLayout.astro';
+import AdminPageTemplate from '../../../../components/admin/AdminPageTemplate.astro';
+import AdminCard from '../../../../components/admin/AdminCard.astro';
+import Icon from '../../../../components/admin/Icon.astro';
+import StatusChip from '../../../../components/admin/StatusChip.astro';
+import { DatabaseService } from '../../../../lib/db';
+import { getAuthContext } from '../../../../lib/auth';
+import { hasPermission, type Role } from '../../../../lib/permissions';
+
+const { slug } = Astro.params;
+
+if (!Astro.locals.runtime.env.DB) {
+  return Astro.redirect('/admin?error=db_not_configured');
+}
+
+const db = new DatabaseService(Astro.locals.runtime.env.DB);
+const { user } = await getAuthContext(Astro.cookies, db);
+
+if (!user) {
+  return Astro.redirect('/admin/login');
+}
+
+const club = await db.getClubBySlug(slug!);
+if (!club) {
+  return Astro.redirect('/admin');
+}
+
+const member = await db.getClubMember(club.id, user.id);
+if (!member) {
+  return Astro.redirect('/admin');
+}
+
+const canEdit = hasPermission(member.role as Role, 'settings.edit');
+const templateId = club.template as 'classic' | 'matchday' | 'community';
+
+const templates = [
+  {
+    id: 'classic',
+    name: 'Classic',
+    description: 'Traditional club layout with hero, news, and fixtures',
+    features: ['Hero with crest', 'News feed', 'Fixture list', 'Sponsors'],
+    color: '#059669',
+  },
+  {
+    id: 'matchday',
+    name: 'Matchday',
+    description: 'Results-focused design for competitive clubs',
+    features: ['Match countdown', 'Result banner', 'Results ticker', 'Calendar'],
+    color: '#2563eb',
+  },
+  {
+    id: 'community',
+    name: 'Community',
+    description: 'Engagement-focused for community-driven clubs',
+    features: ['Volunteer spotlight', 'Highlights', 'Notice board', 'Sponsors'],
+    color: '#7c3aed',
+  },
+];
+
+const breadcrumbs = [
+  { label: 'Dashboard', href: `/${slug}/admin-portal` },
+  { label: 'Website', href: `/${slug}/admin-portal/website` },
+  { label: 'Template' },
+];
+---
+
+<AdminLayout
+  title="Template"
+  club={club}
+  user={user}
+  member={member}
+  currentPage="website"
+>
+  <AdminPageTemplate
+    title="Choose Template"
+    subtitle="Select a design that fits your club's style"
+    breadcrumbs={breadcrumbs}
+  >
+    <Fragment slot="actions">
+      <StatusChip variant="success" size="sm">
+        <Icon name="check-circle" size="sm" class="mr-1" />
+        Current: {templateId.charAt(0).toUpperCase() + templateId.slice(1)}
+      </StatusChip>
+    </Fragment>
+
+    <!-- Templates Grid -->
+    <div class="grid gap-4 sm:grid-cols-3">
+      {templates.map((template) => (
+        <div class:list={["card overflow-hidden transition-all", templateId === template.id ? "ring-2" : ""]} style={templateId === template.id ? `--tw-ring-color: ${template.color}` : ''}>
+          <!-- Header -->
+          <div class="p-5 text-white" style={`background: ${template.color}`}>
+            <div class="flex items-center justify-between mb-3">
+              <div class="w-10 h-10 rounded-lg bg-white/20 flex items-center justify-center">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6z"/>
+                </svg>
+              </div>
+              {templateId === template.id && (
+                <span class="text-xs font-medium bg-white/20 px-2 py-1 rounded-full">Active</span>
+              )}
+            </div>
+            <h3 class="text-lg font-semibold">{template.name}</h3>
+            <p class="text-sm text-white/80 mt-1">{template.description}</p>
+          </div>
+
+          <!-- Features -->
+          <div class="p-5">
+            <p class="text-xs font-medium uppercase tracking-wide text-slate-400 mb-3">Features</p>
+            <ul class="space-y-2">
+              {template.features.map((feature) => (
+                <li class="flex items-center gap-2 text-sm text-slate-600">
+                  <svg class="w-4 h-4 flex-shrink-0" style={`color: ${template.color}`} fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                  </svg>
+                  {feature}
+                </li>
+              ))}
+            </ul>
+
+            <div class="mt-5">
+              {templateId === template.id ? (
+                <div class="w-full text-center py-2 text-sm font-medium rounded-lg" style={`background: ${template.color}15; color: ${template.color}`}>
+                  Current Template
+                </div>
+              ) : canEdit ? (
+                <button
+                  class="template-switch-btn w-full py-2 text-sm font-medium text-white rounded-lg transition-all hover:opacity-90"
+                  style={`background: ${template.color}`}
+                  data-template={template.id}
+                  data-template-name={template.name}
+                  data-club-id={club.id}
+                >
+                  Switch to {template.name}
+                </button>
+              ) : (
+                <div class="w-full text-center py-2 text-sm font-medium text-slate-400 bg-slate-100 rounded-lg">
+                  Admin only
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+
+    <!-- Info -->
+    <div class="alert alert-info">
+      <Icon name="info" size="lg" class="alert-icon flex-shrink-0 mt-0.5" />
+      <div>
+        <p class="text-sm font-medium" style="color: var(--admin-accent)">What happens when you switch?</p>
+        <p class="text-sm text-slate-600">Your homepage layout will reset to the new template's defaults. Content and settings are preserved.</p>
+      </div>
+    </div>
+  </AdminPageTemplate>
+</AdminLayout>
+
+<script define:vars={{ clubId: club.id, slug }}>
+  document.querySelectorAll('.template-switch-btn')?.forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const template = btn.dataset.template;
+      const templateName = btn.dataset.templateName;
+
+      if (!confirm(`Switch to ${templateName}?\n\nYour homepage layout will reset. Content is preserved.`)) {
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Switching...';
+
+      try {
+        const res = await fetch(`/api/clubs/${clubId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ template }),
+        });
+
+        if (!res.ok) {
+          const data = await res.json();
+          throw new Error(data.error || 'Failed to change template');
+        }
+
+        await fetch(`/api/clubs/${clubId}/homepage-config`, { method: 'DELETE' });
+        window.location.reload();
+      } catch (error) {
+        console.error('Template switch error:', error);
+        alert(error.message || 'Failed to switch template');
+        btn.disabled = false;
+        btn.textContent = `Switch to ${templateName}`;
+      }
+    });
+  });
+</script>

@@ -1,0 +1,17 @@
+# Clubify robots.txt
+# https://www.robotstxt.org/
+
+User-agent: *
+Allow: /
+
+# Block admin areas from indexing
+Disallow: /admin/
+Disallow: /*/admin-portal/
+Disallow: /api/
+
+# Block error pages
+Disallow: /404
+Disallow: /500
+
+# Sitemap location (dynamic per club)
+# Sitemap: https://clubify.ie/sitemap.xml

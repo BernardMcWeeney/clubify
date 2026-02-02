@@ -1,0 +1,1165 @@
+---
+// Onboarding Wizard - Server component wrapper
+import { getAllSports } from '../../lib/sports';
+
+const sports = getAllSports();
+---
+
+<div id="onboarding-app" class="min-h-screen mesh-gradient-light">
+  <div class="mx-auto max-w-3xl px-4 py-12">
+    <!-- Logo -->
+    <div class="text-center mb-8">
+      <a href="/" class="inline-flex items-center gap-3">
+        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center shadow-lg shadow-primary-500/25">
+          <svg class="w-7 h-7 text-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" fill="currentColor" opacity="0.3"/>
+            <path d="M12 6c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6zm0 10c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4z" fill="currentColor"/>
+            <circle cx="12" cy="12" r="2" fill="currentColor"/>
+          </svg>
+        </div>
+        <span class="text-2xl font-bold text-slate-900">Clubify</span>
+      </a>
+    </div>
+
+    <!-- Progress Steps -->
+    <div id="progress-steps" class="mb-8">
+      <div class="flex items-center justify-between">
+        <template id="step-template">
+          <div class="step-item flex items-center">
+            <div class="step-circle w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-all"></div>
+            <div class="step-line hidden sm:block w-8 md:w-12 h-0.5 mx-1"></div>
+          </div>
+        </template>
+      </div>
+      <div id="step-labels" class="flex justify-between mt-2 text-xs text-slate-500">
+        <span>Sport</span>
+        <span>Account</span>
+        <span>Club Info</span>
+        <span>Branding</span>
+        <span>Template</span>
+        <span>Go Live</span>
+      </div>
+    </div>
+
+    <!-- Step Content -->
+    <div id="step-content" class="glass-light rounded-2xl border border-slate-200 p-8 shadow-xl">
+      <!-- Step 0: Sport Selection -->
+      <div id="step-0" class="step-panel">
+        <h2 class="text-2xl font-bold text-slate-900 mb-2">What type of club are you?</h2>
+        <p class="text-slate-600 mb-6">Select your sport to get started with a website tailored for your club.</p>
+
+        <div id="sport-grid" class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+          {sports.map((sport) => (
+            <button
+              type="button"
+              data-sport={sport.id}
+              data-status={sport.status}
+              class="sport-card group relative p-4 rounded-xl border-2 border-slate-200 bg-white hover:border-slate-300 hover:shadow-md transition-all text-left"
+            >
+              <div class="flex items-center gap-3 mb-2">
+                <div class={`w-10 h-10 rounded-lg flex items-center justify-center text-lg ${sport.status === 'ready' ? 'bg-primary-100' : 'bg-slate-100'}`}>
+                  <Fragment set:html={sport.icon} />
+                </div>
+                <div>
+                  <h3 class="font-semibold text-slate-900">{sport.name}</h3>
+                  {sport.status === 'ready' ? (
+                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-700">
+                      Available
+                    </span>
+                  ) : (
+                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700">
+                      Coming Soon
+                    </span>
+                  )}
+                </div>
+              </div>
+              <p class="text-sm text-slate-500 line-clamp-2">{sport.tagline}</p>
+
+              <!-- Selection indicator -->
+              <div class="sport-check absolute top-3 right-3 w-5 h-5 rounded-full border-2 border-slate-300 hidden group-data-[selected]:flex items-center justify-center bg-primary-500 border-primary-500">
+                <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                </svg>
+              </div>
+            </button>
+          ))}
+        </div>
+
+        <button type="button" id="sport-submit" disabled
+          class="w-full py-3 px-6 bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white font-semibold rounded-xl transition-all shadow-lg shadow-primary-500/25 hover:shadow-primary-500/40 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+          <span>Continue</span>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Step 0.5: Waitlist (for coming soon sports) -->
+      <div id="step-waitlist" class="step-panel hidden">
+        <div class="text-center">
+          <div id="waitlist-sport-icon" class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-amber-100 flex items-center justify-center text-2xl">
+            <!-- Icon will be inserted here -->
+          </div>
+          <h2 class="text-2xl font-bold text-slate-900 mb-2">
+            <span id="waitlist-sport-name">This sport</span> is coming soon!
+          </h2>
+          <p class="text-slate-600 mb-6">
+            Join the waitlist and we'll notify you as soon as we launch support for <span id="waitlist-sport-name-2">this sport</span> clubs.
+          </p>
+        </div>
+
+        <form id="waitlist-form" class="space-y-4">
+          <div>
+            <label for="waitlist-email" class="block text-sm font-medium text-slate-700 mb-2">Email address</label>
+            <input type="email" id="waitlist-email" name="email" required
+              class="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              placeholder="john@example.com">
+          </div>
+
+          <div>
+            <label for="waitlist-club-name" class="block text-sm font-medium text-slate-700 mb-2">Club name (optional)</label>
+            <input type="text" id="waitlist-club-name" name="clubName"
+              class="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              placeholder="Your club name">
+          </div>
+
+          <div id="waitlist-success" class="hidden p-4 bg-primary-50 border border-primary-200 rounded-xl">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-full bg-primary-500 flex items-center justify-center">
+                <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                </svg>
+              </div>
+              <div>
+                <p class="text-primary-700 font-medium">You're on the list!</p>
+                <p class="text-primary-600 text-sm">We'll email you when we launch.</p>
+              </div>
+            </div>
+          </div>
+
+          <div id="waitlist-error" class="hidden p-4 bg-red-50 border border-red-200 rounded-xl">
+            <p class="text-red-700 text-sm" id="waitlist-error-message">Something went wrong. Please try again.</p>
+          </div>
+
+          <div class="flex gap-3 pt-2">
+            <button type="button" id="back-to-sport"
+              class="px-6 py-3 border border-slate-200 text-slate-600 font-semibold rounded-xl hover:bg-slate-50 transition-colors">
+              Back
+            </button>
+            <button type="submit" id="waitlist-submit"
+              class="flex-1 py-3 px-6 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-semibold rounded-xl transition-all shadow-lg shadow-amber-500/25 hover:shadow-amber-500/40 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+              <span>Join Waitlist</span>
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+              </svg>
+            </button>
+          </div>
+        </form>
+
+        <div class="mt-6 pt-6 border-t border-slate-200 text-center">
+          <p class="text-slate-500 text-sm mb-3">Want to create a club for a sport that's already available?</p>
+          <button type="button" id="choose-different-sport" class="text-primary-600 hover:text-primary-700 font-medium text-sm">
+            Choose a different sport
+          </button>
+        </div>
+      </div>
+
+      <!-- Step 1: Account -->
+      <div id="step-1" class="step-panel">
+        <h2 class="text-2xl font-bold text-slate-900 mb-2">Create your account</h2>
+        <p class="text-slate-600 mb-6">Enter your details to get started with Clubify.</p>
+
+        <form id="account-form" class="space-y-4">
+          <div>
+            <label for="name" class="block text-sm font-medium text-slate-700 mb-2">Your name</label>
+            <input type="text" id="name" name="name" required
+              class="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              placeholder="John Murphy">
+          </div>
+
+          <div>
+            <label for="email" class="block text-sm font-medium text-slate-700 mb-2">Email address</label>
+            <input type="email" id="email" name="email" required
+              class="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              placeholder="john@example.com">
+          </div>
+
+          <div id="magic-link-sent" class="hidden p-4 bg-primary-50 border border-primary-200 rounded-xl">
+            <p class="text-primary-700 text-sm">
+              <strong>Check your email!</strong> We've sent you a magic link to sign in.
+            </p>
+          </div>
+
+          <!-- Dev mode link (only shown when no email service configured) -->
+          <div id="dev-mode-link" class="hidden p-4 bg-yellow-50 border border-yellow-200 rounded-xl">
+            <div class="flex items-start gap-3">
+              <svg class="w-5 h-5 text-yellow-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
+              </svg>
+              <div class="flex-1">
+                <p class="text-yellow-700 font-medium">Dev Mode</p>
+                <p class="text-yellow-700/80 text-sm mt-1 mb-3">No email service configured. Click below to sign in directly:</p>
+                <a id="dev-link" href="#" class="inline-flex items-center gap-2 px-4 py-2 bg-yellow-500 hover:bg-yellow-400 text-black font-semibold rounded-lg text-sm transition-colors">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+                  </svg>
+                  Click to sign in
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex gap-3">
+            <button type="button" id="back-to-0"
+              class="px-6 py-3 border border-slate-200 text-slate-600 font-semibold rounded-xl hover:bg-slate-50 transition-colors">
+              Back
+            </button>
+            <button type="submit" id="account-submit"
+              class="flex-1 py-3 px-6 bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white font-semibold rounded-xl transition-all shadow-lg shadow-primary-500/25 hover:shadow-primary-500/40 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+              <span>Continue with email</span>
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+              </svg>
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Step 2: Club Info -->
+      <div id="step-2" class="step-panel hidden">
+        <h2 class="text-2xl font-bold text-slate-900 mb-2">Tell us about your club</h2>
+        <p class="text-slate-600 mb-6">Basic information about your GAA club.</p>
+
+        <form id="club-form" class="space-y-4">
+          <div>
+            <label for="club-name" class="block text-sm font-medium text-slate-700 mb-2">Club name</label>
+            <input type="text" id="club-name" name="club-name" required
+              class="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              placeholder="St. Patrick's GAA">
+          </div>
+
+          <div>
+            <label for="county" class="block text-sm font-medium text-slate-700 mb-2">County</label>
+            <select id="county" name="county" required
+              class="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+              <option value="">Select county...</option>
+            </select>
+          </div>
+
+          <div>
+            <label for="slug" class="block text-sm font-medium text-slate-700 mb-2">Club URL</label>
+            <div class="flex items-center">
+              <input type="text" id="slug" name="slug" required
+                class="flex-1 px-4 py-3 bg-white border border-slate-200 rounded-l-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                placeholder="st-patricks-dublin">
+              <span class="px-4 py-3 bg-slate-100 border border-slate-200 rounded-r-xl text-slate-500 text-sm">.clubify.ie</span>
+            </div>
+            <p id="slug-status" class="mt-1 text-sm"></p>
+            <div class="mt-2 flex items-start gap-2 text-xs text-slate-500">
+              <svg class="w-4 h-4 text-slate-400 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M12 20a8 8 0 100-16 8 8 0 000 16z"/>
+              </svg>
+              <span>Format is <strong class="text-slate-700">clubname-county</strong>. We'll auto-format it for you. You can change your domain later or connect a custom domain.</span>
+            </div>
+          </div>
+
+          <div class="flex gap-3 pt-4">
+            <button type="button" id="back-to-1"
+              class="px-6 py-3 border border-slate-200 text-slate-600 font-semibold rounded-xl hover:bg-slate-50 transition-colors">
+              Back
+            </button>
+            <button type="submit" id="club-submit"
+              class="flex-1 py-3 px-6 bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white font-semibold rounded-xl transition-all shadow-lg shadow-primary-500/25 hover:shadow-primary-500/40 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+              <span>Continue</span>
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+              </svg>
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Step 3: Branding -->
+      <div id="step-3" class="step-panel hidden">
+        <h2 class="text-2xl font-bold text-slate-900 mb-2">Club branding</h2>
+        <p class="text-slate-600 mb-2">Upload your crest and choose your club colours.</p>
+        <p class="text-slate-500 text-sm mb-6">You can update these later in Settings.</p>
+
+        <form id="branding-form" class="space-y-6">
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-2">Club crest</label>
+            <div id="crest-upload" class="border-2 border-dashed border-slate-200 rounded-xl p-8 text-center hover:border-primary-500 transition-colors cursor-pointer bg-white/70">
+              <div id="crest-preview" class="hidden mb-4">
+                <img id="crest-image" src="" alt="Club crest" class="w-24 h-24 mx-auto object-contain">
+              </div>
+              <div id="crest-placeholder">
+                <svg class="w-12 h-12 mx-auto text-slate-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+                <p class="text-slate-600 text-sm">Click to upload or drag and drop</p>
+                <p class="text-slate-500 text-xs mt-1">PNG, JPG or SVG (max 2MB)</p>
+              </div>
+              <input type="file" id="crest-input" accept="image/*" class="hidden">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label for="primary-color" class="block text-sm font-medium text-slate-700 mb-2">Primary colour</label>
+              <div class="flex items-center gap-2">
+                <input type="color" id="primary-color" value="#006838"
+                  class="w-12 h-12 rounded-lg border-0 cursor-pointer">
+                <input type="text" id="primary-color-text" value="#006838"
+                  class="flex-1 px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500">
+              </div>
+            </div>
+            <div>
+              <label for="secondary-color" class="block text-sm font-medium text-slate-700 mb-2">Secondary colour</label>
+              <div class="flex items-center gap-2">
+                <input type="color" id="secondary-color" value="#FFFFFF"
+                  class="w-12 h-12 rounded-lg border-0 cursor-pointer">
+                <input type="text" id="secondary-color-text" value="#FFFFFF"
+                  class="flex-1 px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500">
+              </div>
+            </div>
+          </div>
+
+          <!-- Color preview -->
+          <div class="p-4 rounded-xl border border-slate-200" id="color-preview" style="background: linear-gradient(135deg, #006838, #004d2a);">
+            <div class="flex items-center gap-3">
+              <div class="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center">
+                <span class="text-white font-bold text-xl">GAA</span>
+              </div>
+              <div>
+                <div class="text-white font-bold">Your Club Name</div>
+                <div class="text-white/70 text-sm">Preview of your colours</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex gap-3 pt-4">
+            <button type="button" id="back-to-2"
+              class="px-6 py-3 border border-slate-200 text-slate-600 font-semibold rounded-xl hover:bg-slate-50 transition-colors">
+              Back
+            </button>
+            <button type="submit" id="branding-submit"
+              class="flex-1 py-3 px-6 bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white font-semibold rounded-xl transition-all shadow-lg shadow-primary-500/25 hover:shadow-primary-500/40 flex items-center justify-center gap-2">
+              <span>Continue</span>
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+              </svg>
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Step 4: Template -->
+      <div id="step-4" class="step-panel hidden">
+        <h2 class="text-2xl font-bold text-slate-900 mb-2">Choose your template</h2>
+        <p class="text-slate-600 mb-2">Select the layout that best suits your club.</p>
+        <p class="text-slate-500 text-sm mb-6">You can switch templates any time from your admin portal.</p>
+
+        <div id="templates-grid" class="grid gap-6 md:grid-cols-2">
+          <!-- Template cards will be inserted here -->
+        </div>
+
+        <div class="flex gap-3 pt-6">
+          <button type="button" id="back-to-3"
+            class="px-6 py-3 border border-slate-200 text-slate-600 font-semibold rounded-xl hover:bg-slate-50 transition-colors">
+            Back
+          </button>
+          <button type="button" id="template-submit"
+            class="flex-1 py-3 px-6 bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white font-semibold rounded-xl transition-all shadow-lg shadow-primary-500/25 hover:shadow-primary-500/40 flex items-center justify-center gap-2">
+            <span>Continue</span>
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Step 5: Go Live -->
+      <div id="step-5" class="step-panel hidden">
+        <div class="text-center">
+          <div class="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center">
+            <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+          </div>
+          <h2 class="text-2xl font-bold text-slate-900 mb-2">You're all set!</h2>
+          <p class="text-slate-600 mb-6">Your club website is ready to go live.</p>
+
+          <div class="bg-slate-50 rounded-xl p-4 mb-6 border border-slate-200">
+            <p class="text-slate-600 text-sm mb-2">Your club will be live at:</p>
+            <p id="final-url" class="text-primary-600 font-bold text-lg">yourclub.clubify.ie</p>
+          </div>
+
+          <div class="space-y-3">
+            <button type="button" id="go-live-btn"
+              class="w-full py-4 px-6 bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white font-bold rounded-xl transition-all shadow-lg shadow-primary-500/25 hover:shadow-primary-500/40 text-lg flex items-center justify-center gap-2">
+              <span>Launch your club</span>
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+              </svg>
+            </button>
+
+            <button type="button" id="back-to-4"
+              class="w-full py-3 px-6 border border-slate-200 text-slate-600 font-semibold rounded-xl hover:bg-slate-50 transition-colors">
+              Back to edit
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Help text -->
+    <p class="text-center text-slate-500 text-sm mt-6">
+      Already have a club?
+      <a href="/admin/login" class="text-primary-600 hover:text-primary-700">Sign in here</a>
+    </p>
+  </div>
+</div>
+
+<script>
+  // Counties list
+  const COUNTIES = [
+    'Antrim', 'Armagh', 'Carlow', 'Cavan', 'Clare', 'Cork', 'Derry', 'Donegal',
+    'Down', 'Dublin', 'Fermanagh', 'Galway', 'Kerry', 'Kildare', 'Kilkenny',
+    'Laois', 'Leitrim', 'Limerick', 'Longford', 'Louth', 'Mayo', 'Meath',
+    'Monaghan', 'Offaly', 'Roscommon', 'Sligo', 'Tipperary', 'Tyrone',
+    'Waterford', 'Westmeath', 'Wexford', 'Wicklow', 'London', 'New York'
+  ];
+
+  // Sports configuration (matches server-side)
+  const SPORTS = {
+    gaa: { name: 'GAA', status: 'ready', icon: '🏐' },
+    football: { name: 'Football', status: 'coming_soon', icon: '⚽' },
+    rugby: { name: 'Rugby', status: 'coming_soon', icon: '🏉' },
+    athletics: { name: 'Athletics', status: 'coming_soon', icon: '🏃' },
+    golf: { name: 'Golf', status: 'coming_soon', icon: '⛳' },
+    tennis: { name: 'Tennis', status: 'coming_soon', icon: '🎾' },
+    cycling: { name: 'Cycling', status: 'coming_soon', icon: '🚴' }
+  };
+
+  // Templates per sport - currently only GAA is active
+  const TEMPLATES_BY_SPORT: Record<string, Array<{id: string; name: string; description: string; highlights: string[]}>> = {
+    gaa: [
+      {
+        id: 'GAA-classic',
+        name: 'Classic Club',
+        description: 'A balanced, professional layout with hero, fixtures, news, and sponsors.',
+        highlights: ['Hero + fixtures', 'Latest news', 'Sponsors strip']
+      },
+      {
+        id: 'GAA-matchday',
+        name: 'Matchday Focus',
+        description: 'A match-first layout for clubs that want results front and centre.',
+        highlights: ['Match centre', 'Results ticker', 'News highlights']
+      },
+      {
+        id: 'GAA-community',
+        name: 'Community First',
+        description: 'Showcase volunteers, events, and club life alongside fixtures.',
+        highlights: ['Volunteer spotlights', 'Events grid', 'Club notices']
+      }
+    ],
+    // Other sports will use generic templates when they launch
+  };
+
+  // Get templates for current sport (defaults to GAA)
+  function getTemplatesForSport(sport: string): Array<{id: string; name: string; description: string; highlights: string[]}> {
+    return TEMPLATES_BY_SPORT[sport] || TEMPLATES_BY_SPORT['gaa'];
+  }
+
+  // State
+  let currentStep = 0;
+  let selectedSport: string | null = null;
+  let userData = { name: '', email: '' };
+  let clubData = { name: '', county: '', slug: '', id: '' };
+  let brandingData = { primaryColor: '#006838', secondaryColor: '#FFFFFF', crestUrl: '' };
+  let selectedTemplate = 'GAA-classic'; // Default to GAA classic
+
+  // Initialize
+  document.addEventListener('DOMContentLoaded', () => {
+    initCountyDropdown();
+    initTemplateCards();
+    initProgressSteps();
+    initEventListeners();
+    initSportSelection();
+    checkExistingSession();
+  });
+
+  function initCountyDropdown() {
+    const select = document.getElementById('county') as HTMLSelectElement;
+    COUNTIES.forEach(county => {
+      const option = document.createElement('option');
+      option.value = county;
+      option.textContent = county;
+      select.appendChild(option);
+    });
+  }
+
+  function getTemplatePreview(id: string) {
+    // Extract template type from sport-prefixed ID (e.g., 'GAA-matchday' -> 'matchday')
+    const templateType = id.includes('-') ? id.split('-').slice(1).join('-') : id;
+
+    switch (templateType) {
+      case 'matchday':
+        return `
+          <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+            <div class="h-10 rounded-lg bg-gradient-to-r from-amber-100 via-amber-50 to-white border border-amber-200/60"></div>
+            <div class="mt-3 grid grid-cols-3 gap-2">
+              <div class="h-8 rounded-lg bg-slate-100 border border-slate-200"></div>
+              <div class="h-8 rounded-lg bg-white border border-slate-200"></div>
+              <div class="h-8 rounded-lg bg-white border border-slate-200"></div>
+            </div>
+            <div class="mt-3 flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+              <div class="h-2 w-16 rounded-full bg-slate-200"></div>
+              <div class="h-6 w-10 rounded bg-amber-100"></div>
+            </div>
+          </div>
+        `;
+      case 'community':
+        return `
+          <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+            <div class="h-10 rounded-lg bg-gradient-to-r from-teal-100 via-teal-50 to-white border border-teal-200/60"></div>
+            <div class="mt-3 grid grid-cols-2 gap-2">
+              <div class="h-10 rounded-lg bg-white border border-slate-200"></div>
+              <div class="h-10 rounded-lg bg-slate-100 border border-slate-200"></div>
+            </div>
+            <div class="mt-3 h-6 rounded-lg bg-slate-100 border border-slate-200"></div>
+          </div>
+        `;
+      default:
+        return `
+          <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+            <div class="h-10 rounded-lg bg-gradient-to-r from-primary-100 via-primary-50 to-white border border-primary-200/60"></div>
+            <div class="mt-3 grid grid-cols-3 gap-2">
+              <div class="h-8 rounded-lg bg-white border border-slate-200"></div>
+              <div class="h-8 rounded-lg bg-white border border-slate-200"></div>
+              <div class="h-8 rounded-lg bg-slate-100 border border-slate-200"></div>
+            </div>
+            <div class="mt-3 h-6 rounded-lg bg-slate-100 border border-slate-200"></div>
+          </div>
+        `;
+    }
+  }
+
+  function initTemplateCards() {
+    const grid = document.getElementById('templates-grid');
+    if (!grid) return;
+
+    // Get templates for the selected sport
+    const templates = getTemplatesForSport(selectedSport || 'gaa');
+
+    // Ensure selected template is valid for this sport
+    if (!templates.find(t => t.id === selectedTemplate)) {
+      selectedTemplate = templates[0]?.id || 'GAA-classic';
+    }
+
+    grid.innerHTML = templates.map(t => `
+      <label class="template-card cursor-pointer block">
+        <input type="radio" name="template" value="${t.id}" class="hidden" ${t.id === selectedTemplate ? 'checked' : ''}>
+        <div class="p-5 rounded-2xl border-2 transition-all ${t.id === selectedTemplate ? 'border-primary-500 bg-primary-50 shadow-lg shadow-primary-500/10' : 'border-slate-200 bg-white hover:border-slate-300 hover:shadow-md'}">
+          <div class="mb-4">
+            ${getTemplatePreview(t.id)}
+          </div>
+          <div class="flex items-start gap-3">
+            <div class="flex-1">
+              <h3 class="font-semibold text-slate-900">${t.name}</h3>
+              <p class="text-slate-500 text-sm mt-1">${t.description}</p>
+              <div class="mt-3 flex flex-wrap gap-2">
+                ${t.highlights.map((h) => `<span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600">${h}</span>`).join('')}
+              </div>
+            </div>
+            <div class="template-check w-6 h-6 rounded-full border-2 ${t.id === selectedTemplate ? 'border-primary-500 bg-primary-500' : 'border-slate-300'} flex items-center justify-center">
+              ${t.id === selectedTemplate ? '<svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>' : ''}
+            </div>
+          </div>
+        </div>
+      </label>
+    `).join('');
+
+    // Add click handlers
+    grid.querySelectorAll('.template-card').forEach(card => {
+      card.addEventListener('click', () => {
+        const input = card.querySelector('input') as HTMLInputElement;
+        selectedTemplate = input.value;
+        initTemplateCards(); // Re-render
+      });
+    });
+  }
+
+  function initSportSelection() {
+    const sportCards = document.querySelectorAll('.sport-card');
+    const submitBtn = document.getElementById('sport-submit') as HTMLButtonElement;
+
+    sportCards.forEach(card => {
+      card.addEventListener('click', () => {
+        // Remove selection from all cards
+        sportCards.forEach(c => {
+          c.classList.remove('border-primary-500', 'bg-primary-50', 'shadow-lg');
+          c.classList.add('border-slate-200', 'bg-white');
+          c.removeAttribute('data-selected');
+        });
+
+        // Add selection to clicked card
+        card.classList.remove('border-slate-200', 'bg-white');
+        card.classList.add('border-primary-500', 'bg-primary-50', 'shadow-lg');
+        card.setAttribute('data-selected', 'true');
+
+        // Store selected sport
+        const rawSport = (card as HTMLElement).dataset.sport || null;
+        selectedSport = rawSport ? rawSport.toLowerCase() : null;
+
+        // Enable submit button
+        submitBtn.disabled = false;
+      });
+    });
+
+    // Sport submit handler
+    submitBtn.addEventListener('click', handleSportSubmit);
+
+    // Back to sport selection from waitlist
+    document.getElementById('back-to-sport')?.addEventListener('click', () => showStep(0));
+    document.getElementById('choose-different-sport')?.addEventListener('click', () => showStep(0));
+
+    // Waitlist form handler
+    document.getElementById('waitlist-form')?.addEventListener('submit', handleWaitlistSubmit);
+  }
+
+  function handleSportSubmit() {
+    if (!selectedSport) return;
+
+    const sportConfig = SPORTS[selectedSport as keyof typeof SPORTS];
+
+    if (sportConfig.status === 'coming_soon') {
+      // Show waitlist form
+      showWaitlistStep(sportConfig);
+    } else {
+      // Continue to account creation
+      showStep(1);
+    }
+  }
+
+  function showWaitlistStep(sportConfig: { name: string; icon: string }) {
+    // Hide all panels
+    document.querySelectorAll('.step-panel').forEach(panel => {
+      panel.classList.add('hidden');
+    });
+
+    // Update waitlist UI with sport info
+    const iconEl = document.getElementById('waitlist-sport-icon');
+    if (iconEl) iconEl.textContent = sportConfig.icon;
+
+    document.querySelectorAll('#waitlist-sport-name, #waitlist-sport-name-2').forEach(el => {
+      el.textContent = sportConfig.name;
+    });
+
+    // Show waitlist panel
+    document.getElementById('step-waitlist')?.classList.remove('hidden');
+
+    // Hide progress steps for waitlist
+    document.getElementById('progress-steps')?.classList.add('opacity-50');
+  }
+
+  async function handleWaitlistSubmit(e: Event) {
+    e.preventDefault();
+
+    const email = (document.getElementById('waitlist-email') as HTMLInputElement).value;
+    const clubName = (document.getElementById('waitlist-club-name') as HTMLInputElement).value;
+    const submitBtn = document.getElementById('waitlist-submit') as HTMLButtonElement;
+    const successEl = document.getElementById('waitlist-success');
+    const errorEl = document.getElementById('waitlist-error');
+
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span>Joining...</span>';
+
+    // Hide any previous messages
+    successEl?.classList.add('hidden');
+    errorEl?.classList.add('hidden');
+
+    try {
+      const res = await fetch('/api/waitlist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          clubName: clubName || undefined,
+          sport: selectedSport
+        })
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        successEl?.classList.remove('hidden');
+        submitBtn.innerHTML = '<span>You\'re on the list!</span>';
+
+        // Hide form inputs
+        (document.getElementById('waitlist-email') as HTMLInputElement).disabled = true;
+        (document.getElementById('waitlist-club-name') as HTMLInputElement).disabled = true;
+      } else {
+        throw new Error(data.error || 'Failed to join waitlist');
+      }
+    } catch (error) {
+      const errorMessage = document.getElementById('waitlist-error-message');
+      if (errorMessage) {
+        errorMessage.textContent = error instanceof Error ? error.message : 'Something went wrong. Please try again.';
+      }
+      errorEl?.classList.remove('hidden');
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = '<span>Join Waitlist</span><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>';
+    }
+  }
+
+  function initProgressSteps() {
+    const container = document.getElementById('progress-steps')?.querySelector('.flex');
+    if (!container) return;
+
+    // Restore opacity in case we're coming back from waitlist
+    document.getElementById('progress-steps')?.classList.remove('opacity-50');
+
+    container.innerHTML = '';
+    // Now 6 steps: 0-Sport, 1-Account, 2-Club, 3-Branding, 4-Template, 5-GoLive
+    for (let i = 0; i <= 5; i++) {
+      const isActive = i === currentStep;
+      const isCompleted = i < currentStep;
+      const isLast = i === 5;
+
+      const div = document.createElement('div');
+      div.className = 'flex items-center';
+      div.innerHTML = `
+        <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-xs sm:text-sm font-bold transition-all
+          ${isCompleted ? 'bg-primary-500 text-white' : isActive ? 'bg-primary-500/15 border-2 border-primary-500 text-primary-600' : 'bg-slate-200 text-slate-600'}">
+          ${isCompleted ? '<svg class="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>' : i + 1}
+        </div>
+        ${!isLast ? `<div class="hidden sm:block w-8 md:w-12 h-0.5 mx-1 ${isCompleted ? 'bg-primary-500' : 'bg-slate-200'}"></div>` : ''}
+      `;
+      container.appendChild(div);
+    }
+  }
+
+  function showStep(step: number) {
+    currentStep = step;
+    initProgressSteps();
+
+    document.querySelectorAll('.step-panel').forEach(panel => {
+      panel.classList.add('hidden');
+    });
+    document.getElementById(`step-${step}`)?.classList.remove('hidden');
+
+    // Update step labels visibility based on current step
+    const labelsEl = document.getElementById('step-labels');
+    if (labelsEl) {
+      labelsEl.classList.remove('hidden');
+    }
+  }
+
+  function initEventListeners() {
+    // Account form
+    document.getElementById('account-form')?.addEventListener('submit', handleAccountSubmit);
+    // Back from account goes to sport selection (step 0)
+    document.getElementById('back-to-0')?.addEventListener('click', () => showStep(0));
+
+    // Club form
+    document.getElementById('club-form')?.addEventListener('submit', handleClubSubmit);
+    // Back from club info goes to account (step 1)
+    document.getElementById('back-to-1')?.addEventListener('click', () => showStep(1));
+
+    // Slug input
+    let slugTimeout: number;
+    document.getElementById('slug')?.addEventListener('input', (e) => {
+      clearTimeout(slugTimeout);
+      const input = e.target as HTMLInputElement;
+      input.dataset.manual = 'true';
+      input.value = normalizeSlug(input.value);
+      slugTimeout = window.setTimeout(() => checkSlug(input.value), 500);
+    });
+
+    // Auto-generate slug from club name
+    document.getElementById('club-name')?.addEventListener('input', (e) => {
+      if ((document.getElementById('slug') as HTMLInputElement)?.dataset.manual) return;
+      updateSlugFromInputs();
+    });
+
+    document.getElementById('county')?.addEventListener('change', () => {
+      updateSlugFromInputs();
+    });
+
+    document.getElementById('slug')?.addEventListener('focus', (e) => {
+      (e.target as HTMLInputElement).dataset.manual = 'true';
+    });
+
+    // Branding form
+    document.getElementById('branding-form')?.addEventListener('submit', handleBrandingSubmit);
+    // Back from branding goes to club info (step 2)
+    document.getElementById('back-to-2')?.addEventListener('click', () => showStep(2));
+
+    // Color inputs
+    document.getElementById('primary-color')?.addEventListener('input', (e) => {
+      const color = (e.target as HTMLInputElement).value;
+      (document.getElementById('primary-color-text') as HTMLInputElement).value = color;
+      brandingData.primaryColor = color;
+      updateColorPreview();
+    });
+
+    document.getElementById('secondary-color')?.addEventListener('input', (e) => {
+      const color = (e.target as HTMLInputElement).value;
+      (document.getElementById('secondary-color-text') as HTMLInputElement).value = color;
+      brandingData.secondaryColor = color;
+      updateColorPreview();
+    });
+
+    // Crest upload
+    const crestUpload = document.getElementById('crest-upload');
+    const crestInput = document.getElementById('crest-input') as HTMLInputElement;
+
+    crestUpload?.addEventListener('click', () => crestInput?.click());
+    crestInput?.addEventListener('change', handleCrestUpload);
+
+    // Template selection
+    document.getElementById('template-submit')?.addEventListener('click', handleTemplateSubmit);
+    // Back from template goes to branding (step 3)
+    document.getElementById('back-to-3')?.addEventListener('click', () => showStep(3));
+
+    // Go live
+    document.getElementById('go-live-btn')?.addEventListener('click', handleGoLive);
+    // Back from go live goes to template (step 4)
+    document.getElementById('back-to-4')?.addEventListener('click', () => showStep(4));
+  }
+
+  async function checkExistingSession() {
+    try {
+      const res = await fetch('/api/auth/session');
+      const data = await res.json();
+
+      if (data.user) {
+        userData = data.user;
+        // If user has clubs, redirect to admin
+        if (data.clubs && data.clubs.length > 0) {
+          window.location.href = `/${data.clubs[0].slug}/admin-portal`;
+          return;
+        }
+        // User is logged in but has no club - they need to select sport first
+        // If they've already selected a sport (stored in URL or session), skip to step 2
+        const urlParams = new URLSearchParams(window.location.search);
+        const sportParam = urlParams.get('sport');
+        const normalizedSportParam = sportParam ? sportParam.toLowerCase() : null;
+        if (normalizedSportParam && SPORTS[normalizedSportParam as keyof typeof SPORTS]) {
+          selectedSport = normalizedSportParam;
+          showStep(2); // Skip to club info since they're logged in
+        } else {
+          showStep(0); // Start at sport selection
+        }
+      }
+    } catch (e) {
+      console.error('Session check failed:', e);
+    }
+  }
+
+  async function handleAccountSubmit(e: Event) {
+    e.preventDefault();
+    const form = e.target as HTMLFormElement;
+    const name = (form.querySelector('#name') as HTMLInputElement).value;
+    const email = (form.querySelector('#email') as HTMLInputElement).value;
+    const submitBtn = document.getElementById('account-submit') as HTMLButtonElement;
+
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span>Sending magic link...</span>';
+
+    try {
+      const res = await fetch('/api/auth/magic-link', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email })
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        // If dev mode link is returned (no email service configured), show it
+        if (data.devModeLink) {
+          const devModeDiv = document.getElementById('dev-mode-link');
+          const devLink = document.getElementById('dev-link') as HTMLAnchorElement;
+          if (devModeDiv && devLink) {
+            devLink.href = data.devModeLink;
+            devModeDiv.classList.remove('hidden');
+          }
+          submitBtn.innerHTML = '<span>Dev mode</span>';
+        } else {
+          document.getElementById('magic-link-sent')?.classList.remove('hidden');
+          submitBtn.innerHTML = '<span>Check your email</span>';
+        }
+
+        // Start polling for session (user clicks link in email or dev mode link)
+        pollForSession();
+      } else {
+        throw new Error(data.error || 'Unknown error');
+      }
+    } catch (error) {
+      console.error('Account submit error:', error);
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = '<span>Continue with email</span><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>';
+      alert('Failed to send magic link. Please try again.');
+    }
+  }
+
+  async function pollForSession() {
+    const maxAttempts = 60;
+    let attempts = 0;
+
+    const poll = async () => {
+      attempts++;
+      try {
+        const res = await fetch('/api/auth/session');
+        const data = await res.json();
+
+        if (data.user) {
+          userData = data.user;
+          // User is now authenticated, go to club info (step 2)
+          showStep(2);
+          return;
+        }
+      } catch (err) {
+        console.error('Poll error:', err);
+      }
+
+      if (attempts < maxAttempts) {
+        setTimeout(poll, 2000);
+      }
+    };
+
+    poll();
+  }
+
+  async function handleClubSubmit(e: Event) {
+    e.preventDefault();
+    const form = e.target as HTMLFormElement;
+    const name = (form.querySelector('#club-name') as HTMLInputElement).value;
+    const county = (form.querySelector('#county') as HTMLSelectElement).value;
+    const slugInput = form.querySelector('#slug') as HTMLInputElement;
+    const slug = normalizeSlug(slugInput.value, name, county);
+    slugInput.value = slug;
+
+    const submitBtn = document.getElementById('club-submit') as HTMLButtonElement;
+    submitBtn.disabled = true;
+
+    try {
+      const res = await fetch('/api/clubs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name,
+          county,
+          slug,
+          club_type: selectedSport || 'gaa' // Pass the selected sport as club type
+        })
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        clubData = { name, county, slug, id: data.club.id };
+        showStep(3);
+      } else {
+        throw new Error(data.error);
+      }
+    } catch (error) {
+      console.error('Club submit error:', error);
+      alert('Failed to create club. Please try again.');
+    } finally {
+      submitBtn.disabled = false;
+    }
+  }
+
+  async function checkSlug(slug: string) {
+    const statusEl = document.getElementById('slug-status');
+    if (!statusEl || !slug) {
+      if (statusEl) statusEl.textContent = '';
+      return;
+    }
+
+    slug = normalizeSlug(slug);
+
+    try {
+      const res = await fetch(`/api/clubs/check-slug?slug=${encodeURIComponent(slug)}`);
+      const data = await res.json();
+
+      if (data.available) {
+        statusEl.textContent = '✓ Available';
+        statusEl.className = 'mt-1 text-sm text-primary-600';
+      } else {
+        statusEl.textContent = data.reason || '✗ Not available';
+        statusEl.className = 'mt-1 text-sm text-red-600';
+      }
+    } catch (e) {
+      statusEl.textContent = '';
+    }
+  }
+
+  function slugify(text: string): string {
+    return text
+      .toLowerCase()
+      .trim()
+      .replace(/[^\w\s-]/g, '')
+      .replace(/[\s_-]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+  }
+
+  function buildSlug(name: string, county: string): string {
+    const parts = [name, county].filter(Boolean).join('-');
+    return slugify(parts);
+  }
+
+  function normalizeSlug(raw: string, name?: string, county?: string): string {
+    const countyValue = county ?? (document.getElementById('county') as HTMLSelectElement | null)?.value ?? '';
+    const nameValue = name ?? (document.getElementById('club-name') as HTMLInputElement | null)?.value ?? '';
+    const countySlug = slugify(countyValue);
+    let slug = slugify(raw);
+
+    if (!slug) {
+      slug = buildSlug(nameValue, countyValue);
+    }
+
+    if (countySlug) {
+      if (!slug.endsWith(`-${countySlug}`)) {
+        slug = slug.replace(new RegExp(`-${countySlug}$`), '');
+        slug = slug ? `${slug}-${countySlug}` : countySlug;
+      }
+    }
+
+    return slug;
+  }
+
+  function updateSlugFromInputs() {
+    const slugInput = document.getElementById('slug') as HTMLInputElement | null;
+    const name = (document.getElementById('club-name') as HTMLInputElement | null)?.value || '';
+    const county = (document.getElementById('county') as HTMLSelectElement | null)?.value || '';
+    if (!slugInput) return;
+
+    if (!slugInput.dataset.manual) {
+      const value = buildSlug(name, county);
+      slugInput.value = value;
+      checkSlug(value);
+      return;
+    }
+
+    if (county) {
+      const normalized = normalizeSlug(slugInput.value, name, county);
+      if (normalized !== slugInput.value) {
+        slugInput.value = normalized;
+        checkSlug(normalized);
+      }
+    }
+  }
+
+  async function handleBrandingSubmit(e: Event) {
+    e.preventDefault();
+
+    try {
+      await fetch(`/api/clubs/${clubData.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          primary_color: brandingData.primaryColor,
+          secondary_color: brandingData.secondaryColor,
+          crest_url: brandingData.crestUrl,
+          setup_step: 4
+        })
+      });
+
+      showStep(4);
+    } catch (error) {
+      console.error('Branding submit error:', error);
+      alert('Failed to save branding. Please try again.');
+    }
+  }
+
+  async function handleCrestUpload(e: Event) {
+    const input = e.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+
+    // For now, just preview locally
+    // In production, upload to R2
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const url = e.target?.result as string;
+      brandingData.crestUrl = url;
+
+      document.getElementById('crest-preview')?.classList.remove('hidden');
+      document.getElementById('crest-placeholder')?.classList.add('hidden');
+      (document.getElementById('crest-image') as HTMLImageElement).src = url;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function updateColorPreview() {
+    const preview = document.getElementById('color-preview');
+    if (preview) {
+      preview.style.background = `linear-gradient(135deg, ${brandingData.primaryColor}, ${adjustColor(brandingData.primaryColor, -20)})`;
+    }
+  }
+
+  function adjustColor(color: string, amount: number): string {
+    const hex = color.replace('#', '');
+    const r = Math.max(0, Math.min(255, parseInt(hex.slice(0, 2), 16) + amount));
+    const g = Math.max(0, Math.min(255, parseInt(hex.slice(2, 4), 16) + amount));
+    const b = Math.max(0, Math.min(255, parseInt(hex.slice(4, 6), 16) + amount));
+    return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+  }
+
+  async function handleTemplateSubmit() {
+    try {
+      await fetch(`/api/clubs/${clubData.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          template: selectedTemplate,
+          setup_step: 5
+        })
+      });
+
+      // Update final URL display
+      const urlEl = document.getElementById('final-url');
+      if (urlEl) {
+        urlEl.textContent = `${clubData.slug}.clubify.ie`;
+      }
+
+      showStep(5);
+    } catch (error) {
+      console.error('Template submit error:', error);
+      alert('Failed to save template. Please try again.');
+    }
+  }
+
+  async function handleGoLive() {
+    const btn = document.getElementById('go-live-btn') as HTMLButtonElement;
+    btn.disabled = true;
+    btn.innerHTML = '<span>Launching...</span>';
+
+    try {
+      await fetch(`/api/clubs/${clubData.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          is_live: 1,
+          setup_completed: 1
+        })
+      });
+
+      // Redirect to admin portal
+      window.location.href = `/${clubData.slug}/admin-portal`;
+    } catch (error) {
+      console.error('Go live error:', error);
+      btn.disabled = false;
+      btn.innerHTML = '<span>Launch your club</span><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>';
+      alert('Failed to go live. Please try again.');
+    }
+  }
+</script>
+
+<style>
+  @import "../../styles/global.css";
+</style>

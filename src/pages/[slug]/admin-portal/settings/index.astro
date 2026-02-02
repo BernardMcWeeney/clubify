@@ -1,0 +1,182 @@
+---
+import AdminLayout from '../../../../components/admin/AdminLayout.astro';
+import AdminPageTemplate from '../../../../components/admin/AdminPageTemplate.astro';
+import AdminCard from '../../../../components/admin/AdminCard.astro';
+import StatusChip from '../../../../components/admin/StatusChip.astro';
+import Icon from '../../../../components/admin/Icon.astro';
+import { DatabaseService } from '../../../../lib/db';
+import { getAuthContext } from '../../../../lib/auth';
+import { hasPermission, type Role } from '../../../../lib/permissions';
+
+const { slug } = Astro.params;
+
+if (!Astro.locals.runtime.env.DB) {
+  return Astro.redirect('/admin?error=db_not_configured');
+}
+
+const db = new DatabaseService(Astro.locals.runtime.env.DB);
+const { user } = await getAuthContext(Astro.cookies, db);
+
+if (!user) {
+  return Astro.redirect('/admin/login');
+}
+
+const club = await db.getClubBySlug(slug!);
+if (!club) {
+  return Astro.redirect('/admin');
+}
+
+const member = await db.getClubMember(club.id, user.id);
+if (!member) {
+  return Astro.redirect('/admin');
+}
+
+const isAdmin = member.role === 'admin';
+const canViewAudit = hasPermission(member.role as Role, 'audit.view');
+
+// Get social connections for status
+const connections = await db.getSocialConnections(club.id);
+const facebookConnected = connections.some(c => c.platform === 'facebook');
+
+const breadcrumbs = [
+  { label: 'Dashboard', href: `/${slug}/admin-portal` },
+  { label: 'Settings' },
+];
+---
+
+<AdminLayout
+  title="Settings"
+  club={club}
+  user={user}
+  member={member}
+  currentPage="settings"
+>
+  <AdminPageTemplate
+    title="Manage your club hub"
+    subtitle="Branding, modules, people, and publishing settings live here."
+    breadcrumbs={breadcrumbs}
+  >
+    <div slot="actions">
+      <div class="flex items-center gap-3 px-4 py-2 bg-slate-50 rounded-xl border border-slate-200">
+        <Icon name="zap" size="lg" class="icon-accent" />
+        <div>
+          <p class="text-xs text-slate-500">Hub Status</p>
+          <p class="text-sm font-semibold text-slate-900">{club.is_live ? 'Live' : 'Draft mode'}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid gap-5 md:grid-cols-2">
+      <a href={`/${slug}/admin-portal/settings/club`} class="block bg-white rounded-xl border border-slate-200 p-6 hover:shadow-lg transition-all group hover:border-[var(--admin-accent-border)]">
+        <div class="flex items-start gap-4">
+          <div class="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform" style="background: var(--admin-accent)">
+            <Icon name="palette" size="xl" class="text-white" />
+          </div>
+          <div class="flex-1">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <h3 class="text-lg font-semibold text-slate-900">Club identity</h3>
+              <StatusChip variant="info" size="sm">Primary</StatusChip>
+            </div>
+            <p class="text-sm text-slate-600 mt-1">Name, crest, colours, contact info, and sport-specific settings.</p>
+          </div>
+        </div>
+      </a>
+
+      <a href={`/${slug}/admin-portal/settings/social`} class="block bg-white rounded-xl border border-slate-200 p-6 hover:shadow-lg transition-all group hover:border-[var(--admin-accent-border)]">
+        <div class="flex items-start gap-4">
+          <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+            <Icon name="share-2" size="xl" class="text-white" />
+          </div>
+          <div class="flex-1">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <h3 class="text-lg font-semibold text-slate-900">Social connections</h3>
+              <StatusChip variant={facebookConnected ? 'success' : 'neutral'} size="sm">
+                {facebookConnected ? 'Connected' : 'Not connected'}
+              </StatusChip>
+            </div>
+            <p class="text-sm text-slate-600 mt-1">Connect Facebook, Twitter, and Instagram for one-click publishing.</p>
+          </div>
+        </div>
+      </a>
+
+      {isAdmin && (
+        <a href={`/${slug}/admin-portal/settings/modules`} class="block bg-white rounded-xl border border-slate-200 p-6 hover:shadow-lg transition-all group hover:border-[var(--admin-accent-border)]">
+          <div class="flex items-start gap-4">
+            <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-violet-600 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+              <Icon name="grid" size="xl" class="text-white" />
+            </div>
+            <div class="flex-1">
+              <h3 class="text-lg font-semibold text-slate-900">Feature access</h3>
+              <p class="text-sm text-slate-600 mt-1">Enable or disable features to keep your hub focused.</p>
+            </div>
+          </div>
+        </a>
+      )}
+
+      {canViewAudit && (
+        <a href={`/${slug}/admin-portal/audit`} class="block bg-white rounded-xl border border-slate-200 p-6 hover:shadow-lg transition-all group hover:border-[var(--admin-accent-border)]">
+          <div class="flex items-start gap-4">
+            <div class="w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+              <Icon name="clipboard" size="xl" class="text-white" />
+            </div>
+            <div class="flex-1">
+              <h3 class="text-lg font-semibold text-slate-900">Audit log</h3>
+              <p class="text-sm text-slate-600 mt-1">See every action taken across your club hub.</p>
+            </div>
+          </div>
+        </a>
+      )}
+
+      <div class="bg-slate-50 rounded-xl border border-slate-200 p-6 opacity-75">
+        <div class="flex items-start gap-4">
+          <div class="w-12 h-12 bg-slate-300 rounded-xl flex items-center justify-center flex-shrink-0">
+            <Icon name="globe" size="xl" class="text-white" />
+          </div>
+          <div class="flex-1">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <h3 class="text-lg font-semibold text-slate-700">Custom domain</h3>
+              <StatusChip variant="neutral" size="sm">Coming soon</StatusChip>
+            </div>
+            <p class="text-sm text-slate-500 mt-1">Automated DNS and SSL setup is coming soon.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-slate-50 rounded-xl border border-slate-200 p-6 opacity-75">
+        <div class="flex items-start gap-4">
+          <div class="w-12 h-12 bg-slate-300 rounded-xl flex items-center justify-center flex-shrink-0">
+            <Icon name="credit-card" size="xl" class="text-white" />
+          </div>
+          <div class="flex-1">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <h3 class="text-lg font-semibold text-slate-700">Subscription & payments</h3>
+              <StatusChip variant="neutral" size="sm">Coming soon</StatusChip>
+            </div>
+            <p class="text-sm text-slate-500 mt-1">Manage plans and billing details in one place.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {isAdmin && (
+      <AdminCard class="mt-6 border-red-200 bg-red-50/50">
+        <div class="flex items-start gap-4">
+          <div class="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center flex-shrink-0">
+            <Icon name="alert-triangle" size="xl" class="text-red-600" />
+          </div>
+          <div class="flex-1">
+            <h2 class="text-lg font-semibold text-red-900">Danger zone</h2>
+            <p class="text-sm text-red-700 mt-1">Club deletion will permanently remove all data. Reach out to support before proceeding.</p>
+            <button class="px-4 py-2 text-sm font-semibold text-red-600 bg-white border border-red-200 rounded-lg hover:bg-red-50 transition-colors mt-4" disabled>Delete club</button>
+          </div>
+        </div>
+      </AdminCard>
+    )}
+  </AdminPageTemplate>
+</AdminLayout>
+
+<style>
+  .icon-accent {
+    color: var(--admin-accent, #14b8a6);
+  }
+</style>

@@ -1,0 +1,8 @@
+# Cloudflare Pages Redirects
+# https://developers.cloudflare.com/pages/platform/redirects
+
+# Common URL patterns - redirect www to non-www is handled at DNS level
+# Add any club-specific redirects here as needed
+
+# Legacy URL handling (example)
+# /old-path /new-path 301

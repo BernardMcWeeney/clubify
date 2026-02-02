@@ -1,0 +1,387 @@
+---
+import AdminLayout from '../../../../components/admin/AdminLayout.astro';
+import AdminPageTemplate from '../../../../components/admin/AdminPageTemplate.astro';
+import Icon from '../../../../components/admin/Icon.astro';
+import { DatabaseService } from '../../../../lib/db';
+import { getAuthContext } from '../../../../lib/auth';
+
+const { slug } = Astro.params;
+
+if (!Astro.locals.runtime.env.DB) {
+  return Astro.redirect('/admin?error=db_not_configured');
+}
+
+const db = new DatabaseService(Astro.locals.runtime.env.DB);
+const { user } = await getAuthContext(Astro.cookies, db);
+
+if (!user) {
+  return Astro.redirect('/admin/login');
+}
+
+const club = await db.getClubBySlug(slug!);
+if (!club) {
+  return Astro.redirect('/admin');
+}
+
+const member = await db.getClubMember(club.id, user.id);
+if (!member) {
+  return Astro.redirect('/admin');
+}
+
+// Only admins can manage social connections
+const isAdmin = member.role === 'admin';
+
+// Get social connections
+const connections = await db.getSocialConnections(club.id);
+const facebookConnection = connections.find(c => c.platform === 'facebook');
+const twitterConnection = connections.find(c => c.platform === 'twitter');
+const instagramConnection = connections.find(c => c.platform === 'instagram');
+
+// Check if platforms are configured
+const fbConfigured = !!(Astro.locals.runtime.env.FACEBOOK_APP_ID && Astro.locals.runtime.env.FACEBOOK_APP_SECRET);
+const twitterConfigured = !!(Astro.locals.runtime.env.TWITTER_CLIENT_ID && Astro.locals.runtime.env.TWITTER_CLIENT_SECRET);
+const instagramConfigured = fbConfigured; // Instagram uses Facebook App
+
+// Get URL params for success/error messages
+const searchParams = Astro.url.searchParams;
+const success = searchParams.get('success');
+const error = searchParams.get('error');
+
+const errorMessages: Record<string, string> = {
+  facebook_denied: 'Facebook authorization was denied',
+  twitter_denied: 'Twitter authorization was denied',
+  instagram_denied: 'Instagram authorization was denied',
+  invalid_callback: 'Invalid callback received',
+  invalid_state: 'Invalid state parameter',
+  state_expired: 'Authorization expired. Please try again.',
+  token_exchange_failed: 'Failed to get access token',
+  pages_fetch_failed: 'Failed to get your pages',
+  no_pages_found: 'No Facebook Pages found. You need to be an admin of a Facebook Page to connect it.',
+  no_instagram_found: 'No Instagram Business account found linked to your Facebook Page.',
+  callback_error: 'An error occurred during authorization',
+};
+
+const breadcrumbs = [
+  { label: 'Dashboard', href: `/${slug}/admin-portal` },
+  { label: 'Settings', href: `/${slug}/admin-portal/settings` },
+  { label: 'Social Connections' },
+];
+---
+
+<AdminLayout
+  title="Social Connections"
+  club={club}
+  user={user}
+  member={member}
+  currentPage="settings"
+>
+  <AdminPageTemplate
+    title="Social Connections"
+    subtitle="Connect your club's social media accounts to publish news and results directly from Clubify."
+    breadcrumbs={breadcrumbs}
+  >
+    <!-- Success/Error messages -->
+    {success && (
+      <div class="mb-6 p-4 bg-green-50 border border-green-200 rounded-xl">
+        <div class="flex items-center gap-3">
+          <Icon name="check" size="lg" class="text-green-600" />
+          <p class="text-green-700">
+            {success === 'facebook_connected' && 'Facebook Page connected successfully!'}
+            {success === 'twitter_connected' && 'X (Twitter) account connected successfully!'}
+            {success === 'instagram_connected' && 'Instagram account connected successfully!'}
+          </p>
+        </div>
+      </div>
+    )}
+
+    {error && (
+      <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl">
+        <div class="flex items-center gap-3">
+          <Icon name="alert-circle" size="lg" class="text-red-600" />
+          <p class="text-red-700">{errorMessages[error] || 'An error occurred'}</p>
+        </div>
+      </div>
+    )}
+
+    <!-- Facebook -->
+    <div class="bg-white rounded-xl border border-slate-200 p-6 mb-6 shadow-sm">
+      <div class="flex items-start justify-between">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 rounded-xl bg-[#1877F2] flex items-center justify-center">
+            <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+              <path fill-rule="evenodd" d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z" clip-rule="evenodd"/>
+            </svg>
+          </div>
+          <div>
+            <h3 class="text-lg font-semibold text-slate-900">Facebook Page</h3>
+            {facebookConnection ? (
+              <p class="text-slate-500 text-sm">
+                Connected to <span class="text-slate-900 font-medium">{facebookConnection.page_name || 'Facebook Page'}</span>
+              </p>
+            ) : (
+              <p class="text-slate-500 text-sm">Not connected</p>
+            )}
+          </div>
+        </div>
+
+        {isAdmin && (
+          <div>
+            {facebookConnection ? (
+              <button
+                id="disconnect-facebook"
+                class="px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg text-sm font-medium transition-colors"
+              >
+                Disconnect
+              </button>
+            ) : fbConfigured ? (
+              <a
+                href={`/api/clubs/${club.id}/social/connect/facebook`}
+                class="inline-flex items-center gap-2 px-4 py-2 bg-[#1877F2] hover:bg-[#1664d9] text-white rounded-lg text-sm font-medium transition-colors"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+                </svg>
+                Connect
+              </a>
+            ) : (
+              <span class="text-slate-400 text-sm">Not configured</span>
+            )}
+          </div>
+        )}
+      </div>
+
+      {facebookConnection && (
+        <div class="mt-4 pt-4 border-t border-slate-200">
+          <div class="flex items-center gap-4 text-sm">
+            <span class="text-slate-500">Page ID:</span>
+            <span class="text-slate-700 font-mono">{facebookConnection.page_id}</span>
+          </div>
+          <div class="flex items-center gap-4 text-sm mt-2">
+            <span class="text-slate-500">Connected:</span>
+            <span class="text-slate-700">{new Date(facebookConnection.created_at).toLocaleDateString('en-IE')}</span>
+          </div>
+        </div>
+      )}
+
+      {!fbConfigured && (
+        <div class="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+          <p class="text-amber-700 text-sm">
+            Facebook integration requires FACEBOOK_APP_ID and FACEBOOK_APP_SECRET environment variables.
+          </p>
+        </div>
+      )}
+    </div>
+
+    <!-- Twitter/X -->
+    <div class="bg-white rounded-xl border border-slate-200 p-6 mb-6 shadow-sm">
+      <div class="flex items-start justify-between">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 rounded-xl bg-black flex items-center justify-center">
+            <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+            </svg>
+          </div>
+          <div>
+            <h3 class="text-lg font-semibold text-slate-900">X (Twitter)</h3>
+            {twitterConnection ? (
+              <p class="text-slate-500 text-sm">
+                Connected as <span class="text-slate-900 font-medium">@{twitterConnection.page_name || 'Twitter Account'}</span>
+              </p>
+            ) : (
+              <p class="text-slate-500 text-sm">Not connected</p>
+            )}
+          </div>
+        </div>
+
+        {isAdmin && (
+          <div>
+            {twitterConnection ? (
+              <button
+                id="disconnect-twitter"
+                class="px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg text-sm font-medium transition-colors"
+              >
+                Disconnect
+              </button>
+            ) : twitterConfigured ? (
+              <a
+                href={`/api/clubs/${club.id}/social/connect/twitter`}
+                class="inline-flex items-center gap-2 px-4 py-2 bg-black hover:bg-slate-800 text-white rounded-lg text-sm font-medium transition-colors"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+                </svg>
+                Connect
+              </a>
+            ) : (
+              <span class="text-slate-400 text-sm">Not configured</span>
+            )}
+          </div>
+        )}
+      </div>
+
+      {twitterConnection && (
+        <div class="mt-4 pt-4 border-t border-slate-200">
+          <div class="flex items-center gap-4 text-sm">
+            <span class="text-slate-500">Connected:</span>
+            <span class="text-slate-700">{new Date(twitterConnection.created_at).toLocaleDateString('en-IE')}</span>
+          </div>
+        </div>
+      )}
+
+      {!twitterConfigured && (
+        <div class="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+          <p class="text-amber-700 text-sm">
+            Twitter/X integration requires TWITTER_CLIENT_ID and TWITTER_CLIENT_SECRET environment variables.
+          </p>
+        </div>
+      )}
+    </div>
+
+    <!-- Instagram -->
+    <div class="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
+      <div class="flex items-start justify-between">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-[#833AB4] via-[#FD1D1D] to-[#F77737] flex items-center justify-center">
+            <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+              <path fill-rule="evenodd" d="M12.315 2c2.43 0 2.784.013 3.808.06 1.064.049 1.791.218 2.427.465a4.902 4.902 0 011.772 1.153 4.902 4.902 0 011.153 1.772c.247.636.416 1.363.465 2.427.048 1.067.06 1.407.06 4.123v.08c0 2.643-.012 2.987-.06 4.043-.049 1.064-.218 1.791-.465 2.427a4.902 4.902 0 01-1.153 1.772 4.902 4.902 0 01-1.772 1.153c-.636.247-1.363.416-2.427.465-1.067.048-1.407.06-4.123.06h-.08c-2.643 0-2.987-.012-4.043-.06-1.064-.049-1.791-.218-2.427-.465a4.902 4.902 0 01-1.772-1.153 4.902 4.902 0 01-1.153-1.772c-.247-.636-.416-1.363-.465-2.427-.047-1.024-.06-1.379-.06-3.808v-.63c0-2.43.013-2.784.06-3.808.049-1.064.218-1.791.465-2.427a4.902 4.902 0 011.153-1.772A4.902 4.902 0 015.45 2.525c.636-.247 1.363-.416 2.427-.465C8.901 2.013 9.256 2 11.685 2h.63zm-.081 1.802h-.468c-2.456 0-2.784.011-3.807.058-.975.045-1.504.207-1.857.344-.467.182-.8.398-1.15.748-.35.35-.566.683-.748 1.15-.137.353-.3.882-.344 1.857-.047 1.023-.058 1.351-.058 3.807v.468c0 2.456.011 2.784.058 3.807.045.975.207 1.504.344 1.857.182.466.399.8.748 1.15.35.35.683.566 1.15.748.353.137.882.3 1.857.344 1.054.048 1.37.058 4.041.058h.08c2.597 0 2.917-.01 3.96-.058.976-.045 1.505-.207 1.858-.344.466-.182.8-.398 1.15-.748.35-.35.566-.683.748-1.15.137-.353.3-.882.344-1.857.048-1.055.058-1.37.058-4.041v-.08c0-2.597-.01-2.917-.058-3.96-.045-.976-.207-1.505-.344-1.858a3.097 3.097 0 00-.748-1.15 3.098 3.098 0 00-1.15-.748c-.353-.137-.882-.3-1.857-.344-1.023-.047-1.351-.058-3.807-.058zM12 6.865a5.135 5.135 0 110 10.27 5.135 5.135 0 010-10.27zm0 1.802a3.333 3.333 0 100 6.666 3.333 3.333 0 000-6.666zm5.338-3.205a1.2 1.2 0 110 2.4 1.2 1.2 0 010-2.4z" clip-rule="evenodd"/>
+            </svg>
+          </div>
+          <div>
+            <h3 class="text-lg font-semibold text-slate-900">Instagram</h3>
+            {instagramConnection ? (
+              <p class="text-slate-500 text-sm">
+                Connected to <span class="text-slate-900 font-medium">@{instagramConnection.page_name || 'Instagram Account'}</span>
+              </p>
+            ) : (
+              <p class="text-slate-500 text-sm">Not connected</p>
+            )}
+          </div>
+        </div>
+
+        {isAdmin && (
+          <div>
+            {instagramConnection ? (
+              <button
+                id="disconnect-instagram"
+                class="px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg text-sm font-medium transition-colors"
+              >
+                Disconnect
+              </button>
+            ) : instagramConfigured ? (
+              <a
+                href={`/api/clubs/${club.id}/social/connect/instagram`}
+                class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#833AB4] via-[#FD1D1D] to-[#F77737] hover:opacity-90 text-white rounded-lg text-sm font-medium transition-opacity"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+                </svg>
+                Connect
+              </a>
+            ) : (
+              <span class="text-slate-400 text-sm">Not configured</span>
+            )}
+          </div>
+        )}
+      </div>
+
+      {instagramConnection && (
+        <div class="mt-4 pt-4 border-t border-slate-200">
+          <div class="flex items-center gap-4 text-sm">
+            <span class="text-slate-500">Account ID:</span>
+            <span class="text-slate-700 font-mono">{instagramConnection.page_id}</span>
+          </div>
+          <div class="flex items-center gap-4 text-sm mt-2">
+            <span class="text-slate-500">Connected:</span>
+            <span class="text-slate-700">{new Date(instagramConnection.created_at).toLocaleDateString('en-IE')}</span>
+          </div>
+        </div>
+      )}
+
+      {!instagramConfigured && (
+        <div class="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+          <p class="text-amber-700 text-sm">
+            Instagram integration requires Facebook App credentials. Connect Facebook first.
+          </p>
+        </div>
+      )}
+
+      {instagramConfigured && !instagramConnection && (
+        <div class="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+          <p class="text-blue-700 text-sm">
+            <strong>Note:</strong> Instagram requires a Facebook Page with a linked Instagram Business or Creator account.
+          </p>
+        </div>
+      )}
+    </div>
+
+    {!isAdmin && (
+      <div class="mt-6 p-4 bg-slate-50 rounded-xl border border-slate-200">
+        <p class="text-slate-500 text-sm text-center">
+          Only club administrators can manage social connections.
+        </p>
+      </div>
+    )}
+  </AdminPageTemplate>
+</AdminLayout>
+
+<script define:vars={{ clubId: club.id, slug }}>
+  // Disconnect Facebook
+  document.getElementById('disconnect-facebook')?.addEventListener('click', async () => {
+    if (!confirm('Are you sure you want to disconnect your Facebook Page?')) return;
+
+    try {
+      const response = await fetch(`/api/clubs/${clubId}/social/connect/facebook`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        window.location.reload();
+      } else {
+        const data = await response.json();
+        alert(data.error || 'Failed to disconnect Facebook');
+      }
+    } catch (error) {
+      alert('Failed to disconnect Facebook');
+    }
+  });
+
+  // Disconnect Twitter
+  document.getElementById('disconnect-twitter')?.addEventListener('click', async () => {
+    if (!confirm('Are you sure you want to disconnect your X (Twitter) account?')) return;
+
+    try {
+      const response = await fetch(`/api/clubs/${clubId}/social/connect/twitter`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        window.location.reload();
+      } else {
+        const data = await response.json();
+        alert(data.error || 'Failed to disconnect Twitter');
+      }
+    } catch (error) {
+      alert('Failed to disconnect Twitter');
+    }
+  });
+
+  // Disconnect Instagram
+  document.getElementById('disconnect-instagram')?.addEventListener('click', async () => {
+    if (!confirm('Are you sure you want to disconnect your Instagram account?')) return;
+
+    try {
+      const response = await fetch(`/api/clubs/${clubId}/social/connect/instagram`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        window.location.reload();
+      } else {
+        const data = await response.json();
+        alert(data.error || 'Failed to disconnect Instagram');
+      }
+    } catch (error) {
+      alert('Failed to disconnect Instagram');
+    }
+  });
+</script>

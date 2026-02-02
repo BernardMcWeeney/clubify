@@ -1,0 +1,119 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Navigation from '../../components/Navigation.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import Footer from '../../components/Footer.astro';
+
+// Placeholder blog posts - in production these would come from a CMS or database
+const posts = [
+  {
+    title: "Welcome to the Clubify Blog",
+    excerpt: "We're excited to launch our blog where we'll share tips, updates, and stories from GAA clubs using Clubify.",
+    date: "1 February 2026",
+    slug: "welcome-to-clubify-blog",
+    category: "Announcements",
+    image: null
+  }
+];
+---
+
+<Layout title="Blog - Clubify">
+  <Navigation />
+  <PageHeader
+    title="Blog"
+    description="Tips, updates, and stories from GAA clubs"
+    badge="News & Updates"
+  />
+
+  <section class="py-16 bg-white">
+    <div class="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+      {posts.length > 0 ? (
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {posts.map((post) => (
+            <article class="bg-white rounded-2xl border border-slate-200 overflow-hidden hover:shadow-lg transition-shadow">
+              {post.image ? (
+                <img src={post.image} alt="" class="w-full h-48 object-cover" />
+              ) : (
+                <div class="w-full h-48 bg-gradient-to-br from-primary-100 to-accent-100 flex items-center justify-center">
+                  <svg class="w-16 h-16 text-primary-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/>
+                  </svg>
+                </div>
+              )}
+              <div class="p-6">
+                <div class="flex items-center gap-3 mb-3">
+                  <span class="text-xs font-semibold text-primary-600 bg-primary-50 px-2.5 py-1 rounded-full">
+                    {post.category}
+                  </span>
+                  <span class="text-xs text-slate-500">{post.date}</span>
+                </div>
+                <h2 class="text-lg font-bold text-slate-900 mb-2 line-clamp-2">
+                  {post.title}
+                </h2>
+                <p class="text-slate-600 text-sm mb-4 line-clamp-3">
+                  {post.excerpt}
+                </p>
+                <span class="text-primary-600 font-medium text-sm inline-flex items-center gap-1 hover:gap-2 transition-all cursor-pointer">
+                  Read more
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                  </svg>
+                </span>
+              </div>
+            </article>
+          ))}
+        </div>
+      ) : (
+        <div class="text-center py-16">
+          <div class="inline-flex items-center justify-center w-20 h-20 bg-slate-100 rounded-full mb-6">
+            <svg class="w-10 h-10 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/>
+            </svg>
+          </div>
+          <h2 class="text-2xl font-bold text-slate-900 mb-4">Coming Soon</h2>
+          <p class="text-slate-600 max-w-md mx-auto">
+            We're working on some great content. Check back soon for tips, updates, and stories from GAA clubs using Clubify.
+          </p>
+        </div>
+      )}
+
+      <!-- Newsletter signup -->
+      <div class="mt-16 bg-gradient-to-br from-primary-50 to-accent-50 rounded-3xl p-8 md:p-12 text-center border border-primary-100">
+        <h2 class="text-2xl font-bold text-slate-900 mb-4">Stay Updated</h2>
+        <p class="text-slate-600 max-w-lg mx-auto mb-6">
+          Get the latest Clubify news and tips delivered straight to your inbox.
+        </p>
+        <form class="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
+          <input
+            type="email"
+            placeholder="your@email.com"
+            class="flex-1 px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+          />
+          <button
+            type="submit"
+            class="px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-xl transition-colors shadow-lg shadow-primary-600/25"
+          >
+            Subscribe
+          </button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <Footer />
+</Layout>
+
+<style>
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+</style>

@@ -8,5 +8,11 @@ declare namespace App {
 }
 
 interface Env {
-  // Add your Cloudflare bindings here
+  DB?: D1Database;
+  MEDIA?: R2Bucket;
+  CACHE?: KVNamespace;
+  SITE_URL?: string;
+  APP_NAME?: string;
+  RESEND_API_KEY?: string;
+  SUPER_ADMIN_EMAIL?: string;
 }

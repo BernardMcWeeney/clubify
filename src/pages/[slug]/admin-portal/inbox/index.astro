@@ -1,0 +1,288 @@
+---
+import AdminLayout from '../../../../components/admin/AdminLayout.astro';
+import AdminPageTemplate from '../../../../components/admin/AdminPageTemplate.astro';
+import AdminCard from '../../../../components/admin/AdminCard.astro';
+import Icon from '../../../../components/admin/Icon.astro';
+import { DatabaseService } from '../../../../lib/db';
+import { getAuthContext } from '../../../../lib/auth';
+
+const { slug } = Astro.params;
+
+if (!Astro.locals.runtime.env.DB) {
+  return Astro.redirect('/admin?error=db_not_configured');
+}
+
+const db = new DatabaseService(Astro.locals.runtime.env.DB);
+const { user } = await getAuthContext(Astro.cookies, db);
+
+if (!user) {
+  return Astro.redirect('/admin/login');
+}
+
+const club = await db.getClubBySlug(slug!);
+if (!club) {
+  return Astro.redirect('/admin');
+}
+
+const member = await db.getClubMember(club.id, user.id);
+if (!member) {
+  return Astro.redirect('/admin');
+}
+
+interface ContactSubmission {
+  id: string;
+  name: string | null;
+  email: string | null;
+  phone: string | null;
+  message: string;
+  consent: number;
+  created_at: string;
+}
+
+interface FormSubmission {
+  id: string;
+  form_id: string;
+  data: string;
+  created_at: string;
+}
+
+interface Form {
+  id: string;
+  name: string;
+  slug: string;
+}
+
+const contactSettings = await db.getContactSettings(club.id);
+const retentionDays = contactSettings?.retention_days ?? 30;
+const contactSubmissions = await db.getContactSubmissions(club.id, retentionDays) as ContactSubmission[];
+const forms = await db.getForms(club.id) as Form[];
+
+const formSubmissionsByForm = await Promise.all(
+  forms.map(async (form) => ({
+    form,
+    submissions: await db.getFormSubmissions(form.id) as FormSubmission[]
+  }))
+);
+
+const totalFormSubmissions = formSubmissionsByForm.reduce((sum, { submissions }) => sum + submissions.length, 0);
+const recentCount = contactSubmissions.filter(s => {
+  const diffHours = (new Date().getTime() - new Date(s.created_at).getTime()) / 3600000;
+  return diffHours < 24;
+}).length;
+
+function formatDate(dateStr: string): string {
+  const date = new Date(dateStr);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
+
+  if (diffMins < 60) return `${diffMins}m ago`;
+  if (diffHours < 24) return `${diffHours}h ago`;
+  if (diffDays < 7) return `${diffDays}d ago`;
+
+  return date.toLocaleDateString('en-IE', { day: 'numeric', month: 'short' });
+}
+
+const breadcrumbs = [
+  { label: 'Dashboard', href: `/${slug}/admin-portal` },
+  { label: 'Inbox' },
+];
+---
+
+<AdminLayout
+  title="Inbox"
+  club={club}
+  user={user}
+  member={member}
+  currentPage="inbox"
+>
+  <AdminPageTemplate
+    title="Inbox"
+    subtitle="All form submissions and contact messages"
+    breadcrumbs={breadcrumbs}
+  >
+    <!-- Stats -->
+    <div class="grid grid-cols-3 gap-4 mb-6">
+      <div class="stat-card stat-card-accent">
+        <p class="stat-card-label">Contact Form</p>
+        <p class="stat-card-value">{contactSubmissions.length}</p>
+        <p class="text-xs text-slate-500 mt-1">Last {retentionDays} days</p>
+      </div>
+      <div class="stat-card">
+        <p class="stat-card-label">Form Submissions</p>
+        <p class="stat-card-value">{totalFormSubmissions}</p>
+        <p class="text-xs text-slate-500 mt-1">{forms.length} form{forms.length !== 1 ? 's' : ''}</p>
+      </div>
+      <div class="stat-card">
+        <p class="stat-card-label">Recent (24h)</p>
+        <p class="stat-card-value">{recentCount}</p>
+        <p class="text-xs text-slate-500 mt-1">new messages</p>
+      </div>
+    </div>
+
+    <!-- GDPR Notice -->
+    <div class="alert alert-info mb-6">
+      <Icon name="shield" size="lg" class="alert-icon flex-shrink-0 mt-0.5" />
+      <div>
+        <p class="text-sm font-medium" style="color: var(--admin-accent)">GDPR Compliance</p>
+        <p class="text-sm text-slate-600">Submissions auto-purge after {retentionDays} days. <a href={`/${slug}/admin-portal/website/contact-form`} class="link">Adjust settings</a></p>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <AdminCard padding="none">
+      <div class="border-b border-slate-200">
+        <div class="tabs px-4">
+          <button class="tab active" data-tab="contact">
+            Contact ({contactSubmissions.length})
+          </button>
+          <button class="tab" data-tab="forms">
+            Forms ({totalFormSubmissions})
+          </button>
+        </div>
+      </div>
+
+      <!-- Contact Form Tab -->
+      <div id="tab-contact" class="tab-panel">
+        {contactSubmissions.length > 0 ? (
+          <div class="divide-y divide-slate-100">
+            {contactSubmissions.map((submission) => (
+              <div class="p-5 hover:bg-slate-50 transition-colors">
+                <div class="flex flex-col sm:flex-row items-start justify-between gap-4 mb-3">
+                  <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full flex items-center justify-center text-white font-medium text-sm" style="background: var(--admin-accent)">
+                      {submission.name ? submission.name.charAt(0).toUpperCase() : '?'}
+                    </div>
+                    <div>
+                      <p class="font-medium text-slate-900">{submission.name || 'Anonymous'}</p>
+                      <p class="text-xs text-slate-500">{formatDate(submission.created_at)}</p>
+                    </div>
+                  </div>
+                  <div class="flex flex-wrap items-center gap-2">
+                    {submission.email && (
+                      <a href={`mailto:${submission.email}`} class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-md bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors">
+                        <Icon name="mail" size="sm" />
+                        {submission.email}
+                      </a>
+                    )}
+                    {submission.phone && (
+                      <a href={`tel:${submission.phone}`} class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-md bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors">
+                        <Icon name="phone" size="sm" />
+                        {submission.phone}
+                      </a>
+                    )}
+                  </div>
+                </div>
+                <p class="text-sm text-slate-700 bg-slate-50 rounded-lg p-3 border border-slate-100">{submission.message}</p>
+                {submission.consent === 1 && (
+                  <div class="mt-2 flex items-center gap-1.5 text-xs text-emerald-600">
+                    <Icon name="check-circle" size="md" />
+                    GDPR consent given
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div class="py-12 text-center">
+            <div class="w-12 h-12 mx-auto mb-4 rounded-full bg-slate-100 flex items-center justify-center">
+              <Icon name="inbox" size="xl" class="text-slate-400" />
+            </div>
+            <h3 class="text-lg font-medium text-slate-900 mb-1">No messages yet</h3>
+            <p class="text-sm text-slate-500">Contact form submissions will appear here</p>
+          </div>
+        )}
+      </div>
+
+      <!-- Forms Tab -->
+      <div id="tab-forms" class="tab-panel hidden">
+        {formSubmissionsByForm.length > 0 ? (
+          <div class="divide-y divide-slate-100">
+            {formSubmissionsByForm.map(({ form, submissions }) => (
+              <div class="p-5">
+                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
+                  <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-lg flex items-center justify-center icon-accent-bg">
+                      <Icon name="clipboard" size="lg" class="icon-accent" />
+                    </div>
+                    <div>
+                      <p class="font-medium text-slate-900">{form.name}</p>
+                      <p class="text-sm text-slate-500">/{slug}/forms/{form.slug}</p>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <span class="badge badge-accent">{submissions.length} submission{submissions.length !== 1 ? 's' : ''}</span>
+                    <a href={`/${slug}/admin-portal/forms/${form.id}`} class="btn-secondary text-sm">Manage</a>
+                  </div>
+                </div>
+
+                {submissions.length > 0 ? (
+                  <div class="space-y-2">
+                    {submissions.slice(0, 3).map((submission) => (
+                      <div class="p-3 rounded-lg bg-slate-50 border border-slate-100">
+                        <div class="flex items-center justify-between mb-2">
+                          <span class="text-xs text-slate-500">{formatDate(submission.created_at)}</span>
+                        </div>
+                        <pre class="text-sm text-slate-700 whitespace-pre-wrap font-sans">{submission.data}</pre>
+                      </div>
+                    ))}
+                    {submissions.length > 3 && (
+                      <a href={`/${slug}/admin-portal/forms/${form.id}`} class="block text-center py-2 text-sm link">
+                        View all {submissions.length} submissions
+                      </a>
+                    )}
+                  </div>
+                ) : (
+                  <p class="text-sm text-slate-500 text-center py-4">No submissions yet</p>
+                )}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div class="py-12 text-center">
+            <div class="w-12 h-12 mx-auto mb-4 rounded-full bg-slate-100 flex items-center justify-center">
+              <Icon name="clipboard" size="xl" class="text-slate-400" />
+            </div>
+            <h3 class="text-lg font-medium text-slate-900 mb-1">No forms created</h3>
+            <p class="text-sm text-slate-500 mb-4">Create custom forms to collect information</p>
+            <a href={`/${slug}/admin-portal/forms`} class="btn-primary">Create a form</a>
+          </div>
+        )}
+      </div>
+    </AdminCard>
+  </AdminPageTemplate>
+</AdminLayout>
+
+<style>
+  .icon-accent-bg {
+    background: var(--admin-accent-soft, rgba(20, 184, 166, 0.1));
+  }
+  .icon-accent {
+    color: var(--admin-accent, #14b8a6);
+  }
+</style>
+
+<script>
+  const buttons = document.querySelectorAll('.tab');
+  const panels = document.querySelectorAll('.tab-panel');
+
+  function activate(tab: string) {
+    buttons.forEach((btn) => {
+      const isActive = btn.getAttribute('data-tab') === tab;
+      btn.classList.toggle('active', isActive);
+    });
+
+    panels.forEach((panel) => {
+      panel.classList.toggle('hidden', panel.id !== `tab-${tab}`);
+    });
+  }
+
+  buttons.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const tab = btn.getAttribute('data-tab');
+      if (tab) activate(tab);
+    });
+  });
+</script>

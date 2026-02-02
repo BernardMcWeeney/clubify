@@ -1,0 +1,280 @@
+---
+import AdminLayout from '../../../../components/admin/AdminLayout.astro';
+import AdminPageTemplate from '../../../../components/admin/AdminPageTemplate.astro';
+import AdminCard from '../../../../components/admin/AdminCard.astro';
+import StatusChip from '../../../../components/admin/StatusChip.astro';
+import Icon from '../../../../components/admin/Icon.astro';
+import Button from '../../../../components/ui/Button.astro';
+import { DatabaseService } from '../../../../lib/db';
+import { getAuthContext } from '../../../../lib/auth';
+
+const { slug } = Astro.params;
+
+if (!Astro.locals.runtime.env.DB) {
+  return Astro.redirect('/admin?error=db_not_configured');
+}
+
+const db = new DatabaseService(Astro.locals.runtime.env.DB);
+const { user } = await getAuthContext(Astro.cookies, db);
+
+if (!user) {
+  return Astro.redirect('/admin/login');
+}
+
+const club = await db.getClubBySlug(slug!);
+if (!club) {
+  return Astro.redirect('/admin');
+}
+
+const member = await db.getClubMember(club.id, user.id);
+if (!member) {
+  return Astro.redirect('/admin');
+}
+
+const upcomingFixtures = await db.getUpcomingFixtures(club.id, 20);
+const playedFixtures = await db.getPlayedFixtures(club.id, 20);
+const canManage = ['admin', 'pro'].includes(member.role);
+
+const wins = playedFixtures.filter((f: any) => f.result === 'win').length;
+const losses = playedFixtures.filter((f: any) => f.result === 'loss').length;
+const draws = playedFixtures.filter((f: any) => f.result === 'draw').length;
+
+function formatDate(dateStr: string): string {
+  return new Date(dateStr).toLocaleDateString('en-IE', {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+  });
+}
+
+function getResultVariant(result: string | null): 'success' | 'error' | 'warning' | 'neutral' {
+  if (result === 'win') return 'success';
+  if (result === 'loss') return 'error';
+  if (result === 'draw') return 'warning';
+  return 'neutral';
+}
+
+function getResultLabel(result: string | null): string {
+  if (result === 'win') return 'Win';
+  if (result === 'loss') return 'Loss';
+  if (result === 'draw') return 'Draw';
+  return '';
+}
+
+const breadcrumbs = [
+  { label: 'Dashboard', href: `/${slug}/admin-portal` },
+  { label: 'Fixtures' },
+];
+---
+
+<AdminLayout
+  title="Fixtures"
+  club={club}
+  user={user}
+  member={member}
+  currentPage="fixtures"
+>
+  <Fragment slot="header-actions">
+    {canManage && (
+      <Button href={`/${slug}/admin-portal/fixtures/new`} variant="primary">
+        <Icon name="plus" size="md" />
+        Add fixture
+      </Button>
+    )}
+  </Fragment>
+
+  <AdminPageTemplate
+    title="Fixtures & Results"
+    subtitle="Manage your club's upcoming matches and results"
+    breadcrumbs={breadcrumbs}
+    wide
+  >
+    <!-- Stats -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <div class="stat-card stat-card-accent">
+        <p class="stat-card-label">Upcoming</p>
+        <p class="stat-card-value">{upcomingFixtures.length}</p>
+      </div>
+      <div class="stat-card">
+        <p class="stat-card-label">Wins</p>
+        <p class="stat-card-value text-emerald-600">{wins}</p>
+      </div>
+      <div class="stat-card">
+        <p class="stat-card-label">Draws</p>
+        <p class="stat-card-value text-amber-600">{draws}</p>
+      </div>
+      <div class="stat-card">
+        <p class="stat-card-label">Losses</p>
+        <p class="stat-card-value text-red-600">{losses}</p>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <AdminCard padding="none">
+      <div class="border-b border-slate-200">
+        <div class="tabs px-4">
+          <button class="tab active" data-tab="upcoming">
+            Upcoming ({upcomingFixtures.length})
+          </button>
+          <button class="tab" data-tab="results">
+            Results ({playedFixtures.length})
+          </button>
+        </div>
+      </div>
+
+      <!-- Upcoming Fixtures Tab -->
+      <div id="tab-upcoming" class="tab-panel">
+        {upcomingFixtures.length > 0 ? (
+          <div class="divide-y divide-slate-100">
+            {upcomingFixtures.map((fixture: any) => (
+              <div class="p-5 hover:bg-slate-50 transition-colors">
+                <div class="flex items-start justify-between gap-4">
+                  <div class="flex-1">
+                    <div class="flex items-center gap-2 mb-2">
+                      <StatusChip variant={fixture.is_home ? 'info' : 'neutral'} size="sm">
+                        {fixture.is_home ? 'Home' : 'Away'}
+                      </StatusChip>
+                      {fixture.competition && (
+                        <span class="text-xs text-slate-500">{fixture.competition}</span>
+                      )}
+                      {fixture.team_name && (
+                        <span class="text-xs text-slate-500">• {fixture.team_name}</span>
+                      )}
+                    </div>
+                    <h3 class="text-lg font-semibold text-slate-900 mb-2">
+                      vs {fixture.opponent}
+                    </h3>
+                    <div class="flex flex-wrap items-center gap-4 text-sm text-slate-500">
+                      <span class="flex items-center gap-1.5">
+                        <Icon name="calendar" size="md" />
+                        {formatDate(fixture.match_date)}
+                      </span>
+                      {fixture.match_time && (
+                        <span class="flex items-center gap-1.5">
+                          <Icon name="clock" size="md" />
+                          {fixture.match_time}
+                        </span>
+                      )}
+                      {fixture.venue && (
+                        <span class="flex items-center gap-1.5">
+                          <Icon name="location" size="md" />
+                          {fixture.venue}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  {canManage && (
+                    <div class="flex items-center gap-2">
+                      <a href={`/${slug}/admin-portal/fixtures/${fixture.id}/result`} class="btn-secondary text-sm">
+                        Enter Result
+                      </a>
+                      <a href={`/${slug}/admin-portal/fixtures/${fixture.id}`} class="p-1.5 text-slate-400 hover:text-slate-600 rounded-md hover:bg-slate-100 transition-colors" title="Edit">
+                        <Icon name="edit" size="md" />
+                      </a>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div class="py-12 text-center">
+            <div class="w-12 h-12 mx-auto mb-4 rounded-full bg-slate-100 flex items-center justify-center">
+              <Icon name="calendar" size="xl" class="text-slate-400" />
+            </div>
+            <h3 class="text-lg font-medium text-slate-900 mb-1">No upcoming fixtures</h3>
+            <p class="text-sm text-slate-500 mb-4">Add your first fixture to get started.</p>
+            {canManage && (
+              <Button href={`/${slug}/admin-portal/fixtures/new`} variant="primary">
+                <Icon name="plus" size="md" />
+                Add fixture
+              </Button>
+            )}
+          </div>
+        )}
+      </div>
+
+      <!-- Results Tab -->
+      <div id="tab-results" class="tab-panel hidden">
+        {playedFixtures.length > 0 ? (
+          <div class="divide-y divide-slate-100">
+            {playedFixtures.map((fixture: any) => (
+              <div class="p-5 hover:bg-slate-50 transition-colors">
+                <div class="flex items-start justify-between gap-4">
+                  <div class="flex-1">
+                    <div class="flex items-center gap-2 mb-2">
+                      <StatusChip variant={fixture.is_home ? 'info' : 'neutral'} size="sm">
+                        {fixture.is_home ? 'Home' : 'Away'}
+                      </StatusChip>
+                      {fixture.result && (
+                        <StatusChip variant={getResultVariant(fixture.result)} size="sm">
+                          {getResultLabel(fixture.result)}
+                        </StatusChip>
+                      )}
+                      {fixture.competition && (
+                        <span class="text-xs text-slate-500">{fixture.competition}</span>
+                      )}
+                    </div>
+                    <h3 class="text-lg font-semibold text-slate-900 mb-2">
+                      vs {fixture.opponent}
+                    </h3>
+                    <div class="flex flex-wrap items-center gap-4 text-sm">
+                      <span class="font-mono font-semibold text-slate-900 bg-slate-100 px-2 py-1 rounded">
+                        {fixture.home_goals}-{fixture.home_points} to {fixture.away_goals}-{fixture.away_points}
+                      </span>
+                      <span class="text-slate-500">{formatDate(fixture.match_date)}</span>
+                      {fixture.venue && (
+                        <span class="text-slate-500">• {fixture.venue}</span>
+                      )}
+                    </div>
+                  </div>
+                  {canManage && (
+                    <div class="flex items-center gap-2">
+                      <a href={`/${slug}/admin-portal/fixtures/${fixture.id}/result`} class="btn-secondary text-sm">
+                        Edit Result
+                      </a>
+                      <a href={`/${slug}/admin-portal/fixtures/${fixture.id}`} class="p-1.5 text-slate-400 hover:text-slate-600 rounded-md hover:bg-slate-100 transition-colors" title="Edit">
+                        <Icon name="edit" size="md" />
+                      </a>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div class="py-12 text-center">
+            <div class="w-12 h-12 mx-auto mb-4 rounded-full bg-slate-100 flex items-center justify-center">
+              <Icon name="check" size="xl" class="text-slate-400" />
+            </div>
+            <h3 class="text-lg font-medium text-slate-900 mb-1">No results yet</h3>
+            <p class="text-sm text-slate-500">Results will appear here once fixtures are played.</p>
+          </div>
+        )}
+      </div>
+    </AdminCard>
+  </AdminPageTemplate>
+</AdminLayout>
+
+<script>
+  const buttons = document.querySelectorAll('.tab');
+  const panels = document.querySelectorAll('.tab-panel');
+
+  function activate(tab: string) {
+    buttons.forEach((btn) => {
+      const isActive = btn.getAttribute('data-tab') === tab;
+      btn.classList.toggle('active', isActive);
+    });
+
+    panels.forEach((panel) => {
+      panel.classList.toggle('hidden', panel.id !== `tab-${tab}`);
+    });
+  }
+
+  buttons.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const tab = btn.getAttribute('data-tab');
+      if (tab) activate(tab);
+    });
+  });
+</script>

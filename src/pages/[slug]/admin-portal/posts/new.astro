@@ -1,0 +1,219 @@
+---
+import AdminLayout from '../../../../components/admin/AdminLayout.astro';
+import AdminPageTemplate from '../../../../components/admin/AdminPageTemplate.astro';
+import AdminCard from '../../../../components/admin/AdminCard.astro';
+import Button from '../../../../components/ui/Button.astro';
+import { DatabaseService } from '../../../../lib/db';
+import { getAuthContext } from '../../../../lib/auth';
+
+const { slug } = Astro.params;
+
+if (!Astro.locals.runtime.env.DB) {
+  return Astro.redirect('/admin?error=db_not_configured');
+}
+
+const db = new DatabaseService(Astro.locals.runtime.env.DB);
+const { user } = await getAuthContext(Astro.cookies, db);
+
+if (!user) {
+  return Astro.redirect('/admin/login');
+}
+
+const club = await db.getClubBySlug(slug!);
+if (!club) {
+  return Astro.redirect('/admin');
+}
+
+const member = await db.getClubMember(club.id, user.id);
+if (!member) {
+  return Astro.redirect('/admin');
+}
+
+// Check permissions
+if (!['admin', 'pro', 'editor'].includes(member.role)) {
+  return Astro.redirect(`/${slug}/admin-portal/posts`);
+}
+
+const canPublish = ['admin', 'pro'].includes(member.role);
+
+const breadcrumbs = [
+  { label: 'Dashboard', href: `/${slug}/admin-portal` },
+  { label: 'Posts', href: `/${slug}/admin-portal/posts` },
+  { label: 'New Post' },
+];
+---
+
+<AdminLayout
+  title="New Post"
+  club={club}
+  user={user}
+  member={member}
+  currentPage="posts"
+>
+  <AdminPageTemplate
+    title="New Post"
+    subtitle="Create a news post, match report, or announcement"
+    breadcrumbs={breadcrumbs}
+  >
+    <form id="post-form">
+      <AdminCard>
+        <div class="space-y-6">
+          <!-- Title -->
+          <div>
+            <label for="title" class="block text-sm font-medium text-slate-700 mb-2">Title *</label>
+            <input
+              type="text"
+              id="title"
+              name="title"
+              required
+              maxlength="200"
+              class="input-themed w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white transition-colors"
+              placeholder="Enter post title..."
+            />
+          </div>
+
+          <!-- Summary -->
+          <div>
+            <label for="summary" class="block text-sm font-medium text-slate-700 mb-2">Summary</label>
+            <textarea
+              id="summary"
+              name="summary"
+              rows="2"
+              maxlength="300"
+              class="input-themed w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white transition-colors resize-none"
+              placeholder="Brief summary for previews..."
+            ></textarea>
+            <p class="text-slate-500 text-xs mt-1.5">Max 300 characters. Shows in news listings.</p>
+          </div>
+
+          <!-- Category -->
+          <div>
+            <label for="category" class="block text-sm font-medium text-slate-700 mb-2">Category</label>
+            <select
+              id="category"
+              name="category"
+              class="select-themed w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:bg-white transition-colors appearance-none"
+            >
+              <option value="news">News</option>
+              <option value="match-report">Match Report</option>
+              <option value="fundraiser">Fundraiser</option>
+              <option value="notice">Notice</option>
+            </select>
+          </div>
+
+          <!-- Featured Image URL -->
+          <div>
+            <label for="featuredImage" class="block text-sm font-medium text-slate-700 mb-2">Featured Image URL</label>
+            <input
+              type="url"
+              id="featuredImage"
+              name="featuredImage"
+              class="input-themed w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white transition-colors"
+              placeholder="https://..."
+            />
+            <p class="text-slate-500 text-xs mt-1.5">Upload images in the Media library, then paste the URL here.</p>
+          </div>
+
+          <!-- Content -->
+          <div>
+            <label for="content" class="block text-sm font-medium text-slate-700 mb-2">Content</label>
+            <textarea
+              id="content"
+              name="content"
+              rows="15"
+              class="input-themed w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white transition-colors font-mono text-sm"
+              placeholder="Write your post content here. You can use Markdown for formatting..."
+            ></textarea>
+            <p class="text-slate-500 text-xs mt-1.5">Supports Markdown: **bold**, *italic*, [links](url), # headings</p>
+          </div>
+
+          <!-- Actions -->
+          <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3 pt-4 border-t border-slate-200">
+            <button
+              type="submit"
+              name="action"
+              value="draft"
+              class="w-full sm:w-auto px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl transition-colors font-medium"
+            >
+              Save as Draft
+            </button>
+            {canPublish ? (
+              <Button type="submit" name="action" value="publish" variant="primary">
+                Publish Now
+              </Button>
+            ) : (
+              <p class="text-slate-500 text-sm">Only Admins and PROs can publish directly.</p>
+            )}
+          </div>
+        </div>
+      </AdminCard>
+
+      <!-- Loading state -->
+      <div id="loading" class="hidden fixed inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center z-50">
+        <div class="bg-white rounded-xl p-6 text-center shadow-xl border border-slate-200">
+          <div class="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin mx-auto mb-3" style="border-color: var(--admin-accent); border-top-color: transparent;"></div>
+          <p class="text-slate-700">Saving post...</p>
+        </div>
+      </div>
+    </form>
+  </AdminPageTemplate>
+</AdminLayout>
+
+<style>
+  .input-themed:focus {
+    border-color: var(--admin-accent, #14b8a6);
+    box-shadow: 0 0 0 2px var(--admin-ring, rgba(20, 184, 166, 0.2));
+  }
+  .select-themed:focus {
+    border-color: var(--admin-accent, #14b8a6);
+    box-shadow: 0 0 0 2px var(--admin-ring, rgba(20, 184, 166, 0.2));
+  }
+</style>
+
+<script define:vars={{ clubId: club.id, slug }}>
+  const form = document.getElementById('post-form');
+  const loading = document.getElementById('loading');
+
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const formData = new FormData(form);
+    const action = e.submitter?.value || 'draft';
+
+    const data = {
+      title: formData.get('title'),
+      summary: formData.get('summary') || null,
+      category: formData.get('category'),
+      featuredImage: formData.get('featuredImage') || null,
+      content: formData.get('content') || null,
+      status: action === 'publish' ? 'published' : 'draft',
+    };
+
+    if (!data.title?.trim()) {
+      alert('Title is required');
+      return;
+    }
+
+    loading?.classList.remove('hidden');
+
+    try {
+      const response = await fetch(`/api/clubs/${clubId}/posts`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to create post');
+      }
+
+      // Redirect to posts list
+      window.location.href = `/${slug}/admin-portal/posts`;
+    } catch (error) {
+      alert(error.message || 'Failed to create post');
+      loading?.classList.add('hidden');
+    }
+  });
+</script>

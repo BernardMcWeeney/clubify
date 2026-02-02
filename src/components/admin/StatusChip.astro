@@ -1,0 +1,44 @@
+---
+/**
+ * StatusChip Component - Semantic status badges with subtle colors
+ *
+ * Usage:
+ * <StatusChip variant="success">Published</StatusChip>
+ * <StatusChip variant="warning" size="sm">Draft</StatusChip>
+ * <StatusChip variant="neutral">Pending</StatusChip>
+ */
+
+interface Props {
+  /** Semantic variant determining color */
+  variant: 'success' | 'warning' | 'error' | 'info' | 'neutral';
+  /** Size: sm (smaller text), md (default) */
+  size?: 'sm' | 'md';
+  /** Additional CSS classes */
+  class?: string;
+}
+
+const {
+  variant,
+  size = 'md',
+  class: className = '',
+} = Astro.props;
+
+const variantStyles = {
+  success: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+  warning: 'bg-amber-50 text-amber-700 border-amber-200',
+  error: 'bg-red-50 text-red-700 border-red-200',
+  info: 'bg-blue-50 text-blue-700 border-blue-200',
+  neutral: 'bg-slate-100 text-slate-600 border-slate-200',
+};
+
+const sizeStyles = {
+  sm: 'px-2 py-0.5 text-xs',
+  md: 'px-2.5 py-1 text-xs',
+};
+
+const baseClasses = 'inline-flex items-center font-medium rounded-full border';
+---
+
+<span class={`${baseClasses} ${variantStyles[variant]} ${sizeStyles[size]} ${className}`}>
+  <slot />
+</span>

@@ -3,12 +3,19 @@ interface Props {
   id?: string;
   class?: string;
   container?: boolean;
+  size?: 'sm' | 'md' | 'lg';
 }
 
-const { id, class: className = '', container = true } = Astro.props;
+const { id, class: className = '', container = true, size = 'md' } = Astro.props;
+
+const sizeClasses = {
+  sm: 'py-16 md:py-20',
+  md: 'py-20 md:py-28',
+  lg: 'py-24 md:py-32'
+};
 ---
 
-<section id={id} class={`py-20 md:py-28 ${className}`}>
+<section id={id} class={`${sizeClasses[size]} ${className}`}>
   {container ? (
     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
       <slot />

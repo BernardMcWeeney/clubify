@@ -1,0 +1,346 @@
+---
+import AdminLayout from '../../../../../components/admin/AdminLayout.astro';
+import AdminPageTemplate from '../../../../../components/admin/AdminPageTemplate.astro';
+import AdminCard from '../../../../../components/admin/AdminCard.astro';
+import Icon from '../../../../../components/admin/Icon.astro';
+import { DatabaseService } from '../../../../../lib/db';
+import { getAuthContext } from '../../../../../lib/auth';
+import { formatDateTime } from '../../../../../lib/utils';
+
+const { slug, formId } = Astro.params;
+
+if (!Astro.locals.runtime.env.DB) {
+  return Astro.redirect('/admin?error=db_not_configured');
+}
+
+const db = new DatabaseService(Astro.locals.runtime.env.DB);
+const { user } = await getAuthContext(Astro.cookies, db);
+
+if (!user) {
+  return Astro.redirect('/admin/login');
+}
+
+const club = await db.getClubBySlug(slug!);
+if (!club) {
+  return Astro.redirect('/admin');
+}
+
+const member = await db.getClubMember(club.id, user.id);
+if (!member) {
+  return Astro.redirect('/admin');
+}
+
+const form = await db.getFormById(formId!);
+if (!form || form.club_id !== club.id) {
+  return Astro.redirect(`/${slug}/admin-portal/forms`);
+}
+
+const fields = await db.getFormFields(form.id);
+const submissions = await db.getFormSubmissions(form.id);
+const fieldLabelMap = new Map(fields.map((field) => [field.id, field.label]));
+const submissionsView = submissions.map((sub) => ({
+  ...sub,
+  payload: JSON.parse(sub.data),
+}));
+
+const canManage = ['admin', 'pro'].includes(member.role);
+
+const breadcrumbs = [
+  { label: 'Dashboard', href: `/${slug}/admin-portal` },
+  { label: 'Forms', href: `/${slug}/admin-portal/forms` },
+  { label: form.name },
+];
+---
+
+<AdminLayout
+  title={form.name}
+  club={club}
+  user={user}
+  member={member}
+  currentPage="forms"
+>
+  <AdminPageTemplate
+    title={form.name}
+    subtitle={`/${slug}/forms/${form.slug}`}
+    breadcrumbs={breadcrumbs}
+    wide
+  >
+    <div slot="actions">
+      <a href={`/${slug}/forms/${form.slug}`} target="_blank" class="btn-secondary inline-flex items-center gap-2">
+        <Icon name="external-link" size="md" />
+        Preview
+      </a>
+    </div>
+
+    <div id="form-editor" data-club-id={club.id} data-form-id={form.id} data-slug={slug}>
+      <div class="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
+        <div class="space-y-6">
+          <AdminCard>
+            <h2 class="text-lg font-semibold text-slate-900">Form settings</h2>
+            <p class="text-sm text-slate-500 mt-1">Control the name, slug, and success message.</p>
+
+            <div class="mt-6 grid gap-4">
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-2">Form name</label>
+                <input id="form-name" type="text" class="input-themed w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:bg-white transition-colors" value={form.name} disabled={!canManage} />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-2">Form slug</label>
+                <input id="form-slug" type="text" class="input-themed w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:bg-white transition-colors" value={form.slug} disabled={!canManage} />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-2">Description</label>
+                <textarea id="form-description" rows="3" class="input-themed w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:bg-white transition-colors resize-none" disabled={!canManage}>{form.description || ''}</textarea>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-2">Success message</label>
+                <textarea id="form-success" rows="2" class="input-themed w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:bg-white transition-colors resize-none" disabled={!canManage}>{form.success_message || 'Thanks! Your submission has been received.'}</textarea>
+              </div>
+              <label class="flex items-center gap-3 p-3 rounded-xl border border-slate-200 hover:bg-slate-50 transition-colors cursor-pointer">
+                <input id="form-active" type="checkbox" class="rounded border-slate-300 accent-[var(--admin-accent)]" checked={form.is_active === 1} disabled={!canManage} />
+                <span class="text-sm text-slate-700">Form is active</span>
+              </label>
+            </div>
+
+            <div class="mt-5 flex justify-end">
+              <button id="save-form" class="btn-primary" disabled={!canManage}>
+                Save settings
+              </button>
+            </div>
+          </AdminCard>
+
+          <AdminCard>
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+              <div>
+                <h2 class="text-lg font-semibold text-slate-900">Form fields</h2>
+                <p class="text-sm text-slate-500 mt-1">Build the questions and reorder them.</p>
+              </div>
+              <button id="add-field" class="btn-secondary" disabled={!canManage}>
+                <Icon name="plus" size="md" />
+                Add field
+              </button>
+            </div>
+
+            <div class="space-y-4" id="fields-list">
+              {fields.map((field) => (
+                <div class="field-row rounded-xl border border-slate-200 p-4 bg-slate-50" data-field-id={field.id}>
+                  <div class="flex flex-wrap gap-3">
+                    <input class="field-label flex-1 min-w-[200px] px-3 py-2 rounded-lg border border-slate-200 bg-white text-sm focus:outline-none focus:border-slate-400" value={field.label} placeholder="Field label" disabled={!canManage} />
+                    <select class="field-type px-3 py-2 rounded-lg border border-slate-200 bg-white text-sm focus:outline-none focus:border-slate-400" value={field.type} disabled={!canManage}>
+                      <option value="text">Text</option>
+                      <option value="textarea">Paragraph</option>
+                      <option value="email">Email</option>
+                      <option value="phone">Phone</option>
+                      <option value="select">Select</option>
+                      <option value="checkbox">Checkbox</option>
+                      <option value="radio">Radio</option>
+                      <option value="date">Date</option>
+                    </select>
+                    <label class="flex items-center gap-2 text-sm text-slate-600">
+                      <input type="checkbox" class="field-required rounded border-slate-300 accent-[var(--admin-accent)]" checked={field.required === 1} disabled={!canManage} />
+                      Required
+                    </label>
+                  </div>
+                  <div class="mt-3 grid gap-3 md:grid-cols-2">
+                    <input class="field-placeholder px-3 py-2 rounded-lg border border-slate-200 bg-white text-sm focus:outline-none focus:border-slate-400" value={field.placeholder || ''} placeholder="Placeholder" disabled={!canManage} />
+                    <input class="field-help px-3 py-2 rounded-lg border border-slate-200 bg-white text-sm focus:outline-none focus:border-slate-400" value={field.help_text || ''} placeholder="Helper text" disabled={!canManage} />
+                  </div>
+                  <div class="mt-3">
+                    <input class="field-options w-full px-3 py-2 rounded-lg border border-slate-200 bg-white text-sm focus:outline-none focus:border-slate-400" value={field.options || ''} placeholder="Options (comma separated for select/radio/checkbox)" disabled={!canManage} />
+                  </div>
+                  <div class="mt-3 flex items-center justify-between">
+                    <div class="flex gap-2">
+                      <button type="button" class="field-up px-2 py-1 rounded-lg border border-slate-200 text-slate-500 hover:text-slate-900 hover:bg-white transition-colors" disabled={!canManage}>
+                        <Icon name="chevron-up" size="md" />
+                      </button>
+                      <button type="button" class="field-down px-2 py-1 rounded-lg border border-slate-200 text-slate-500 hover:text-slate-900 hover:bg-white transition-colors" disabled={!canManage}>
+                        <Icon name="chevron-down" size="md" />
+                      </button>
+                    </div>
+                    <button type="button" class="field-remove text-sm text-red-600 hover:text-red-700 hover:bg-red-50 px-2 py-1 rounded-lg transition-colors" disabled={!canManage}>Remove</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div class="mt-5 flex justify-end">
+              <button id="save-fields" class="btn-primary" disabled={!canManage}>
+                Save fields
+              </button>
+            </div>
+          </AdminCard>
+        </div>
+
+        <AdminCard>
+          <div class="flex items-center justify-between mb-6">
+            <div>
+              <h2 class="text-lg font-semibold text-slate-900">Submissions</h2>
+              <p class="text-sm text-slate-500 mt-1">All responses saved in your inbox.</p>
+            </div>
+            <span class="text-xs text-slate-400">{submissionsView.length} total</span>
+          </div>
+
+          <div class="space-y-4">
+            {submissionsView.length > 0 ? (
+              submissionsView.map((submission: any) => (
+                <div class="rounded-xl border border-slate-200 p-4 hover:bg-slate-50 transition-colors">
+                  <div class="flex items-center justify-between text-xs text-slate-500 mb-3">
+                    <span>{formatDateTime(submission.created_at)}</span>
+                    <span class="font-mono">{submission.id.slice(0, 8)}</span>
+                  </div>
+                  <div class="space-y-2 text-sm">
+                    {Object.entries(submission.payload).map(([key, value]) => (
+                      <div class="flex items-start gap-2">
+                        <span class="text-slate-500 min-w-[120px]">{fieldLabelMap.get(key) || key}</span>
+                        <span class="text-slate-800">{value || '-'}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div class="rounded-xl border border-dashed border-slate-200 p-8 text-center">
+                <div class="w-10 h-10 mx-auto mb-3 rounded-full bg-slate-100 flex items-center justify-center">
+                  <Icon name="inbox" size="lg" class="text-slate-400" />
+                </div>
+                <p class="text-slate-500">No submissions yet.</p>
+              </div>
+            )}
+          </div>
+        </AdminCard>
+      </div>
+    </div>
+  </AdminPageTemplate>
+</AdminLayout>
+
+<style>
+  .input-themed:focus {
+    border-color: var(--admin-accent, #14b8a6);
+    box-shadow: 0 0 0 2px var(--admin-ring, rgba(20, 184, 166, 0.2));
+  }
+</style>
+
+<script>
+  const editor = document.getElementById('form-editor');
+  const clubId = editor?.dataset.clubId;
+  const formId = editor?.dataset.formId;
+
+  const fieldsList = document.getElementById('fields-list');
+  const addFieldBtn = document.getElementById('add-field');
+
+  function makeFieldRow() {
+    const row = document.createElement('div');
+    row.className = 'field-row rounded-xl border border-slate-200 p-4 bg-slate-50';
+    row.innerHTML = `
+      <div class="flex flex-wrap gap-3">
+        <input class="field-label flex-1 min-w-[200px] px-3 py-2 rounded-lg border border-slate-200 bg-white text-sm focus:outline-none focus:border-slate-400" placeholder="Field label" />
+        <select class="field-type px-3 py-2 rounded-lg border border-slate-200 bg-white text-sm focus:outline-none focus:border-slate-400">
+          <option value="text">Text</option>
+          <option value="textarea">Paragraph</option>
+          <option value="email">Email</option>
+          <option value="phone">Phone</option>
+          <option value="select">Select</option>
+          <option value="checkbox">Checkbox</option>
+          <option value="radio">Radio</option>
+          <option value="date">Date</option>
+        </select>
+        <label class="flex items-center gap-2 text-sm text-slate-600">
+          <input type="checkbox" class="field-required rounded border-slate-300" style="accent-color: var(--admin-accent)" />
+          Required
+        </label>
+      </div>
+      <div class="mt-3 grid gap-3 md:grid-cols-2">
+        <input class="field-placeholder px-3 py-2 rounded-lg border border-slate-200 bg-white text-sm focus:outline-none focus:border-slate-400" placeholder="Placeholder" />
+        <input class="field-help px-3 py-2 rounded-lg border border-slate-200 bg-white text-sm focus:outline-none focus:border-slate-400" placeholder="Helper text" />
+      </div>
+      <div class="mt-3">
+        <input class="field-options w-full px-3 py-2 rounded-lg border border-slate-200 bg-white text-sm focus:outline-none focus:border-slate-400" placeholder="Options (comma separated for select/radio/checkbox)" />
+      </div>
+      <div class="mt-3 flex items-center justify-between">
+        <div class="flex gap-2">
+          <button type="button" class="field-up px-2 py-1 rounded-lg border border-slate-200 text-slate-500 hover:text-slate-900 hover:bg-white transition-colors">&#8593;</button>
+          <button type="button" class="field-down px-2 py-1 rounded-lg border border-slate-200 text-slate-500 hover:text-slate-900 hover:bg-white transition-colors">&#8595;</button>
+        </div>
+        <button type="button" class="field-remove text-sm text-red-600 hover:text-red-700 hover:bg-red-50 px-2 py-1 rounded-lg transition-colors">Remove</button>
+      </div>
+    `;
+    return row;
+  }
+
+  addFieldBtn?.addEventListener('click', () => {
+    fieldsList?.appendChild(makeFieldRow());
+  });
+
+  fieldsList?.addEventListener('click', (event) => {
+    const target = event.target;
+    const row = target.closest('.field-row');
+    if (!row) return;
+
+    if (target.classList.contains('field-remove')) {
+      row.remove();
+    }
+
+    if (target.classList.contains('field-up')) {
+      const prev = row.previousElementSibling;
+      if (prev) fieldsList.insertBefore(row, prev);
+    }
+
+    if (target.classList.contains('field-down')) {
+      const next = row.nextElementSibling;
+      if (next) {
+        fieldsList.insertBefore(next, row);
+      }
+    }
+  });
+
+  document.getElementById('save-form')?.addEventListener('click', async () => {
+    const payload = {
+      name: document.getElementById('form-name')?.value?.trim(),
+      slug: document.getElementById('form-slug')?.value?.trim(),
+      description: document.getElementById('form-description')?.value?.trim() || null,
+      success_message: document.getElementById('form-success')?.value?.trim() || null,
+      is_active: document.getElementById('form-active')?.checked ? 1 : 0,
+    };
+
+    const res = await fetch(`/api/clubs/${clubId}/forms/${formId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+
+    const data = await res.json();
+    if (!res.ok) {
+      alert(data.error || 'Failed to save form');
+      return;
+    }
+
+    window.location.reload();
+  });
+
+  document.getElementById('save-fields')?.addEventListener('click', async () => {
+    const fieldRows = Array.from(document.querySelectorAll('.field-row'));
+    const fields = fieldRows.map((row, index) => ({
+      label: row.querySelector('.field-label')?.value?.trim(),
+      type: row.querySelector('.field-type')?.value,
+      required: row.querySelector('.field-required')?.checked ? 1 : 0,
+      options: row.querySelector('.field-options')?.value?.trim() || null,
+      placeholder: row.querySelector('.field-placeholder')?.value?.trim() || null,
+      help_text: row.querySelector('.field-help')?.value?.trim() || null,
+      order_index: index,
+    })).filter((field) => field.label);
+
+    const res = await fetch(`/api/clubs/${clubId}/forms/${formId}/fields`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ fields }),
+    });
+
+    const data = await res.json();
+    if (!res.ok) {
+      alert(data.error || 'Failed to save fields');
+      return;
+    }
+
+    alert('Fields updated');
+  });
+</script>

@@ -1,0 +1,81 @@
+---
+interface Volunteer {
+  name: string;
+  role: string;
+  quote?: string;
+  image_url?: string;
+}
+
+interface Props {
+  volunteer?: Volunteer | null;
+  primaryColor: string;
+  slug: string;
+}
+
+const { volunteer, primaryColor, slug } = Astro.props;
+---
+
+<section class="py-16 bg-slate-50">
+  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <div class="text-center mb-8">
+      <h2 class="text-2xl font-bold text-slate-900 mb-2">Volunteer With Us</h2>
+      <p class="text-slate-600">Our club runs on the dedication of our volunteers</p>
+    </div>
+
+    {volunteer ? (
+      <div class="max-w-2xl mx-auto bg-white rounded-2xl p-8 border border-slate-200 shadow-sm">
+        <div class="flex flex-col sm:flex-row items-center gap-6">
+          {volunteer.image_url ? (
+            <img
+              src={volunteer.image_url}
+              alt={volunteer.name}
+              class="w-24 h-24 rounded-full object-cover"
+            />
+          ) : (
+            <div
+              class="w-24 h-24 rounded-full flex items-center justify-center text-2xl font-bold text-white"
+              style={`background-color: ${primaryColor}`}
+            >
+              {volunteer.name.charAt(0)}
+            </div>
+          )}
+          <div class="text-center sm:text-left flex-1">
+            <h3 class="text-xl font-semibold text-slate-900">{volunteer.name}</h3>
+            <p class="text-slate-600 mb-3">{volunteer.role}</p>
+            {volunteer.quote && (
+              <blockquote class="text-slate-600 italic">"{volunteer.quote}"</blockquote>
+            )}
+          </div>
+        </div>
+      </div>
+    ) : (
+      <div class="max-w-2xl mx-auto bg-white rounded-2xl p-8 border border-slate-200 text-center shadow-sm">
+        <div
+          class="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
+          style={`background-color: ${primaryColor}15`}
+        >
+          <svg
+            class="w-8 h-8"
+            style={`color: ${primaryColor}`}
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+          </svg>
+        </div>
+        <h3 class="text-lg font-semibold text-slate-900 mb-2">Join Our Volunteer Team</h3>
+        <p class="text-slate-600 mb-4">
+          We're always looking for people to help with coaching, events, fundraising, and more.
+        </p>
+        <a
+          href={`/${slug}/contact`}
+          class="inline-block px-6 py-2 rounded-full font-medium text-white transition-colors"
+          style={`background-color: ${primaryColor}`}
+        >
+          Get Involved
+        </a>
+      </div>
+    )}
+  </div>
+</section>

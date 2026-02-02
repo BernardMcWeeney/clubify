@@ -1,0 +1,73 @@
+---
+/**
+ * FormField Component - Wrapper for form inputs with label, help text, and error state
+ *
+ * Usage:
+ * <FormField label="Email" helper="We'll never share your email." required>
+ *   <input type="email" name="email" />
+ * </FormField>
+ *
+ * With error:
+ * <FormField label="Password" error="Password must be at least 8 characters.">
+ *   <input type="password" name="password" />
+ * </FormField>
+ */
+
+interface Props {
+  /** Field label */
+  label?: string;
+  /** Helper text shown below the input */
+  helper?: string;
+  /** Error message (shows instead of helper when present) */
+  error?: string;
+  /** Mark field as required (adds asterisk) */
+  required?: boolean;
+  /** Additional CSS classes */
+  class?: string;
+}
+
+const {
+  label,
+  helper,
+  error,
+  required = false,
+  class: className = '',
+} = Astro.props;
+
+const hasError = !!error;
+---
+
+<div class={`${className}`}>
+  {label && (
+    <label class="block text-sm font-medium text-slate-700 mb-1.5">
+      {label}
+      {required && <span class="text-red-500 ml-0.5">*</span>}
+    </label>
+  )}
+
+  <div class:list={[{ 'form-field-error': hasError }]}>
+    <slot />
+  </div>
+
+  {(error || helper) && (
+    <p class={`text-sm mt-1.5 ${error ? 'text-red-600' : 'text-slate-500'}`}>
+      {error || helper}
+    </p>
+  )}
+</div>
+
+<style>
+  /* Apply error styles to child inputs */
+  .form-field-error :global(input),
+  .form-field-error :global(select),
+  .form-field-error :global(textarea) {
+    border-color: rgb(239 68 68) !important; /* red-500 */
+  }
+
+  .form-field-error :global(input:focus),
+  .form-field-error :global(select:focus),
+  .form-field-error :global(textarea:focus) {
+    border-color: rgb(239 68 68) !important; /* red-500 */
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;
+  }
+</style>

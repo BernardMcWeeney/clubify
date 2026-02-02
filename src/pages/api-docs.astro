@@ -1,0 +1,123 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Navigation from '../components/Navigation.astro';
+import PageHeader from '../components/PageHeader.astro';
+import Footer from '../components/Footer.astro';
+---
+
+<Layout title="API Documentation - Clubify">
+  <Navigation />
+  <PageHeader
+    title="API Documentation"
+    description="Integrate Clubify with your own tools and services"
+    badge="Developers"
+  />
+
+  <section class="py-16 bg-white">
+    <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+      <!-- Coming Soon Notice -->
+      <div class="text-center mb-16">
+        <div class="inline-flex items-center justify-center w-20 h-20 bg-slate-100 rounded-full mb-6">
+          <svg class="w-10 h-10 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
+          </svg>
+        </div>
+        <h2 class="text-2xl font-bold text-slate-900 mb-4">API Coming Soon</h2>
+        <p class="text-slate-600 max-w-lg mx-auto">
+          We're working on a public API that will let you integrate Clubify with your own tools and services.
+          Sign up to be notified when it launches.
+        </p>
+      </div>
+
+      <!-- Planned Features -->
+      <div class="mb-16">
+        <h2 class="text-xl font-bold text-slate-900 mb-6 text-center">Planned API Features</h2>
+        <div class="grid md:grid-cols-2 gap-6">
+          <div class="bg-slate-50 rounded-2xl p-6 border border-slate-200">
+            <div class="w-10 h-10 bg-primary-100 rounded-xl flex items-center justify-center mb-4">
+              <svg class="w-5 h-5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/>
+              </svg>
+            </div>
+            <h3 class="font-semibold text-slate-900 mb-2">Content API</h3>
+            <p class="text-sm text-slate-600">
+              Read and write posts, pages, and fixtures programmatically. Perfect for importing content or building custom displays.
+            </p>
+          </div>
+
+          <div class="bg-slate-50 rounded-2xl p-6 border border-slate-200">
+            <div class="w-10 h-10 bg-primary-100 rounded-xl flex items-center justify-center mb-4">
+              <svg class="w-5 h-5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+              </svg>
+            </div>
+            <h3 class="font-semibold text-slate-900 mb-2">Fixtures API</h3>
+            <p class="text-sm text-slate-600">
+              Sync fixtures and results with external systems like league management platforms.
+            </p>
+          </div>
+
+          <div class="bg-slate-50 rounded-2xl p-6 border border-slate-200">
+            <div class="w-10 h-10 bg-primary-100 rounded-xl flex items-center justify-center mb-4">
+              <svg class="w-5 h-5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+              </svg>
+            </div>
+            <h3 class="font-semibold text-slate-900 mb-2">Media API</h3>
+            <p class="text-sm text-slate-600">
+              Upload and manage images and videos. Build custom galleries or integrate with photo services.
+            </p>
+          </div>
+
+          <div class="bg-slate-50 rounded-2xl p-6 border border-slate-200">
+            <div class="w-10 h-10 bg-primary-100 rounded-xl flex items-center justify-center mb-4">
+              <svg class="w-5 h-5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+              </svg>
+            </div>
+            <h3 class="font-semibold text-slate-900 mb-2">Webhooks</h3>
+            <p class="text-sm text-slate-600">
+              Get notified when things happen - new posts, fixture results, form submissions, and more.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Notify Me CTA -->
+      <div class="bg-gradient-to-br from-primary-50 to-accent-50 rounded-3xl p-8 md:p-12 text-center border border-primary-100">
+        <h2 class="text-2xl font-bold text-slate-900 mb-4">Get Early Access</h2>
+        <p class="text-slate-600 max-w-lg mx-auto mb-6">
+          Be the first to know when our API launches. We'll also share documentation and early access opportunities.
+        </p>
+        <form class="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
+          <input
+            type="email"
+            placeholder="developer@example.com"
+            class="flex-1 px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+          />
+          <button
+            type="submit"
+            class="px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-xl transition-colors shadow-lg shadow-primary-600/25"
+          >
+            Notify Me
+          </button>
+        </form>
+      </div>
+
+      <!-- Contact for Enterprise -->
+      <div class="mt-12 text-center">
+        <p class="text-slate-600 mb-2">
+          Need custom integrations now?
+        </p>
+        <a href="/contact" class="text-primary-600 font-medium hover:text-primary-700 inline-flex items-center gap-1">
+          Contact us to discuss your needs
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <Footer />
+</Layout>

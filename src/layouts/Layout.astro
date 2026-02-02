@@ -2,9 +2,20 @@
 interface Props {
   title: string;
   description?: string;
+  image?: string;
+  canonical?: string;
 }
 
-const { title, description = "All-in-one website and app platform for GAA clubs. Create your club site in minutes." } = Astro.props;
+const {
+  title,
+  description = "All-in-one website and app platform for sports clubs. Create your club site in minutes.",
+  image = "/og-default.jpg",
+  canonical
+} = Astro.props;
+
+const siteUrl = "https://clubify.ie";
+const canonicalUrl = canonical || Astro.url.href;
+const ogImageUrl = image.startsWith('http') ? image : `${siteUrl}${image}`;
 ---
 
 <!doctype html>
@@ -15,21 +26,61 @@ const { title, description = "All-in-one website and app platform for GAA clubs.
     <meta name="description" content={description} />
     <meta name="theme-color" content="#006838" />
 
+    <!-- Canonical URL -->
+    <link rel="canonical" href={canonicalUrl} />
+
     <!-- Open Graph -->
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Clubify" />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:image" content={ogImageUrl} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:locale" content="en_IE" />
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImageUrl} />
 
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>{title}</title>
+
+    <!-- JSON-LD Structured Data -->
+    <script is:inline type="application/ld+json" set:html={JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Clubify",
+      "applicationCategory": "WebApplication",
+      "operatingSystem": "Web",
+      "description": description,
+      "url": siteUrl,
+      "offers": {
+        "@type": "Offer",
+        "price": "499",
+        "priceCurrency": "EUR",
+        "priceValidUntil": "2026-12-31"
+      },
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.8",
+        "ratingCount": "50"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Clubify",
+        "url": siteUrl,
+        "logo": {
+          "@type": "ImageObject",
+          "url": `${siteUrl}/logo.svg`
+        }
+      }
+    })} />
   </head>
-  <body class="bg-slate-950 text-white antialiased">
+  <body class="bg-white text-slate-900 antialiased">
     <slot />
   </body>
 </html>

@@ -1,0 +1,160 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Navigation from '../components/Navigation.astro';
+import PageHeader from '../components/PageHeader.astro';
+import Footer from '../components/Footer.astro';
+
+const helpTopics = [
+  {
+    title: "Getting Started",
+    icon: "rocket",
+    items: [
+      { question: "How do I create my club's website?", answer: "Sign up at clubify.ie, follow our onboarding wizard to set up your club details, choose a template, and customise your colours. You can be live in under 15 minutes." },
+      { question: "How do I add team members?", answer: "Go to Settings > Team in your admin portal. Click 'Invite Member' and enter their email address. You can assign roles like Admin, Editor, or Viewer." },
+      { question: "Can I change my template later?", answer: "Yes! Go to Website > Template in your admin portal. Preview different templates and switch anytime - all your content will be preserved." }
+    ]
+  },
+  {
+    title: "Content Management",
+    icon: "document",
+    items: [
+      { question: "How do I publish a news post?", answer: "Go to Posts in your admin portal, click 'New Post', write your content using the rich text editor, add images if needed, and click 'Publish'." },
+      { question: "How do I add a fixture?", answer: "Go to Fixtures in your admin portal, click 'Add Fixture', enter the teams, date, time, and venue. Once the match is played, you can add the result." },
+      { question: "How do I upload images?", answer: "You can upload images directly when creating posts, or use the Media library to manage all your club's photos and videos in one place." }
+    ]
+  },
+  {
+    title: "Social Media",
+    icon: "share",
+    items: [
+      { question: "How do I connect my social accounts?", answer: "Go to Settings > Social in your admin portal. Click 'Connect' next to Facebook, Twitter, or Instagram and follow the authorisation steps." },
+      { question: "Does posting to Clubify automatically post to social media?", answer: "When publishing a post, you can toggle social sharing on/off. If enabled, your post will be shared to connected social accounts." }
+    ]
+  },
+  {
+    title: "Account & Billing",
+    icon: "credit-card",
+    items: [
+      { question: "How do I upgrade to annual billing?", answer: "Go to Settings > Billing in your admin portal. You can switch between monthly and annual billing at any time." },
+      { question: "How do I cancel my subscription?", answer: "Go to Settings > Billing and click 'Cancel Subscription'. Your site will remain active until the end of your billing period." },
+      { question: "Can I export my data?", answer: "Yes! Go to Settings > Data and click 'Export Data'. You'll receive a download with all your club's content." }
+    ]
+  }
+];
+
+function getIcon(name: string) {
+  const icons: Record<string, string> = {
+    rocket: "M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z",
+    document: "M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z",
+    share: "M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z",
+    "credit-card": "M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
+  };
+  return icons[name] || icons.document;
+}
+---
+
+<Layout title="Help Centre - Clubify">
+  <Navigation />
+  <PageHeader
+    title="Help Centre"
+    description="Find answers to common questions"
+    badge="Support"
+  />
+
+  <section class="py-16 bg-white">
+    <div class="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+      <!-- Search (visual only for now) -->
+      <div class="max-w-xl mx-auto mb-12">
+        <div class="relative">
+          <input
+            type="search"
+            placeholder="Search for help..."
+            class="w-full px-5 py-4 pl-12 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+          />
+          <svg class="w-5 h-5 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Help Topics -->
+      <div class="space-y-12">
+        {helpTopics.map((topic) => (
+          <div>
+            <div class="flex items-center gap-3 mb-6">
+              <div class="w-10 h-10 bg-primary-100 rounded-xl flex items-center justify-center">
+                <svg class="w-5 h-5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d={getIcon(topic.icon)}/>
+                </svg>
+              </div>
+              <h2 class="text-xl font-bold text-slate-900">{topic.title}</h2>
+            </div>
+
+            <div class="space-y-4">
+              {topic.items.map((item, index) => (
+                <div class="help-item bg-slate-50 rounded-xl border border-slate-200 overflow-hidden">
+                  <button
+                    class="help-trigger w-full px-6 py-4 text-left flex items-center justify-between gap-4"
+                    data-index={`${topic.title}-${index}`}
+                  >
+                    <span class="font-medium text-slate-900">{item.question}</span>
+                    <svg class="help-icon w-5 h-5 text-slate-400 flex-shrink-0 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                    </svg>
+                  </button>
+                  <div class="help-content hidden px-6 pb-4">
+                    <p class="text-slate-600">{item.answer}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <!-- Contact Support -->
+      <div class="mt-16 bg-gradient-to-br from-primary-50 to-accent-50 rounded-3xl p-8 md:p-12 text-center border border-primary-100">
+        <h2 class="text-2xl font-bold text-slate-900 mb-4">Still Need Help?</h2>
+        <p class="text-slate-600 max-w-lg mx-auto mb-6">
+          Can't find what you're looking for? Our support team is here to help.
+        </p>
+        <a
+          href="mailto:support@clubify.ie"
+          class="inline-flex items-center gap-2 px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-xl transition-colors shadow-lg shadow-primary-600/25"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+          </svg>
+          Contact Support
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <Footer />
+</Layout>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const triggers = document.querySelectorAll('.help-trigger');
+
+    triggers.forEach(trigger => {
+      trigger.addEventListener('click', () => {
+        const item = trigger.parentElement;
+        const content = item?.querySelector('.help-content');
+        const icon = trigger.querySelector('.help-icon');
+        const isOpen = content?.classList.contains('hidden') === false;
+
+        // Toggle content
+        content?.classList.toggle('hidden', isOpen);
+        icon?.classList.toggle('rotate-180', !isOpen);
+      });
+    });
+  });
+</script>
+
+<style>
+  .help-icon {
+    transition: transform 0.2s ease;
+  }
+</style>

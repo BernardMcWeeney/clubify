@@ -1,0 +1,508 @@
+---
+import AdminLayout from '../../../../components/admin/AdminLayout.astro';
+import AdminPageTemplate from '../../../../components/admin/AdminPageTemplate.astro';
+import AdminCard from '../../../../components/admin/AdminCard.astro';
+import Icon from '../../../../components/admin/Icon.astro';
+import { DatabaseService } from '../../../../lib/db';
+import { getAuthContext } from '../../../../lib/auth';
+import { hasPermission, type Role } from '../../../../lib/permissions';
+import { IRISH_COUNTIES } from '../../../../lib/utils';
+
+const { slug } = Astro.params;
+
+if (!Astro.locals.runtime.env.DB) {
+  return Astro.redirect('/admin?error=db_not_configured');
+}
+
+const db = new DatabaseService(Astro.locals.runtime.env.DB);
+const { user } = await getAuthContext(Astro.cookies, db);
+
+if (!user) {
+  return Astro.redirect('/admin/login');
+}
+
+const club = await db.getClubBySlug(slug!);
+if (!club) {
+  return Astro.redirect('/admin');
+}
+
+const member = await db.getClubMember(club.id, user.id);
+if (!member) {
+  return Astro.redirect('/admin');
+}
+
+const canEdit = hasPermission(member.role as Role, 'club.edit');
+
+const sportSettings = (() => {
+  try {
+    return club.sport_settings ? JSON.parse(club.sport_settings) : {};
+  } catch {
+    return {};
+  }
+})();
+
+const showPricing = ['golf'].includes(club.club_type);
+const showBooking = ['golf', 'tennis'].includes(club.club_type);
+const showMembership = ['golf', 'tennis'].includes(club.club_type);
+
+const breadcrumbs = [
+  { label: 'Dashboard', href: `/${slug}/admin-portal` },
+  { label: 'Settings', href: `/${slug}/admin-portal/settings` },
+  { label: 'Club Identity' },
+];
+---
+
+<AdminLayout
+  title="Club Details"
+  club={club}
+  user={user}
+  member={member}
+  currentPage="settings"
+>
+  <AdminPageTemplate
+    title="Brand kit & club profile"
+    subtitle="Everything that shapes how your club looks and appears across web and app."
+    breadcrumbs={breadcrumbs}
+  >
+    {!canEdit && (
+      <div class="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-xl text-sm text-amber-700">
+        <div class="flex items-center gap-2">
+          <Icon name="alert-triangle" size="md" />
+          You don't have permission to edit club settings.
+        </div>
+      </div>
+    )}
+
+    <form id="club-form" class="space-y-6">
+      <AdminCard>
+        <h2 class="text-lg font-semibold text-slate-900 mb-4">Club identity</h2>
+        <div class="grid gap-4 mt-4">
+          <div>
+            <label for="name" class="admin-label">Club Name</label>
+            <input
+              type="text"
+              id="name"
+              name="name"
+              value={club.name}
+              disabled={!canEdit}
+              class="admin-input"
+            />
+          </div>
+
+          <div>
+            <label for="tagline" class="admin-label">Tagline</label>
+            <input
+              type="text"
+              id="tagline"
+              name="tagline"
+              value={club.tagline || ''}
+              placeholder="e.g., Proud GAA Club since 1920"
+              disabled={!canEdit}
+              class="admin-input"
+            />
+          </div>
+
+          <div>
+            <label for="description" class="admin-label">Short description</label>
+            <textarea
+              id="description"
+              name="description"
+              rows={3}
+              placeholder="Share a short summary about your club"
+              disabled={!canEdit}
+              class="admin-input"
+            >{club.description || ''}</textarea>
+          </div>
+
+          <div>
+            <label for="county" class="admin-label">County</label>
+            <div class="relative">
+              <select
+                id="county"
+                name="county"
+                disabled={!canEdit}
+                class="admin-select"
+              >
+                <option value="" disabled>Select a county</option>
+                {IRISH_COUNTIES.map((county) => (
+                  <option value={county} selected={club.county === county}>{county}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </div>
+      </AdminCard>
+
+      <AdminCard>
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+          <div>
+            <h2 class="text-lg font-semibold text-slate-900">Brand kit</h2>
+            <p class="text-sm text-slate-600 mt-1">Your crest and colour palette for the club website.</p>
+          </div>
+          <span class="admin-accent-pill">Dashboard accent uses {club.club_type.toUpperCase()}</span>
+        </div>
+
+        <div class="mt-6 grid gap-6 lg:grid-cols-[220px_1fr]">
+          <div class="space-y-3">
+            <label class="admin-label">Club crest</label>
+            <div class="w-32 h-32 rounded-2xl border border-slate-200 bg-white flex items-center justify-center">
+              {club.crest_url ? (
+                <img src={club.crest_url} alt={club.name} class="w-24 h-24 object-contain" />
+              ) : (
+                <div class="text-slate-400 text-sm">No crest</div>
+              )}
+            </div>
+            <p class="text-xs text-slate-500">Upload a crest in Media and link it here (coming soon).</p>
+          </div>
+
+          <div class="space-y-4">
+            <div
+              id="color-preview"
+              class="rounded-2xl p-5 border border-slate-200"
+              style={`background: linear-gradient(135deg, ${club.primary_color}, ${club.secondary_color})`}
+            >
+              <div class="flex items-center gap-3">
+                <div
+                  class="w-14 h-14 rounded-2xl flex items-center justify-center font-bold text-lg shadow-md"
+                  style={`background-color: ${club.accent_color}; color: white;`}
+                >
+                  {club.name.charAt(0)}
+                </div>
+                <div>
+                  <div class="text-white font-bold text-lg drop-shadow-sm">{club.name}</div>
+                  <div class="text-white/80 text-sm">Preview of your colours</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="grid gap-4 sm:grid-cols-3">
+              <div>
+                <label for="primary_color" class="admin-label">Primary</label>
+                <div class="flex items-center gap-3">
+                  <input
+                    type="color"
+                    id="primary_color"
+                    name="primary_color"
+                    value={club.primary_color}
+                    disabled={!canEdit}
+                    class="w-14 h-12 rounded-xl border border-slate-200 bg-transparent"
+                  />
+                  <input
+                    type="text"
+                    value={club.primary_color}
+                    id="primary_color_text"
+                    class="admin-input font-mono text-sm uppercase"
+                    readonly
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label for="secondary_color" class="admin-label">Secondary</label>
+                <div class="flex items-center gap-3">
+                  <input
+                    type="color"
+                    id="secondary_color"
+                    name="secondary_color"
+                    value={club.secondary_color}
+                    disabled={!canEdit}
+                    class="w-14 h-12 rounded-xl border border-slate-200 bg-transparent"
+                  />
+                  <input
+                    type="text"
+                    value={club.secondary_color}
+                    id="secondary_color_text"
+                    class="admin-input font-mono text-sm uppercase"
+                    readonly
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label for="accent_color" class="admin-label">Accent</label>
+                <div class="flex items-center gap-3">
+                  <input
+                    type="color"
+                    id="accent_color"
+                    name="accent_color"
+                    value={club.accent_color}
+                    disabled={!canEdit}
+                    class="w-14 h-12 rounded-xl border border-slate-200 bg-transparent"
+                  />
+                  <input
+                    type="text"
+                    value={club.accent_color}
+                    id="accent_color_text"
+                    class="admin-input font-mono text-sm uppercase"
+                    readonly
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </AdminCard>
+
+      {(showPricing || showBooking || showMembership) && (
+        <AdminCard>
+          <h2 class="text-lg font-semibold text-slate-900 mb-2">{club.club_type.toUpperCase()} settings</h2>
+          <p class="text-sm text-slate-600 mt-2">These fields power sport-specific sections on your club website.</p>
+
+          <div class="grid gap-4 mt-4">
+            {showBooking && (
+              <div>
+                <label for="booking_url" class="admin-label">Booking link</label>
+                <input
+                  type="url"
+                  id="booking_url"
+                  name="booking_url"
+                  value={sportSettings.booking_url || ''}
+                  placeholder="https://yourbookingplatform.com"
+                  disabled={!canEdit}
+                  class="admin-input"
+                />
+              </div>
+            )}
+
+            {showMembership && (
+              <div>
+                <label for="membership_pricing" class="admin-label">Membership pricing</label>
+                <textarea
+                  id="membership_pricing"
+                  name="membership_pricing"
+                  rows={3}
+                  placeholder="e.g., Adult €300, Student €150"
+                  disabled={!canEdit}
+                  class="admin-input"
+                >{sportSettings.membership_pricing || ''}</textarea>
+              </div>
+            )}
+
+            {showPricing && (
+              <div class="grid gap-4 md:grid-cols-2">
+                <div>
+                  <label for="event_pricing" class="admin-label">Event pricing</label>
+                  <textarea
+                    id="event_pricing"
+                    name="event_pricing"
+                    rows={3}
+                    placeholder="e.g., Open weekend €50"
+                    disabled={!canEdit}
+                    class="admin-input"
+                  >{sportSettings.event_pricing || ''}</textarea>
+                </div>
+                <div>
+                  <label for="visitor_pricing" class="admin-label">Visitor pricing</label>
+                  <textarea
+                    id="visitor_pricing"
+                    name="visitor_pricing"
+                    rows={3}
+                    placeholder="e.g., Visitor green fee €40"
+                    disabled={!canEdit}
+                    class="admin-input"
+                  >{sportSettings.visitor_pricing || ''}</textarea>
+                </div>
+              </div>
+            )}
+          </div>
+        </AdminCard>
+      )}
+
+      <AdminCard>
+        <h2 class="text-lg font-semibold text-slate-900 mb-4">Contact info</h2>
+        <div class="grid gap-4 mt-4">
+          <div>
+            <label for="contact_email" class="admin-label">Email</label>
+            <input
+              type="email"
+              id="contact_email"
+              name="contact_email"
+              value={club.contact_email || ''}
+              placeholder="info@yourclub.ie"
+              disabled={!canEdit}
+              class="admin-input"
+            />
+          </div>
+
+          <div>
+            <label for="contact_phone" class="admin-label">Phone</label>
+            <input
+              type="tel"
+              id="contact_phone"
+              name="contact_phone"
+              value={club.contact_phone || ''}
+              placeholder="01 234 5678"
+              disabled={!canEdit}
+              class="admin-input"
+            />
+          </div>
+
+          <div>
+            <label for="address" class="admin-label">Address</label>
+            <input
+              type="text"
+              id="address"
+              name="address"
+              value={club.address || ''}
+              placeholder="Club grounds address"
+              disabled={!canEdit}
+              class="admin-input"
+            />
+          </div>
+        </div>
+      </AdminCard>
+
+      <AdminCard>
+        <h2 class="text-lg font-semibold text-slate-900 mb-4">Social & website</h2>
+        <div class="grid gap-4 mt-4">
+          <div>
+            <label for="website_url" class="admin-label">Website</label>
+            <input
+              type="url"
+              id="website_url"
+              name="website_url"
+              value={club.website_url || ''}
+              placeholder="https://yourclub.ie"
+              disabled={!canEdit}
+              class="admin-input"
+            />
+          </div>
+
+          <div>
+            <label for="facebook_url" class="admin-label">Facebook</label>
+            <input
+              type="url"
+              id="facebook_url"
+              name="facebook_url"
+              value={club.facebook_url || ''}
+              placeholder="https://facebook.com/yourclub"
+              disabled={!canEdit}
+              class="admin-input"
+            />
+          </div>
+
+          <div>
+            <label for="twitter_url" class="admin-label">X / Twitter</label>
+            <input
+              type="url"
+              id="twitter_url"
+              name="twitter_url"
+              value={club.twitter_url || ''}
+              placeholder="https://x.com/yourclub"
+              disabled={!canEdit}
+              class="admin-input"
+            />
+          </div>
+
+          <div>
+            <label for="instagram_url" class="admin-label">Instagram</label>
+            <input
+              type="url"
+              id="instagram_url"
+              name="instagram_url"
+              value={club.instagram_url || ''}
+              placeholder="https://instagram.com/yourclub"
+              disabled={!canEdit}
+              class="admin-input"
+            />
+          </div>
+        </div>
+      </AdminCard>
+
+      {canEdit && (
+        <div class="flex items-center justify-end">
+          <button type="submit" class="btn-primary">Save changes</button>
+        </div>
+      )}
+    </form>
+
+    <div id="loading" class="hidden fixed inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center z-50">
+      <div class="bg-white rounded-xl p-6 text-center border border-slate-200 shadow-xl">
+        <div class="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin mx-auto mb-3" style="border-color: var(--admin-accent); border-top-color: transparent;"></div>
+        <p class="text-slate-700">Saving...</p>
+      </div>
+    </div>
+  </AdminPageTemplate>
+</AdminLayout>
+
+<script define:vars={{ clubId: club.id, slug }}>
+  const form = document.getElementById('club-form');
+  const loading = document.getElementById('loading');
+
+  const colorPreview = document.getElementById('color-preview');
+  const accentBadge = colorPreview?.querySelector('div > div:first-child');
+
+  function updateColorPreview() {
+    const primary = (document.getElementById('primary_color') as HTMLInputElement)?.value || '#006838';
+    const secondary = (document.getElementById('secondary_color') as HTMLInputElement)?.value || '#FFFFFF';
+    const accent = (document.getElementById('accent_color') as HTMLInputElement)?.value || '#FFB300';
+
+    if (colorPreview) {
+      colorPreview.style.background = `linear-gradient(135deg, ${primary}, ${secondary})`;
+    }
+    if (accentBadge) {
+      (accentBadge as HTMLElement).style.backgroundColor = accent;
+    }
+  }
+
+  ['primary', 'secondary', 'accent'].forEach(color => {
+    const picker = document.getElementById(`${color}_color`);
+    const text = document.getElementById(`${color}_color_text`);
+    picker?.addEventListener('input', (e) => {
+      if (text) text.value = (e.target as HTMLInputElement).value.toUpperCase();
+      updateColorPreview();
+    });
+  });
+
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const formData = new FormData(form);
+
+    const sportSettings = {
+      booking_url: formData.get('booking_url') || null,
+      membership_pricing: formData.get('membership_pricing') || null,
+      event_pricing: formData.get('event_pricing') || null,
+      visitor_pricing: formData.get('visitor_pricing') || null,
+    };
+
+    const data = {
+      name: formData.get('name'),
+      tagline: formData.get('tagline') || null,
+      description: formData.get('description') || null,
+      county: formData.get('county'),
+      primary_color: formData.get('primary_color'),
+      secondary_color: formData.get('secondary_color'),
+      accent_color: formData.get('accent_color'),
+      contact_email: formData.get('contact_email') || null,
+      contact_phone: formData.get('contact_phone') || null,
+      address: formData.get('address') || null,
+      website_url: formData.get('website_url') || null,
+      facebook_url: formData.get('facebook_url') || null,
+      twitter_url: formData.get('twitter_url') || null,
+      instagram_url: formData.get('instagram_url') || null,
+      sport_settings: sportSettings,
+    };
+
+    loading?.classList.remove('hidden');
+
+    try {
+      const response = await fetch(`/api/clubs/${clubId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to save');
+      }
+
+      window.location.reload();
+    } catch (error) {
+      alert(error.message || 'Failed to save changes');
+      loading?.classList.add('hidden');
+    }
+  });
+</script>
